@@ -1024,6 +1024,7 @@ end
 
 
 WeaponsTab:AddSection("🎯 التصويب")
+WeaponsTab:AddSection("🎯 التصويب")
 
 -- زر إطلاق النار على القاتل
 local ShootMurderButtonEnabled = false
@@ -1033,7 +1034,7 @@ local autoShootActive = false
 local shootConnection = nil
 local aimbotConnection = nil
 
--- نفس دوال التصويب والإطلاق الممتازة الي كانت
+-- نفس دوال التصويب القوية
 local function GetMurdererTarget()
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
@@ -1144,47 +1145,73 @@ local function QuickShoot()
     if tick() - lastShotTime < SHOT_COOLDOWN then return end
     
     local player = game:GetService("Players").LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
+    local character = player.Character
+    if not character then 
+        character = player.CharacterAdded:Wait()
+        task.wait(0.1)
+    end
+    
     if not character then return end
     
-    if not character:FindFirstChild("Gun") then
+    -- أولاً: أخذ السلاح من الحقيبة إذا لم يكن في اليد
+    local gun = character:FindFirstChild("Gun")
+    if not gun then
         local backpack = player:FindFirstChild("Backpack")
         if backpack then
             for _, item in ipairs(backpack:GetChildren()) do
                 if item.Name == "Gun" then
                     item.Parent = character
-                    task.wait(0.05)
+                    gun = item
+                    task.wait(0.1) -- أعط وقت للسلاح يتحرك
                     break
                 end
             end
         end
     end
     
-    local gun = character:FindFirstChild("Gun")
-    if gun then
-        local targetPos = GetAimbotTarget()
+    -- تأكد أن السلاح موجود
+    gun = character:FindFirstChild("Gun")
+    if not gun then
+        warn("⚠️ لا يوجد سلاح في الحقيبة أو اليد!")
+        return false
+    end
+    
+    -- الآن ابحث عن الهدف وأطلق
+    local targetPos = GetAimbotTarget()
+    
+    if targetPos then
+        local success = pcall(function()
+            -- طريقة الإطلاق الرئيسية
+            if gun:FindFirstChild("KnifeLocal") then
+                gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, targetPos, "AH2")
+                print("🔫 إطلاق نار: طريقة 1")
+            elseif gun:FindFirstChild("RemoteFunction") then
+                gun.RemoteFunction:InvokeServer("Fire", targetPos)
+                print("🔫 إطلاق نار: طريقة 2")
+            elseif gun:FindFirstChild("GunScript") then
+                -- جرب طرق أخرى
+                require(gun.GunScript).Fire(targetPos)
+                print("🔫 إطلاق نار: طريقة 3")
+            else
+                -- جرب أي RemoteFunction في السلاح
+                for _, child in ipairs(gun:GetDescendants()) do
+                    if child:IsA("RemoteFunction") then
+                        child:InvokeServer("Fire", targetPos)
+                        print("🔫 إطلاق نار: طريقة 4")
+                        break
+                    end
+                end
+            end
+        end)
         
-        if targetPos then
-            pcall(function()
-                if gun:FindFirstChild("KnifeLocal") then
-                    gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, targetPos, "AH2")
-                elseif gun:FindFirstChild("RemoteFunction") then
-                    gun.RemoteFunction:InvokeServer("Fire", targetPos)
-                end
-                
-                task.wait(0.05)
-                
-                targetPos = targetPos + Vector3.new(math.random(-0.1, 0.1), math.random(-0.1, 0.1), math.random(-0.1, 0.1))
-                if gun:FindFirstChild("KnifeLocal") then
-                    gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, targetPos, "AH2")
-                elseif gun:FindFirstChild("RemoteFunction") then
-                    gun.RemoteFunction:InvokeServer("Fire", targetPos)
-                end
-            end)
-            
+        if success then
             lastShotTime = tick()
             return true
+        else
+            warn("❌ فشل الإطلاق!")
         end
+    else
+        warn("🎯 لا يوجد هدف!")
     end
     
     return false
@@ -1236,209 +1263,236 @@ WeaponsTab:AddToggle({
                 guip:FindFirstChild("ShootMurderButton"):Destroy()
             end
             
-            -- === تصميم PRO احترافي ===
+            -- === تصميم محسّن ===
             local ScreenGui = Instance.new("ScreenGui", guip)
             ScreenGui.Name = "ShootMurderButton"
             ScreenGui.ResetOnSpawn = false
             ScreenGui.IgnoreGuiInset = true
             
-            -- الخلفية الرئيسية (Modern Glass Effect)
+            -- الخلفية الرئيسية - أكبر وأوضح
             local MainFrame = Instance.new("Frame", ScreenGui)
             MainFrame.Name = "MainFrame"
             MainFrame.Draggable = true
-            MainFrame.Position = UDim2.new(0.5, -180, 0.5, -100) -- نفس الموقع القديم تقريباً
-            MainFrame.Size = UDim2.new(0, 180, 0, 220) -- نفس الحجم تقريباً
-            MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-            MainFrame.BackgroundTransparency = 0.1
+            MainFrame.Position = UDim2.new(0.5, -200, 0.5, -120) -- أكبر شوي
+            MainFrame.Size = UDim2.new(0, 240, 0, 250) -- أوسع وأطول
+            MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+            MainFrame.BackgroundTransparency = 0.05 -- أقل شفافية
             MainFrame.BorderSizePixel = 0
             
-            -- تأثير الزجاج
-            local GlassCorner = Instance.new("UICorner", MainFrame)
-            GlassCorner.CornerRadius = UDim.new(0, 15)
+            -- زوايا دائرية
+            local MainCorner = Instance.new("UICorner", MainFrame)
+            MainCorner.CornerRadius = UDim.new(0, 12)
             
-            local GlassStroke = Instance.new("UIStroke", MainFrame)
-            GlassStroke.Color = Color3.fromRGB(100, 100, 255)
-            GlassStroke.Thickness = 2
-            GlassStroke.Transparency = 0.3
+            -- ظل
+            local MainStroke = Instance.new("UIStroke", MainFrame)
+            MainStroke.Color = Color3.fromRGB(80, 120, 255)
+            MainStroke.Thickness = 2
             
-            -- ظل خلفي
-            local DropShadow = Instance.new("ImageLabel", MainFrame)
-            DropShadow.Name = "DropShadow"
-            DropShadow.BackgroundTransparency = 1
-            DropShadow.Size = UDim2.new(1, 10, 1, 10)
-            DropShadow.Position = UDim2.new(0, -5, 0, -5)
-            DropShadow.Image = "rbxassetid://6010420018"
-            DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-            DropShadow.ImageTransparency = 0.8
-            DropShadow.ScaleType = Enum.ScaleType.Slice
-            DropShadow.SliceCenter = Rect.new(49, 49, 450, 450)
-            DropShadow.ZIndex = -1
+            -- شريط العنوان (أسهل للسحب)
+            local TitleBar = Instance.new("Frame", MainFrame)
+            TitleBar.Name = "TitleBar"
+            TitleBar.Position = UDim2.new(0, 0, 0, 0)
+            TitleBar.Size = UDim2.new(1, 0, 0, 35)
+            TitleBar.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+            TitleBar.BorderSizePixel = 0
+            TitleBar.Draggable = true
+            
+            local TitleBarCorner = Instance.new("UICorner", TitleBar)
+            TitleBarCorner.CornerRadius = UDim.new(0, 12)
             
             -- العنوان
-            local Title = Instance.new("TextLabel", MainFrame)
+            local Title = Instance.new("TextLabel", TitleBar)
             Title.Name = "Title"
-            Title.Position = UDim2.new(0, 0, 0, 10)
-            Title.Size = UDim2.new(1, 0, 0, 40)
+            Title.Position = UDim2.new(0, 10, 0, 0)
+            Title.Size = UDim2.new(1, -20, 1, 0)
             Title.BackgroundTransparency = 1
-            Title.Text = "🎯 AIMBOT CONTROL"
+            Title.Text = "🎯 AIMBOT CONTROL PANEL"
             Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Title.TextSize = 18
+            Title.TextSize = 16
             Title.Font = Enum.Font.GothamBold
-            Title.TextStrokeTransparency = 0.8
-            Title.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            Title.TextXAlignment = Enum.TextXAlignment.Left
             
-            -- زر الإطلاق السريع (تصميم جميل)
-            local QuickButton = Instance.new("TextButton", MainFrame)
+            -- زر الإغلاق
+            local CloseButton = Instance.new("TextButton", TitleBar)
+            CloseButton.Name = "CloseButton"
+            CloseButton.Position = UDim2.new(1, -30, 0.5, -10)
+            CloseButton.Size = UDim2.new(0, 20, 0, 20)
+            CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+            CloseButton.Text = "X"
+            CloseButton.TextColor3 = Color3.new(1, 1, 1)
+            CloseButton.TextSize = 14
+            CloseButton.Font = Enum.Font.GothamBold
+            
+            local CloseCorner = Instance.new("UICorner", CloseButton)
+            CloseCorner.CornerRadius = UDim.new(1, 0)
+            
+            CloseButton.MouseButton1Click:Connect(function()
+                ScreenGui:Destroy()
+                ShootMurderButtonEnabled = false
+                if aimbotConnection then
+                    aimbotConnection:Disconnect()
+                    aimbotConnection = nil
+                end
+            end)
+            
+            -- المحتوى
+            local Content = Instance.new("Frame", MainFrame)
+            Content.Name = "Content"
+            Content.Position = UDim2.new(0, 15, 0, 45)
+            Content.Size = UDim2.new(1, -30, 1, -55)
+            Content.BackgroundTransparency = 1
+            
+            -- زر الإطلاق السريع (أصغر وأوضح)
+            local QuickButton = Instance.new("TextButton", Content)
             QuickButton.Name = "QuickButton"
-            QuickButton.Position = UDim2.new(0.1, 0, 0.25, 0)
-            QuickButton.Size = UDim2.new(0.8, 0, 0, 45)
-            QuickButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+            QuickButton.Position = UDim2.new(0, 0, 0, 10)
+            QuickButton.Size = UDim2.new(1, 0, 0, 55)
+            QuickButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60) -- أفتح
             QuickButton.TextColor3 = Color3.new(1, 1, 1)
-            QuickButton.Text = "🔥 QUICK SHOT\nاضغط للإطلاق السريع"
+            QuickButton.Text = "🔥 إطلاق سريع\n(اضغط هنا أو اضغط مطولاً)"
             QuickButton.TextSize = 14
             QuickButton.Font = Enum.Font.GothamSemibold
             QuickButton.TextWrapped = true
             QuickButton.AutoButtonColor = true
             
             local QuickCorner = Instance.new("UICorner", QuickButton)
-            QuickCorner.CornerRadius = UDim.new(0, 10)
+            QuickCorner.CornerRadius = UDim.new(0, 8)
             
             local QuickStroke = Instance.new("UIStroke", QuickButton)
             QuickStroke.Color = Color3.new(1, 1, 1)
-            QuickStroke.Thickness = 1.5
+            QuickStroke.Thickness = 2
             
-            local QuickGradient = Instance.new("UIGradient", QuickButton)
-            QuickGradient.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 40, 40))
-            })
-            QuickGradient.Rotation = 90
-            
-            -- زر AIMBOT (تصميم جميل)
-            local AimbotButton = Instance.new("TextButton", MainFrame)
+            -- زر AIMBOT (أصغر)
+            local AimbotButton = Instance.new("TextButton", Content)
             AimbotButton.Name = "AimbotButton"
-            AimbotButton.Position = UDim2.new(0.1, 0, 0.55, 0)
-            AimbotButton.Size = UDim2.new(0.8, 0, 0, 45)
-            AimbotButton.BackgroundColor3 = Color3.fromRGB(60, 60, 255)
+            AimbotButton.Position = UDim2.new(0, 0, 0, 75)
+            AimbotButton.Size = UDim2.new(1, 0, 0, 55)
+            AimbotButton.BackgroundColor3 = Color3.fromRGB(60, 100, 255) -- أفتح
             AimbotButton.TextColor3 = Color3.new(1, 1, 1)
-            AimbotButton.Text = "🤖 AUTO AIMBOT\nتشغيل/إيقاف التلقائي"
+            AimbotButton.Text = "🤖 AIMBOT تلقائي\n(تشغيل/إيقاف)"
             AimbotButton.TextSize = 14
             AimbotButton.Font = Enum.Font.GothamSemibold
             AimbotButton.TextWrapped = true
             AimbotButton.AutoButtonColor = true
             
             local AimbotCorner = Instance.new("UICorner", AimbotButton)
-            AimbotCorner.CornerRadius = UDim.new(0, 10)
+            AimbotCorner.CornerRadius = UDim.new(0, 8)
             
             local AimbotStroke = Instance.new("UIStroke", AimbotButton)
             AimbotStroke.Color = Color3.new(1, 1, 1)
-            AimbotStroke.Thickness = 1.5
+            AimbotStroke.Thickness = 2
             
-            local AimbotGradient = Instance.new("UIGradient", AimbotButton)
-            AimbotGradient.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 255)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 200))
-            })
-            AimbotGradient.Rotation = 90
+            -- مؤشر الحالة
+            local StatusLabel = Instance.new("TextLabel", Content)
+            StatusLabel.Name = "StatusLabel"
+            StatusLabel.Position = UDim2.new(0, 0, 0, 145)
+            StatusLabel.Size = UDim2.new(1, 0, 0, 30)
+            StatusLabel.BackgroundTransparency = 1
+            StatusLabel.Text = "الحالة: جاهز"
+            StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            StatusLabel.TextSize = 13
+            StatusLabel.Font = Enum.Font.Gotham
             
-            -- مؤشر حالة AIMBOT
-            local StatusIndicator = Instance.new("Frame", MainFrame)
-            StatusIndicator.Name = "StatusIndicator"
-            StatusIndicator.Position = UDim2.new(0.9, -10, 0.05, 0)
-            StatusIndicator.Size = UDim2.new(0, 10, 0, 10)
-            StatusIndicator.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-            StatusIndicator.BorderSizePixel = 0
-            
-            local StatusCorner = Instance.new("UICorner", StatusIndicator)
-            StatusCorner.CornerRadius = UDim.new(1, 0)
-            
-            local StatusGlow = Instance.new("ImageLabel", StatusIndicator)
-            StatusGlow.BackgroundTransparency = 1
-            StatusGlow.Size = UDim2.new(1, 6, 1, 6)
-            StatusGlow.Position = UDim2.new(0, -3, 0, -3)
-            StatusGlow.Image = "rbxassetid://4996894000"
-            StatusGlow.ImageColor3 = Color3.fromRGB(255, 50, 50)
-            StatusGlow.ImageTransparency = 0.7
+            -- النتائج
+            local ResultLabel = Instance.new("TextLabel", Content)
+            ResultLabel.Name = "ResultLabel"
+            ResultLabel.Position = UDim2.new(0, 0, 0, 170)
+            ResultLabel.Size = UDim2.new(1, 0, 0, 30)
+            ResultLabel.BackgroundTransparency = 1
+            ResultLabel.Text = "آخر إطلاق: ---"
+            ResultLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+            ResultLabel.TextSize = 12
+            ResultLabel.Font = Enum.Font.Gotham
             
             -- أحداث الأزرار
             local aimbotActive = false
             
+            -- حدث زر الإطلاق (مُصلح)
             QuickButton.MouseButton1Click:Connect(function()
-                QuickShoot()
+                StatusLabel.Text = "الحالة: إطلاق..."
+                StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
                 
-                -- تأثير عند الضغط
-                QuickButton.BackgroundTransparency = 0.5
-                task.wait(0.1)
-                QuickButton.BackgroundTransparency = 0
-            end)
-            
-            QuickButton.MouseButton1Down:Connect(function()
-                local startTime = tick()
-                while task.wait(0.1) do
-                    if not QuickButton:IsDescendantOf(game) then break end
-                    local mouse = player:GetMouse()
-                    if mouse:IsMouseDown() then
-                        QuickShoot()
-                        QuickButton.BackgroundTransparency = 0.3
-                        task.wait(0.05)
-                        QuickButton.BackgroundTransparency = 0
-                    else
-                        break
-                    end
+                local success = QuickShoot()
+                
+                if success then
+                    StatusLabel.Text = "الحالة: تم الإطلاق!"
+                    StatusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
+                    ResultLabel.Text = "آخر إطلاق: ✅ نجاح"
+                else
+                    StatusLabel.Text = "الحالة: فشل الإطلاق"
+                    StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+                    ResultLabel.Text = "آخر إطلاق: ❌ فشل"
                 end
+                
+                -- تأثير ضوء
+                QuickButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+                task.wait(0.1)
+                QuickButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
             end)
             
+            -- الضغط المطول (يعمل بكفاءة الآن)
+            local isPressing = false
+            QuickButton.MouseButton1Down:Connect(function()
+                isPressing = true
+                
+                task.spawn(function()
+                    task.wait(0.3) -- انتظر 0.3 ثانية قبل البدء بالإطلاق المتكرر
+                    
+                    while isPressing do
+                        if not QuickButton:IsDescendantOf(game) then break end
+                        
+                        local mouse = player:GetMouse()
+                        if mouse and mouse:IsMouseDown() then
+                            QuickShoot()
+                            task.wait(0.2) -- سرعة الإطلاق المتكرر
+                        else
+                            break
+                        end
+                    end
+                end)
+            end)
+            
+            QuickButton.MouseButton1Up:Connect(function()
+                isPressing = false
+            end)
+            
+            QuickButton.MouseLeave:Connect(function()
+                isPressing = false
+            end)
+            
+            -- حدث زر AIMBOT
             AimbotButton.MouseButton1Click:Connect(function()
                 aimbotActive = not aimbotActive
                 
                 if aimbotActive then
-                    AimbotButton.Text = "✅ AIMBOT ACTIVE\nالإطلاق التلقائي مفعل"
-                    StatusIndicator.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
-                    StatusGlow.ImageColor3 = Color3.fromRGB(50, 255, 50)
+                    AimbotButton.Text = "✅ AIMBOT مفعل\n(إيقاف التلقائي)"
+                    AimbotButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+                    StatusLabel.Text = "الحالة: AIMBOT مفعل"
+                    StatusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
                     StartAimbot()
-                    
-                    -- تأثير عند التشغيل
-                    AimbotButton.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
-                    AimbotGradient.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 255, 80)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 200, 40))
-                    })
                 else
-                    AimbotButton.Text = "🤖 AUTO AIMBOT\nتشغيل/إيقاف التلقائي"
-                    StatusIndicator.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-                    StatusGlow.ImageColor3 = Color3.fromRGB(255, 50, 50)
+                    AimbotButton.Text = "🤖 AIMBOT تلقائي\n(تشغيل/إيقاف)"
+                    AimbotButton.BackgroundColor3 = Color3.fromRGB(60, 100, 255)
+                    StatusLabel.Text = "الحالة: AIMBOT متوقف"
+                    StatusLabel.TextColor3 = Color3.fromRGB(255, 150, 50)
+                    
                     if aimbotConnection then
                         aimbotConnection:Disconnect()
                         aimbotConnection = nil
                     end
-                    
-                    -- إعادة الألوان الأصلية
-                    AimbotButton.BackgroundColor3 = Color3.fromRGB(60, 60, 255)
-                    AimbotGradient.Color = ColorSequence.new({
-                        ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 80, 255)),
-                        ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 200))
-                    })
                 end
-                
-                -- تأثير عند الضغط
-                AimbotButton.BackgroundTransparency = 0.5
-                task.wait(0.1)
-                AimbotButton.BackgroundTransparency = 0
             end)
             
-            -- تشغيل AIMBOT تلقائياً من البداية
+            -- تشغيل AIMBOT تلقائياً عند البدء
             aimbotActive = true
-            AimbotButton.Text = "✅ AIMBOT ACTIVE\nالإطلاق التلقائي مفعل"
-            StatusIndicator.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
-            StatusGlow.ImageColor3 = Color3.fromRGB(50, 255, 50)
-            AimbotButton.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
-            AimbotGradient.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 255, 80)),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 200, 40))
-            })
+            AimbotButton.Text = "✅ AIMBOT مفعل\n(إيقاف التلقائي)"
+            AimbotButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+            StatusLabel.Text = "الحالة: AIMBOT مفعل"
+            StatusLabel.TextColor3 = Color3.fromRGB(50, 255, 50)
             StartAimbot()
             
         else
+            -- إيقاف كل شيء عند الإغلاق
             if aimbotConnection then
                 aimbotConnection:Disconnect()
                 aimbotConnection = nil
@@ -2258,6 +2312,7 @@ print("• تبويب اللاعب: حركة، سرعة، قوة، عدم الم
 print("• تبويب السكربتات: تحميل سكربتات خارجية")
 print("• تبويب الإعدادات: جميع خيارات النظام")
 print("════════════════════════════════════════════════")
+
 
 
 
