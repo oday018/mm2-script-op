@@ -791,109 +791,234 @@ WeaponsTab:AddSection("🎯 التصويب")
 -- زر إطلاق النار على القاتل
 local ShootMurderButtonEnabled = false
 local lastShotTime = 0
-local SHOT_COOLDOWN = 0.5 -- 0.5 ثانية بين كل طلقة
+local SHOT_COOLDOWN = 0.2 -- 0.2 ثانية فقط بين الطلقات
 local autoShootActive = false
 local shootConnection = nil
+local aimbotConnection = nil
 
--- دالة للحصول على القاتل
+-- === دالة التصويب الدقيق المحسنة ===
 local function GetMurdererTarget()
     local Players = game:GetService("Players")
     local player = Players.LocalPlayer
     local character = player.Character
     if not character then return nil, false end
     
-    -- ابحث عن القاتل من بين اللاعبين الأحياء
+    local closestTarget = nil
+    local closestDistance = math.huge
+    local targetHeadPosition = nil
+    
+    local myHead = character:FindFirstChild("Head")
+    if not myHead then return nil, false end
+    
+    -- ابحث عن القاتل الأقرب
     for _, otherPlayer in ipairs(Players:GetPlayers()) do
         if otherPlayer ~= player and otherPlayer.Character then
             local otherChar = otherPlayer.Character
             local humanoid = otherChar:FindFirstChild("Humanoid")
             
-            -- تحقق إذا كان هذا اللاعب هو القاتل
-            -- في Murder Mystery 2، القاتل لديه سكين
             if humanoid and humanoid.Health > 0 then
-                if otherChar:FindFirstChild("Knife") then
-                    -- احسب موضع الرأس للتصويب الدقيق
+                -- في Murder Mystery 2، القاتل لديه سكين
+                local hasKnife = otherChar:FindFirstChild("Knife") 
+                local isMurderer = otherChar:FindFirstChild("Knife") or 
+                                  (otherPlayer:FindFirstChild("Backpack") and 
+                                   otherPlayer.Backpack:FindFirstChild("Knife"))
+                
+                if isMurderer then
                     local head = otherChar:FindFirstChild("Head")
-                    if head then
-                        return head.Position, false
+                    local root = otherChar:FindFirstChild("HumanoidRootPart")
+                    
+                    if head and root then
+                        -- حساب المسافة بدقة
+                        local distance = (myHead.Position - head.Position).Magnitude
+                        
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestTarget = otherChar
+                            
+                            -- حساب موقع التصويب بدقة (رأس + توقع الحركة)
+                            local velocity = root.Velocity
+                            local prediction = velocity * 0.1 -- توقع حركة الهدف
+                            
+                            -- التصويب الدقيق على الرأس
+                            targetHeadPosition = head.Position + prediction + Vector3.new(0, 0.1, 0)
+                        end
                     end
-                    return otherChar:GetPrimaryPartCFrame().Position, false
                 end
             end
         end
     end
+    
+    if closestTarget and targetHeadPosition then
+        -- تحقق إذا كان الهدف مرئياً
+        local raycastParams = RaycastParams.new()
+        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+        raycastParams.FilterDescendantsInstances = {character}
+        raycastParams.IgnoreWater = true
+        
+        local ray = workspace:Raycast(myHead.Position, (targetHeadPosition - myHead.Position).Unit * 1000, raycastParams)
+        
+        if ray then
+            if ray.Instance:IsDescendantOf(closestTarget) then
+                return targetHeadPosition, false
+            end
+        else
+            return targetHeadPosition, false
+        end
+    end
+    
     return nil, false
 end
 
--- دالة إطلاق النار
-local function ShootAtMurderer()
-    if tick() - lastShotTime < SHOT_COOLDOWN then return end
-    
-    local player = game:GetService("Players").LocalPlayer
+-- === دالة تصويب AIMBOT محسنة ===
+local function GetAimbotTarget()
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
     local character = player.Character
-    if not character then return end
+    if not character then return nil, false end
     
-    -- أولاً: التحقق من وجود سلاح في الحقيبة ومسكه
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        -- ابحث عن مسدس في الحقيبة
-        for _, item in ipairs(backpack:GetChildren()) do
-            if item.Name == "Gun" and not character:FindFirstChild("Gun") then
-                -- ضع المسدس في يد الشخصية
-                item.Parent = character
-                wait(0.1) -- انتظر قليلاً حتى يتم وضع السلاح
-                break
+    local myHead = character:FindFirstChild("Head")
+    if not myHead then return nil, false end
+    
+    local camera = workspace.CurrentCamera
+    local mouse = player:GetMouse()
+    
+    local closestTarget = nil
+    local closestScreenDistance = math.huge
+    local targetPosition = nil
+    
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local otherChar = otherPlayer.Character
+            local humanoid = otherChar:FindFirstChild("Humanoid")
+            
+            if humanoid and humanoid.Health > 0 then
+                -- تحقق إذا كان القاتل
+                local isMurderer = otherChar:FindFirstChild("Knife") or 
+                                  (otherPlayer:FindFirstChild("Backpack") and 
+                                   otherPlayer.Backpack:FindFirstChild("Knife"))
+                
+                if isMurderer then
+                    local head = otherChar:FindFirstChild("Head")
+                    local root = otherChar:FindFirstChild("HumanoidRootPart")
+                    
+                    if head and root then
+                        -- حساب موقع الهدف على الشاشة
+                        local screenPoint, onScreen = camera:WorldToViewportPoint(head.Position)
+                        
+                        if onScreen then
+                            -- حساب المسافة من مركز الشاشة (تصويب أوتوماتيكي)
+                            local mousePos = Vector2.new(mouse.X, mouse.Y)
+                            local targetPos = Vector2.new(screenPoint.X, screenPoint.Y)
+                            local distance = (mousePos - targetPos).Magnitude
+                            
+                            -- تصويب مباشر على أقرب هدف
+                            if distance < closestScreenDistance then
+                                closestScreenDistance = distance
+                                closestTarget = otherChar
+                                
+                                -- حساب توقع حركة الهدف
+                                local velocity = root.Velocity
+                                local prediction = velocity * 0.15 -- زيادة توقع الحركة
+                                
+                                targetPosition = head.Position + prediction + Vector3.new(0, 0.15, 0)
+                            end
+                        end
+                    end
+                end
             end
         end
     end
     
-    -- الآن حاول إطلاق النار
-    local gun = character:FindFirstChild("Gun")
-    if gun then
-        local targetPos, isSelf = GetMurdererTarget()
-        if targetPos and not isSelf then
-            -- التصويب الدقيق على الرأس
-            local headshotPos = targetPos + Vector3.new(0, 0.5, 0) -- تصويب أعلى قليلاً للرأس
-            
-            pcall(function()
-                if gun:FindFirstChild("KnifeLocal") then
-                    gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, headshotPos, "AH2")
-                    lastShotTime = tick()
-                    print("تم إطلاق النار على القاتل!")
-                elseif gun:FindFirstChild("RemoteFunction") then
-                    gun.RemoteFunction:InvokeServer("Fire", headshotPos)
-                    lastShotTime = tick()
-                    print("تم إطلاق النار على القاتل!")
-                end
-            end)
-        else
-            warn("لم يتم العثور على هدف القاتل")
-        end
-    else
-        warn("لا يوجد مسدس لدى اللاعب")
-    end
+    return targetPosition, false
 end
 
--- دالة إطلاق النار التلقائي
-local function StartAutoShoot()
-    if autoShootActive then return end
-    autoShootActive = true
+-- === دالة الإطلاق السريع ===
+local function QuickShoot()
+    if tick() - lastShotTime < SHOT_COOLDOWN then return end
     
-    shootConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if ShootMurderButtonEnabled then
-            ShootAtMurderer()
-        else
-            autoShootActive = false
-            if shootConnection then
-                shootConnection:Disconnect()
-                shootConnection = nil
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    if not character then return end
+    
+    -- البحث السريع عن سلاح
+    if not character:FindFirstChild("Gun") then
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            for _, item in ipairs(backpack:GetChildren()) do
+                if item.Name == "Gun" then
+                    item.Parent = character
+                    task.wait(0.05) -- وقت انتظار قصير جداً
+                    break
+                end
+            end
+        end
+    end
+    
+    local gun = character:FindFirstChild("Gun")
+    if gun then
+        -- استخدم AIMBOT للتصويب الدقيق
+        local targetPos = GetAimbotTarget()
+        
+        if targetPos then
+            -- إطلاق متعدد لزيادة الفرصة
+            pcall(function()
+                -- محاولة 1
+                if gun:FindFirstChild("KnifeLocal") then
+                    gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, targetPos, "AH2")
+                elseif gun:FindFirstChild("RemoteFunction") then
+                    gun.RemoteFunction:InvokeServer("Fire", targetPos)
+                end
+                
+                task.wait(0.05)
+                
+                -- محاولة 2 (للتأكد)
+                targetPos = targetPos + Vector3.new(math.random(-0.1, 0.1), math.random(-0.1, 0.1), math.random(-0.1, 0.1))
+                if gun:FindFirstChild("KnifeLocal") then
+                    gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, targetPos, "AH2")
+                elseif gun:FindFirstChild("RemoteFunction") then
+                    gun.RemoteFunction:InvokeServer("Fire", targetPos)
+                end
+            end)
+            
+            lastShotTime = tick()
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- === AIMBOT التلقائي ===
+local function StartAimbot()
+    if aimbotConnection then return end
+    
+    aimbotConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not ShootMurderButtonEnabled then return end
+        
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character
+        if not character then return end
+        
+        local gun = character:FindFirstChild("Gun")
+        if gun then
+            local targetPos = GetAimbotTarget()
+            if targetPos then
+                -- إطلاق مباشر بدون تأخير
+                pcall(function()
+                    if gun:FindFirstChild("KnifeLocal") then
+                        gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, targetPos, "AH2")
+                    elseif gun:FindFirstChild("RemoteFunction") then
+                        gun.RemoteFunction:InvokeServer("Fire", targetPos)
+                    end
+                end)
+                lastShotTime = tick()
             end
         end
     end)
 end
 
 WeaponsTab:AddToggle({
-    Name = "زر إطلاق النار على القاتل",
+    Name = "🔥 إطلاق سريع على القاتل (AIMBOT)",
     Default = false,
     Callback = function(Value)
         ShootMurderButtonEnabled = Value
@@ -901,130 +1026,137 @@ WeaponsTab:AddToggle({
         local Players = game:GetService("Players")
         local player = Players.LocalPlayer
         
-        -- استخدم CoreGui مع gethui إن كان موجوداً
+        -- استخدم gethui إن كان موجوداً
         local guip = game:GetService("CoreGui")
         if gethui then
             guip = gethui()
         end
         
         if Value then
-            if not guip:FindFirstChild("ShootMurderButton") then
-                local ScreenGui = Instance.new("ScreenGui", guip)
-                ScreenGui.Name = "ShootMurderButton"
-                ScreenGui.ResetOnSpawn = false
-                ScreenGui.IgnoreGuiInset = true
-                
-                local TextButton = Instance.new("TextButton", ScreenGui)
-                TextButton.Draggable = true
-                TextButton.Position = UDim2.new(0.5, 187, 0.5, -176)
-                TextButton.Size = UDim2.new(0, 70, 0, 50) -- أكبر قليلاً
-                TextButton.TextStrokeTransparency = 0
-                TextButton.BackgroundTransparency = 0.2
-                TextButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50) -- لون أحمر للتنبيه
-                TextButton.BorderColor3 = Color3.new(1, 1, 1)
-                TextButton.Text = "🚀\nإطلاق على القاتل"
-                TextButton.TextColor3 = Color3.new(1, 1, 1)
-                TextButton.TextSize = 12
-                TextButton.Visible = true
-                TextButton.AnchorPoint = Vector2.new(0.4, 0.2)
-                TextButton.Active = true
-                TextButton.TextWrapped = true
-                TextButton.AutoButtonColor = true
-                TextButton.Modal = false
-                
-                local corner = Instance.new("UICorner", TextButton)
-                corner.CornerRadius = UDim.new(0, 8)
-                
-                local UIStroke = Instance.new("UIStroke", TextButton)
-                UIStroke.Color = Color3.new(1, 1, 1)
-                UIStroke.Thickness = 3
-                UIStroke.Transparency = 0.2
-                
-                -- زر الضغط العادي
-                TextButton.MouseButton1Click:Connect(function()
-                    ShootAtMurderer()
-                end)
-                
-                -- زر الضغط الطويل (إطلاق تلقائي)
-                local pressing = false
-                local pressStart = 0
-                
-                TextButton.MouseButton1Down:Connect(function()
-                    pressing = true
-                    pressStart = tick()
-                    
-                    -- بعد 0.3 ثانية يبدأ الإطلاق التلقائي
-                    task.wait(0.3)
-                    if pressing then
-                        StartAutoShoot()
-                    end
-                end)
-                
-                TextButton.MouseButton1Up:Connect(function()
-                    pressing = false
-                    autoShootActive = false
-                    if shootConnection then
-                        shootConnection:Disconnect()
-                        shootConnection = nil
-                    end
-                end)
-                
-                TextButton.MouseLeave:Connect(function()
-                    pressing = false
-                end)
-                
-                -- إضافة زر إضافي للإطلاق التلقائي المستمر
-                local AutoToggle = Instance.new("TextButton", ScreenGui)
-                AutoToggle.Name = "AutoToggle"
-                AutoToggle.Position = UDim2.new(0.5, 187, 0.5, -120)
-                AutoToggle.Size = UDim2.new(0, 70, 0, 30)
-                AutoToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 255)
-                AutoToggle.TextColor3 = Color3.new(1, 1, 1)
-                AutoToggle.Text = "تشغيل التلقائي"
-                AutoToggle.TextSize = 11
-                
-                local autoEnabled = false
-                local autoConnection = nil
-                
-                AutoToggle.MouseButton1Click:Connect(function()
-                    autoEnabled = not autoEnabled
-                    
-                    if autoEnabled then
-                        AutoToggle.Text = "إيقاف التلقائي"
-                        AutoToggle.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-                        
-                        -- تشغيل الإطلاق التلقائي المستمر
-                        autoConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                            ShootAtMurderer()
-                            wait(0.3) -- فاصل بين الطلقات
-                        end)
-                    else
-                        AutoToggle.Text = "تشغيل التلقائي"
-                        AutoToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 255)
-                        
-                        if autoConnection then
-                            autoConnection:Disconnect()
-                            autoConnection = nil
-                        end
-                    end
-                end)
+            -- إخفاء واجهة قديمة
+            if guip:FindFirstChild("ShootMurderButton") then
+                guip:FindFirstChild("ShootMurderButton"):Destroy()
             end
             
-            -- تشغيل الإطلاق التلقائي عند التفعيل
-            StartAutoShoot()
+            -- إنشاء واجهة جديدة بسيطة
+            local ScreenGui = Instance.new("ScreenGui", guip)
+            ScreenGui.Name = "ShootMurderButton"
+            ScreenGui.ResetOnSpawn = false
+            ScreenGui.IgnoreGuiInset = true
+            
+            -- زر الإطلاق السريع
+            local QuickButton = Instance.new("TextButton", ScreenGui)
+            QuickButton.Name = "QuickButton"
+            QuickButton.Draggable = true
+            QuickButton.Position = UDim2.new(0.85, -80, 0.9, -60)
+            QuickButton.Size = UDim2.new(0, 80, 0, 50)
+            QuickButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+            QuickButton.TextColor3 = Color3.new(1, 1, 1)
+            QuickButton.Text = "🎯\nإطلاق سريع"
+            QuickButton.TextSize = 14
+            QuickButton.Font = Enum.Font.GothamBold
+            QuickButton.TextWrapped = true
+            
+            local corner = Instance.new("UICorner", QuickButton)
+            corner.CornerRadius = UDim.new(0, 10)
+            
+            local UIStroke = Instance.new("UIStroke", QuickButton)
+            UIStroke.Color = Color3.new(1, 1, 1)
+            UIStroke.Thickness = 2
+            
+            -- زر AIMBOT التلقائي
+            local AimbotButton = Instance.new("TextButton", ScreenGui)
+            AimbotButton.Name = "AimbotButton"
+            AimbotButton.Draggable = true
+            AimbotButton.Position = UDim2.new(0.85, -80, 0.9, 0)
+            AimbotButton.Size = UDim2.new(0, 80, 0, 50)
+            AimbotButton.BackgroundColor3 = Color3.fromRGB(50, 50, 255)
+            AimbotButton.TextColor3 = Color3.new(1, 1, 1)
+            AimbotButton.Text = "🤖\nAIMBOT"
+            AimbotButton.TextSize = 14
+            AimbotButton.Font = Enum.Font.GothamBold
+            AimbotButton.TextWrapped = true
+            
+            local corner2 = Instance.new("UICorner", AimbotButton)
+            corner2.CornerRadius = UDim.new(0, 10)
+            
+            local UIStroke2 = Instance.new("UIStroke", AimbotButton)
+            UIStroke2.Color = Color3.new(1, 1, 1)
+            UIStroke2.Thickness = 2
+            
+            -- أحداث الأزرار
+            local aimbotActive = false
+            
+            QuickButton.MouseButton1Click:Connect(function()
+                QuickShoot()
+            end)
+            
+            QuickButton.MouseButton1Down:Connect(function()
+                -- إطلاق سريع متكرر عند الضغط مطولاً
+                local startTime = tick()
+                while task.wait(0.1) do
+                    if not QuickButton:IsDescendantOf(game) then break end
+                    local mouse = player:GetMouse()
+                    if mouse:IsMouseDown() then
+                        QuickShoot()
+                    else
+                        break
+                    end
+                end
+            end)
+            
+            AimbotButton.MouseButton1Click:Connect(function()
+                aimbotActive = not aimbotActive
+                
+                if aimbotActive then
+                    AimbotButton.Text = "✅\nAIMBOT ON"
+                    AimbotButton.BackgroundColor3 = Color3.fromRGB(50, 255, 50)
+                    StartAimbot()
+                else
+                    AimbotButton.Text = "🤖\nAIMBOT"
+                    AimbotButton.BackgroundColor3 = Color3.fromRGB(50, 50, 255)
+                    if aimbotConnection then
+                        aimbotConnection:Disconnect()
+                        aimbotConnection = nil
+                    end
+                end
+            end)
+            
+            -- تشغيل AIMBOT تلقائياً
+            StartAimbot()
             
         else
-            -- إيقاف كل شيء عند إغلاق الميزة
-            autoShootActive = false
-            if shootConnection then
-                shootConnection:Disconnect()
-                shootConnection = nil
+            -- إيقاف كل شيء
+            if aimbotConnection then
+                aimbotConnection:Disconnect()
+                aimbotConnection = nil
             end
             
             if guip:FindFirstChild("ShootMurderButton") then
                 guip:FindFirstChild("ShootMurderButton"):Destroy()
             end
         end
+    end
+})
+
+-- إضافة خيارات إضافية للتحكم
+WeaponsTab:AddSlider({
+    Name = "سرعة AIMBOT",
+    Min = 1,
+    Max = 10,
+    Default = 5,
+    Color = Color3.fromRGB(255, 50, 50),
+    Increment = 1,
+    Callback = function(Value)
+        SHOT_COOLDOWN = 0.3 - (Value * 0.02)
+    end
+})
+
+WeaponsTab:AddToggle({
+    Name = "أخذ السلاح تلقائياً",
+    Default = true,
+    Callback = function(Value)
+        -- يمكنك إضافة هذا المنطق لاحقاً
     end
 })
 -- ==================== تبويب القذف ====================
@@ -1835,4 +1967,5 @@ print("• تبويب اللاعب: حركة، سرعة، قوة، عدم الم
 print("• تبويب السكربتات: تحميل سكربتات خارجية")
 print("• تبويب الإعدادات: جميع خيارات النظام")
 print("════════════════════════════════════════════════")
+
 
