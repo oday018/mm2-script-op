@@ -1,4 +1,4 @@
-[
+--[[
     سكربت Murder Mystery 2 - النسخة العربية الموسعة
     تم التطوير بواسطة: real_redz
     الواجهة: Wand UI (Redz Library V5 Remake)
@@ -1128,3 +1128,534 @@ FlingTab:AddSlider({
         })
     end
 })
+
+-- ==================== تبويب اللاعب ====================
+
+PlayerTab:AddSection("🧑 حركة اللاعب")
+
+-- القفز اللانهائي
+local InfiniteJumpEnabled = false
+
+PlayerTab:AddToggle({
+    Name = "القفز اللانهائي",
+    Default = false,
+    Callback = function(Value)
+        InfiniteJumpEnabled = Value
+        
+        if Value then
+            Window:Notify({
+                Title = "🦘 تم تفعيل القفز اللانهائي",
+                Content = "يمكنك القفز دون توقف",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- المرور عبر الجدران
+local NoclipEnabled = false
+
+PlayerTab:AddToggle({
+    Name = "المرور عبر الجدران",
+    Default = false,
+    Callback = function(Value)
+        NoclipEnabled = Value
+        
+        if not Value then
+            if Character then
+                for _, part in ipairs(Character:GetChildren()) do
+                    if part:IsA("BasePart") and not part.CanCollide then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+        
+        if Value then
+            Window:Notify({
+                Title = "🚶 تم تفعيل المرور عبر الجدران",
+                Content = "يمكنك الآن المشي عبر الجدران",
+                Duration = 3
+            })
+        end
+    end
+})
+
+PlayerTab:AddSection("⚡ إعدادات الحركة")
+
+-- سرعة المشي
+local WalkSpeed = 16
+local KeepWalkSpeed = false
+
+PlayerTab:AddSlider({
+    Name = "سرعة المشي",
+    Min = 16,
+    Max = 350,
+    Default = 16,
+    Increment = 1,
+    Callback = function(Value)
+        WalkSpeed = Value
+        if Humanoid then
+            Humanoid.WalkSpeed = Value
+        end
+    end
+})
+
+PlayerTab:AddToggle({
+    Name = "تثبيت سرعة المشي تلقائياً",
+    Default = false,
+    Callback = function(Value)
+        KeepWalkSpeed = Value
+        
+        task.spawn(function()
+            while KeepWalkSpeed do
+                if Humanoid and Humanoid.WalkSpeed ~= WalkSpeed then
+                    Humanoid.WalkSpeed = WalkSpeed
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+-- قوة القفز
+local JumpPower = 50
+local KeepJumpPower = false
+
+PlayerTab:AddSlider({
+    Name = "قوة القفز",
+    Min = 50,
+    Max = 500,
+    Default = 50,
+    Increment = 1,
+    Callback = function(Value)
+        JumpPower = Value
+        if Humanoid then
+            Humanoid.JumpPower = Value
+        end
+    end
+})
+
+PlayerTab:AddToggle({
+    Name = "تثبيت قوة القفز تلقائياً",
+    Default = false,
+    Callback = function(Value)
+        KeepJumpPower = Value
+        
+        task.spawn(function()
+            while KeepJumpPower do
+                if Humanoid and Humanoid.JumpPower ~= JumpPower then
+                    Humanoid.JumpPower = JumpPower
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+})
+
+-- وضع الإله (عدم الموت)
+local GodmodeEnabled = false
+
+PlayerTab:AddToggle({
+    Name = "وضع الإله (عدم الموت)",
+    Default = false,
+    Callback = function(Value)
+        GodmodeEnabled = Value
+        
+        local godConnection
+        local deathConnection
+        
+        local function UpdateGodmode()
+            if godConnection then
+                godConnection:Disconnect()
+                godConnection = nil
+            end
+            
+            if Humanoid then
+                godConnection = Humanoid.HealthChanged:Connect(function()
+                    if GodmodeEnabled and Humanoid.Health < Humanoid.MaxHealth then
+                        Humanoid.Health = Humanoid.MaxHealth
+                    end
+                end)
+            end
+        end
+        
+        local function OnCharacterAdded(newChar)
+            Character = newChar
+            Humanoid = Character:WaitForChild("Humanoid")
+            UpdateGodmode()
+        end
+        
+        if deathConnection then 
+            deathConnection:Disconnect() 
+        end
+        
+        deathConnection = LocalPlayer.CharacterAdded:Connect(OnCharacterAdded)
+        UpdateGodmode()
+        
+        if Value then
+            Window:Notify({
+                Title = "🛡️ تم تفعيل وضع الإله",
+                Content = "لن تتمكن من الموت الآن",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- ==================== تبويب الانتقال ====================
+
+TeleportTab:AddSection("📍 مواقع رئيسية")
+
+TeleportTab:AddButton({
+    Name = "الانتقال إلى الخريطة",
+    Callback = function()
+        local map = Workspace:FindFirstChild("CoinContainer", true)
+        if map then
+            local part = map:FindFirstChildWhichIsA("BasePart", true)
+            if part and HumanoidRootPart then
+                HumanoidRootPart.CFrame = part.CFrame * CFrame.new(0, 2, 0)
+                
+                Window:Notify({
+                    Title = "✅ تم الانتقال",
+                    Content = "انتقلت إلى الخريطة بنجاح",
+                    Duration = 3
+                })
+            else
+                Window:Notify({
+                    Title = "❌ خطأ",
+                    Content = "لم يتم العثور على الخريطة",
+                    Duration = 3
+                })
+            end
+        end
+    end
+})
+
+TeleportTab:AddButton({
+    Name = "الانتقال إلى اللوبي",
+    Callback = function()
+        local lobby = Workspace:FindFirstChild("Lobby", true)
+        if lobby then
+            local part = lobby:FindFirstChildWhichIsA("BasePart", true)
+            if part and HumanoidRootPart then
+                HumanoidRootPart.CFrame = part.CFrame * CFrame.new(0, 2, 0)
+                
+                Window:Notify({
+                    Title = "✅ تم الانتقال",
+                    Content = "انتقلت إلى اللوبي بنجاح",
+                    Duration = 3
+                })
+            else
+                Window:Notify({
+                    Title = "❌ خطأ",
+                    Content = "لم يتم العثور على اللوبي",
+                    Duration = 3
+                })
+            end
+        end
+    end
+})
+
+-- ==================== تبويب السكربتات ====================
+
+ScriptsTab:AddSection("📁 تحميل سكربتات خارجية")
+
+
+ScriptsTab:AddButton({
+    Name = "تحميل Infinite Yield",
+    Callback = function()
+        Window:Dialog({
+            Title = "⚠️ تأكيد التحميل",
+            Content = "هل تريد تحميل سكربت Infinite Yield؟",
+            Options = {
+                {
+                    Name = "❌ إلغاء",
+                    Callback = function()
+                        Window:Notify({
+                            Title = "تم الإلغاء",
+                            Content = "تم إلغاء تحميل Infinite Yield",
+                            Duration = 2
+                        })
+                    end
+                },
+                {
+                    Name = "✅ تأكيد",
+                    Callback = function()
+                        loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+                        
+                        Window:Notify({
+                            Title = "✅ تم التحميل",
+                            Content = "تم تحميل Infinite Yield بنجاح",
+                            Duration = 3
+                        })
+                    end
+                }
+            }
+        })
+    end
+})
+
+ScriptsTab:AddSection("🔗 سكربتات مخصصة")
+
+local CustomScriptURL = ""
+
+ScriptsTab:AddTextBox({
+    Name = "رابط السكربت المخصص",
+    Placeholder = "أدخل رابط السكربت هنا...",
+    Callback = function(Text)
+        CustomScriptURL = Text
+    end
+})
+
+ScriptsTab:AddButton({
+    Name = "تحميل السكربت المخصص",
+    Callback = function()
+        if CustomScriptURL == "" then
+            Window:Notify({
+                Title = "⚠️ تنبيه",
+                Content = "يرجى إدخال رابط السكربت أولاً",
+                Duration = 3
+            })
+            return
+        end
+        
+        Window:Dialog({
+            Title = "⚠️ تأكيد التحميل",
+            Content = "هل تريد تحميل السكربت المخصص؟",
+            Options = {
+                {
+                    Name = "❌ إلغاء",
+                    Callback = function()
+                        Window:Notify({
+                            Title = "تم الإلغاء",
+                            Content = "تم إلغاء تحميل السكربت",
+                            Duration = 2
+                        })
+                    end
+                },
+                {
+                    Name = "✅ تأكيد",
+                    Callback = function()
+                        local success, errorMessage = pcall(function()
+                            loadstring(game:HttpGet(CustomScriptURL))()
+                        end)
+                        
+                        if success then
+                            Window:Notify({
+                                Title = "✅ تم التحميل",
+                                Content = "تم تحميل السكربت بنجاح",
+                                Duration = 3
+                            })
+                        else
+                            Window:Notify({
+                                Title = "❌ خطأ",
+                                Content = "فشل في تحميل السكربت: " .. tostring(errorMessage),
+                                Duration = 5
+                            })
+                        end
+                    end
+                }
+            }
+        })
+    end
+})
+
+-- ==================== تبويب الإعدادات ====================
+
+SettingsTab:AddSection("⚙️ إعدادات الواجهة")
+
+SettingsTab:AddSlider({
+    Name = "حجم الواجهة",
+    Min = 0.6,
+    Max = 1.6,
+    Default = 1.0,
+    Increment = 0.1,
+    Callback = function(Value)
+        Library:SetUIScale(Value)
+    end
+})
+
+SettingsTab:AddSection("📊 معلومات النظام")
+
+local GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+local Executor = identifyexecutor and identifyexecutor() or getexecutorname and getexecutorname() or "غير معروف"
+
+SettingsTab:AddParagraph("معلومات اللعبة", 
+    "🎮 اسم اللعبة: " .. GameName .. "\n" ..
+    "🆔 رقم اللعبة: " .. game.PlaceId .. "\n" ..
+    "👤 اسم اللاعب: " .. LocalPlayer.Name .. "\n" ..
+    "⚡ المشغل: " .. Executor .. "\n" ..
+    "🕐 الوقت: " .. os.date("%I:%M %p")
+)
+
+SettingsTab:AddParagraph("معلومات السكربت", 
+    "✨ السكربت: MM2 العربي\n" ..
+    "📁 الإصدار: 7.0.0\n" ..
+    "🎨 الواجهة: Wand UI\n" ..
+    "🇸🇦 اللغة: العربية\n" ..
+    "🔧 المطور: real_redz\n" ..
+    "📅 تاريخ التحديث: " .. os.date("%Y/%m/%d")
+)
+
+SettingsTab:AddSection("🛠️ أدوات النظام")
+
+SettingsTab:AddButton({
+    Name = "تنظيف الذاكرة",
+    Callback = function()
+        collectgarbage()
+        
+        Window:Notify({
+            Title = "✅ تم التنظيف",
+            Content = "تم تنظيف الذاكرة وتحسين الأداء",
+            Duration = 3
+        })
+    end
+})
+
+SettingsTab:AddButton({
+    Name = "إعادة تحميل السكربت",
+    Callback = function()
+        Window:Dialog({
+            Title = "⚠️ تأكيد إعادة التحميل",
+            Content = "هل تريد إعادة تحميل السكربت؟",
+            Options = {
+                {
+                    Name = "❌ إلغاء",
+                    Callback = function()
+                        Window:Notify({
+                            Title = "تم الإلغاء",
+                            Content = "تم إلغاء إعادة التحميل",
+                            Duration = 2
+                        })
+                    end
+                },
+                {
+                    Name = "✅ تأكيد",
+                    Callback = function()
+                        loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
+                    end
+                }
+            }
+        })
+    end
+})
+
+SettingsTab:AddButton({
+    Name = "إغلاق الواجهة",
+    Callback = function()
+        Window:Dialog({
+            Title = "⚠️ تأكيد الإغلاق",
+            Content = "هل تريد إغلاق واجهة السكربت؟",
+            Options = {
+                {
+                    Name = "❌ إلغاء",
+                    Callback = function()
+                        Window:Notify({
+                            Title = "تم الإلغاء",
+                            Content = "تم إلغاء عملية الإغلاق",
+                            Duration = 2
+                        })
+                    end
+                },
+                {
+                    Name = "✅ تأكيد",
+                    Callback = function()
+                        if Library and Library.Destroy then
+                            Library:Destroy()
+                        end
+                    end
+                }
+            }
+        })
+    end
+})
+
+-- ==================== إعدادات النظام ====================
+
+-- تحديث الشخصية عند الموت
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    Humanoid = Character:WaitForChild("Humanoid")
+    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    
+    -- إعادة تطبيق الإعدادات
+    if WalkSpeed then
+        Humanoid.WalkSpeed = WalkSpeed
+    end
+    if JumpPower then
+        Humanoid.JumpPower = JumpPower
+    end
+end)
+
+-- نظام القفز اللانهائي
+UserInputService.JumpRequest:Connect(function()
+    if InfiniteJumpEnabled then
+        Humanoid:ChangeState("Jumping")
+    end
+end)
+
+-- نظام المرور عبر الجدران
+RunService.Stepped:Connect(function()
+    if NoclipEnabled then
+        for _, part in ipairs(Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+-- ==================== Minimizer مع صورة سيف ====================
+
+local Minimizer = Window:NewMinimizer({
+    KeyCode = Enum.KeyCode.RightControl
+})
+
+-- زر المصغر مع صورة السيف
+Minimizer:CreateMobileMinimizer({
+    Image = "rbxassetid://10734962876",  -- صورة السيف
+    BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+    
+})
+
+-- ==================== إشعار البدء ====================
+
+Window:Notify({
+    Title = "🎮 سكربت MM2 العربي",
+    Content = "✅ تم تحميل السكربت بنجاح!\n\n" ..
+             "✨ الميزات المتاحة:\n" ..
+             "• نظام ESP للأدوار\n" ..
+             "• رؤية السلاح\n" ..
+             "• القذف بأنواعه\n" ..
+             "• المرور عبر الجدران\n" ..
+             "• القفز اللانهائي\n" ..
+             "• وضع الإله\n" ..
+             "• التصويب التلقائي\n" ..
+             "• تحميل سكربتات خارجية\n\n" ..
+             "🔧 اضغط RightControl لإخفاء/إظهار الواجهة",
+    Duration = 8,
+    Image = "rbxassetid://10734953451"
+})
+
+-- ==================== الطباعة في الكونسول ====================
+print("╔══════════════════════════════════════════════╗")
+print("║    سكربت MM2 العربي - النسخة الموسعة        ║")
+print("║          تم التحميل بنجاح! 🎮               ║")
+print("╚══════════════════════════════════════════════╝")
+print("📁 اللعبة: " .. GameName)
+print("👤 اللاعب: " .. LocalPlayer.Name)
+print("🎮 الواجهة: Wand UI")
+print("🇸🇦 اللغة: العربية")
+print("✨ الإصدار: 7.0.0")
+print("🔧 المطور: محقق")
+print("════════════════════════════════════════════════")
+
+print("\n🎯 جميع الميزات مفعلة وجاهزة:")
+print("• تبويب المرئيات: ESP للأدوار، رؤية السلاح")
+print("• تبويب الأسلحة: أخذ وسرقة الأسلحة، التصويب")
+print("• تبويب القذف: قذف القاتل، الشريف، لاعبين محددين")
+print("• تبويب اللاعب: حركة، سرعة، قوة، عدم الموت")
+print("• تبويب السكربتات: تحميل سكربتات خارجية")
+print("• تبويب الإعدادات: جميع خيارات النظام")
+print("════════════════════════════════════════════════")
