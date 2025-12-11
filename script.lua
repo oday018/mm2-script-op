@@ -39,8 +39,7 @@ local function GetRoles()
     
     return roles
 end
-
--- ==================== دالة القذف القوية جدا ====================
+-- ==================== دالة القذف السريع بدون طيران ====================
 local function SHubFling(TargetPlayer)
     if not TargetPlayer then return false end
     if not Character or not Humanoid or not HumanoidRootPart then return false end
@@ -59,86 +58,155 @@ local function SHubFling(TargetPlayer)
     
     -- حفظ موقعنا الأصلي
     local OldPos = HumanoidRootPart.CFrame
+    local OldVelocity = HumanoidRootPart.Velocity
+    local OldRotVelocity = HumanoidRootPart.RotVelocity
     
-    -- 🔥 1. قذف مباشر وقوي جدا
-    local function ApplyDirectFling()
-        -- الانتقال قريب من الهدف
-        local targetPosition = targetPart.Position
-        local flingPosition = targetPosition + Vector3.new(0, 3, 0)
+    -- 🔥 1. الانتقال السريع لظهر الهدف
+    local function GoToBackAndFling()
+        -- حساب موقع الظهر
+        local backPosition = targetPart.Position - (targetPart.CFrame.LookVector * 2) + Vector3.new(0, 1, 0)
         
-        HumanoidRootPart.CFrame = CFrame.new(flingPosition)
-        task.wait(0.05)
+        -- الانتقال فوري لظهر الهدف
+        HumanoidRootPart.CFrame = CFrame.new(backPosition, targetPart.Position)
         
-        -- تطبيق قوة قذف قوية جدا
+        -- ⏱️ انتظار قصير جداً (0.1 ثانية)
+        task.wait(0.1)
+        
+        -- 💥 قذف سريع وقوي
         local flingForce = Vector3.new(
-            math.random(-150000, 150000),  -- 🚀 قوة أفقية خيالية
-            200000,                         -- 🚀 قوة رأسية هائلة
-            math.random(-150000, 150000)   -- 🚀 قوة أفقية خيالية
+            math.random(-120000, 120000),  -- قوة جانبية
+            180000,                         -- قوة رأسية
+            math.random(-120000, 120000)   -- قوة جانبية
         )
         
         targetPart.Velocity = flingForce
         
-        -- تطبيق دوران سريع جدا
+        -- 🌀 دوران سريع
         targetPart.RotVelocity = Vector3.new(
-            math.random(-25000, 25000),
-            math.random(-25000, 25000),
-            math.random(-25000, 25000)
+            math.random(-18000, 18000),
+            math.random(-18000, 18000),
+            math.random(-18000, 18000)
         )
         
-        -- إضافة دفعات إضافية
-        for i = 1, 3 do
-            task.wait(0.1)
-            if targetPart and targetPart.Parent then
-                targetPart.Velocity = targetPart.Velocity + Vector3.new(
-                    math.random(-50000, 50000),
-                    80000,
-                    math.random(-50000, 50000)
-                )
-            end
+        -- ⚡ دفعة إضافية سريعة
+        task.wait(0.05)
+        if targetPart and targetPart.Parent then
+            targetPart.Velocity = targetPart.Velocity + Vector3.new(0, 50000, 0)
         end
     end
     
-    -- 🔥 2. تجميد وإطلاق
-    local function FreezeAndLaunch()
-        -- تجميد مؤقت
-        targetPart.Anchored = true
+    -- 🔥 2. العودة الفورية لموقعنا
+    local function ReturnToPosition()
+        -- العودة الفورية
+        HumanoidRootPart.CFrame = OldPos
+        
+        -- إعادة السرعة الأصلية
+        HumanoidRootPart.Velocity = OldVelocity
+        HumanoidRootPart.RotVelocity = OldRotVelocity
+        
+        -- تأكد من عدم الطيران
+        if HumanoidRootPart.Velocity.Magnitude > 100 then
+            HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+            HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+        end
+    end
+    
+    -- المحاولة الرئيسية
+    local success = pcall(function()
+        -- أولا: الانتقال لظهر الهدف والقذف
+        GoToBackAndFling()
+        
+        -- ثانياً: العودة الفورية
+        ReturnToPosition()
+    end)
+    
+    -- إذا فشلت، جرب طريقة بديلة
+    if not success then
         task.wait(0.1)
-        targetPart.Anchored = false
-        
-        -- إطلاق قوي
-        targetPart.Velocity = Vector3.new(
-            math.random(-200000, 200000),
-            250000,  -- 🚀 أعلى قوة رأسية ممكنة
-            math.random(-200000, 200000)
-        )
+        pcall(function()
+            -- طريقة بديلة سريعة
+            HumanoidRootPart.CFrame = OldPos
+            targetPart.Velocity = Vector3.new(0, 150000, 0)
+            HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+        end)
     end
     
-    -- المحاولة الأولى: القذف المباشر
-    local success1 = pcall(ApplyDirectFling)
-    
-    if not success1 then
-        -- المحاولة الثانية: التجميد والإطلاق
-        task.wait(0.2)
-        local success2 = pcall(FreezeAndLaunch)
-        
-        if not success2 then
-            -- المحاولة الثالثة: طريقة بديلة
-            task.wait(0.2)
-            pcall(function()
-                targetPart.Velocity = Vector3.new(0, 300000, 0)
-            end)
-        end
-    end
-    
-    -- العودة لموقعنا
-    task.wait(0.3)
-    HumanoidRootPart.CFrame = OldPos
-    
-    -- تنظيف السرعة
-    HumanoidRootPart.Velocity = Vector3.zero
-    HumanoidRootPart.RotVelocity = Vector3.zero
+    -- ⏱️ التأكد من عدم طيراننا
+    task.wait(0.2)
+    HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+    HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
     
     return true
+end
+
+-- ==================== دالة القذف للمتحركين ====================
+local function QuickFling(TargetPlayer)
+    if not TargetPlayer then return false end
+    
+    local TCharacter = TargetPlayer.Character
+    if not TCharacter then return false end
+    
+    local TRootPart = TCharacter:FindFirstChild("HumanoidRootPart")
+    if not TRootPart then return false end
+    
+    -- حفظ موقعنا
+    local OldPos = HumanoidRootPart.CFrame
+    
+    -- 🔥 طريقة القذف السريع للمتحركين
+    local function FastFlingMethod()
+        -- 1. حساب موقع أمام اللاعب
+        local frontPosition = TRootPart.Position + (TRootPart.CFrame.LookVector * 3) + Vector3.new(0, 1.5, 0)
+        
+        -- 2. الانتقال السريع
+        HumanoidRootPart.CFrame = CFrame.new(frontPosition)
+        
+        -- 3. قذف فوري (0.05 ثانية فقط)
+        task.wait(0.05)
+        
+        -- 4. تطبيق قوة قذف
+        local velocity = TRootPart.Velocity
+        local flingPower = Vector3.new(
+            math.random(-80000, 80000) + (velocity.X * 2),
+            120000 + math.abs(velocity.Y * 3),  -- تعويض الحركة الرأسية
+            math.random(-80000, 80000) + (velocity.Z * 2)
+        )
+        
+        TRootPart.Velocity = flingPower
+        
+        -- 5. العودة السريعة
+        task.wait(0.1)
+        HumanoidRootPart.CFrame = OldPos
+    end
+    
+    local success = pcall(FastFlingMethod)
+    
+    -- تنظيف السرعة
+    task.wait(0.1)
+    HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+    
+    return success
+end
+
+-- ==================== دالة القذف الذكية (تختار الطريقة المناسبة) ====================
+local function SmartFling(TargetPlayer)
+    if not TargetPlayer then return false end
+    
+    local TCharacter = TargetPlayer.Character
+    if not TCharacter then return false end
+    
+    local TRootPart = TCharacter:FindFirstChild("HumanoidRootPart")
+    if not TRootPart then return false end
+    
+    -- التحقق إذا كان اللاعب يتحرك
+    local isMoving = TRootPart.Velocity.Magnitude > 20
+    
+    if isMoving then
+        -- إذا كان يتحرك، استخدم QuickFling
+        return QuickFling(TargetPlayer)
+    else
+        -- إذا كان ثابتاً، استخدم SHubFling العادية
+        return SHubFling(TargetPlayer)
+    end
 end
 
 -- ==================== إنشاء التبويب ====================
@@ -382,3 +450,4 @@ Window:Notify({
 })
 
 print("🎯 سكربت القذف القوي تم تحميله!")
+
