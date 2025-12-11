@@ -3,9 +3,9 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlred
 
 -- ==================== إنشاء النافذة ====================
 local Window = Library:MakeWindow({
-    Title = "🎯 سكربت القذف الذكي",
-    SubTitle = "يعمل مع المتحركين والثابتين",
-    ScriptFolder = "Smart-Fling-Script"
+    Title = "🎯 سكربت القذف الفعال",
+    SubTitle = "بنفس نمط القذف الأصلي المحسن",
+    ScriptFolder = "Fling-Script"
 })
 
 -- ==================== الخدمات الأساسية ====================
@@ -29,183 +29,188 @@ local function GetRoles()
     return data or {}
 end
 
--- ==================== دالة تعقب الهدف المتحرك ====================
-local function TrackMovingTarget(targetPart)
-    if not targetPart then return targetPart end
-    
-    -- حساب سرعة الهدف
-    local targetVelocity = targetPart.Velocity
-    local speed = targetVelocity.Magnitude
-    
-    -- إذا كان يتحرك بسرعة، نتنبأ بموقعه
-    if speed > 30 then
-        -- توقع الموقع بعد 0.15 ثانية
-        local predictedPosition = targetPart.Position + (targetVelocity * 0.15)
-        
-        -- إعادة حساب CFrame مع الاتجاه
-        local lookVector = targetPart.CFrame.LookVector
-        return CFrame.new(predictedPosition, predictedPosition + lookVector) * targetPart.CFrame.Rotation
-    end
-    
-    return targetPart.CFrame
-end
-
--- ==================== دالة القذف الذكي ====================
-local function SmartFling(TargetPlayer)
-    if not TargetPlayer or not Character or not HumanoidRootPart then 
-        return false 
+-- ==================== دالة الإرسال (Fling) - النسخة المعدلة ====================
+local function SHubFling(TargetPlayer)
+    if not (Character and Humanoid and HumanoidRootPart) then 
+        return 
     end
     
     local TCharacter = TargetPlayer.Character
-    if not TCharacter then return false end
-    
-    local TRootPart = TCharacter:FindFirstChild("HumanoidRootPart")
-    if not TRootPart then return false end
-    
-    -- حفظ موقعنا الأصلي
-    local OldPos = HumanoidRootPart.CFrame
-    local OldVel = HumanoidRootPart.Velocity
-    local OldRot = HumanoidRootPart.RotVelocity
-    
-    -- 🔥 الطريقة الجديدة: القبض والقذف الفوري
-    local function CaptureAndFling()
-        -- 1. تعقب الهدف المتحرك
-        local targetCF = TrackMovingTarget(TRootPart)
-        
-        -- 2. الانتقال للموقع المتوقع
-        local grabPosition = targetCF.Position + Vector3.new(0, 1.5, -1.5)
-        HumanoidRootPart.CFrame = CFrame.new(grabPosition, targetCF.Position)
-        
-        -- 3. الانتظار القصير للتأكد من القبض
-        task.wait(0.08)
-        
-        -- 4. قذف قوي مع تعويض السرعة
-        local targetVelocity = TRootPart.Velocity
-        local flingForce = Vector3.new(
-            math.random(-100000, 100000) + (targetVelocity.X * 3),
-            150000 + math.abs(targetVelocity.Y * 5),  -- تعويض الحركة الرأسية
-            math.random(-100000, 100000) + (targetVelocity.Z * 3)
-        )
-        
-        TRootPart.Velocity = flingForce
-        
-        -- 5. دوران سريع
-        TRootPart.RotVelocity = Vector3.new(
-            math.random(-12000, 12000),
-            math.random(-12000, 12000),
-            math.random(-12000, 12000)
-        )
-        
-        -- 6. دفعات إضافية
-        for i = 1, 2 do
-            task.wait(0.05)
-            if TRootPart and TRootPart.Parent then
-                TRootPart.Velocity = TRootPart.Velocity + Vector3.new(
-                    math.random(-30000, 30000),
-                    40000,
-                    math.random(-30000, 30000)
-                )
-            end
-        end
+    if not TCharacter then 
+        return 
     end
     
-    -- 🔄 تنفيذ مع معالجة الأخطاء
-    local success, err = pcall(CaptureAndFling)
+    local THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
+    local TRootPart = THumanoid and THumanoid.RootPart
+    local THead = TCharacter:FindFirstChild("Head")
+    local Accessory = TCharacter:FindFirstChildOfClass("Accessory")
+    local Handle = Accessory and Accessory:FindFirstChild("Handle")
     
-    -- العودة السريعة لموقعنا
-    task.wait(0.15)
-    HumanoidRootPart.CFrame = OldPos
-    HumanoidRootPart.Velocity = OldVel
-    HumanoidRootPart.RotVelocity = OldRot
+    local OldPos = HumanoidRootPart.CFrame
     
-    -- تنظيف نهائي
-    task.wait(0.1)
-    HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-    HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+    -- ⚡ زيادة سرعة التوجيه
+    repeat 
+        task.wait(0.0005)  -- ⬅️ أسرع (كان 0.001)
+        Workspace.CurrentCamera.CameraSubject = THead or Handle or THumanoid
+    until Workspace.CurrentCamera.CameraSubject == THead or Handle or THumanoid
     
-    return success
+    local function FPos(BasePart, Pos, Ang)
+        local targetCF = CFrame.new(BasePart.Position) * Pos * Ang
+        HumanoidRootPart.CFrame = targetCF
+        Character:SetPrimaryPartCFrame(targetCF)
+        HumanoidRootPart.Velocity = Vector3.new(9e8, 9e9, 9e8)  -- ✅ نفس القوة
+        HumanoidRootPart.RotVelocity = Vector3.new(9e9, 9e9, 9e9)  -- ✅ نفس الدوران
+    end
+    
+    local function SFBasePart(BasePart)
+        local start = tick()
+        local angle = 0
+        local timeout = 0.3  -- ⬅️ وقت أقل (كان 0.5)
+        
+        repeat
+            if HumanoidRootPart and THumanoid then
+                angle = angle + 700  -- ⬅️ دوران أسرع (كان 500)
+                
+                -- 🔥 إضافة تعويض حركة الهدف
+                local moveCompensation = THumanoid.MoveDirection * 1.5
+                
+                for _, offset in ipairs{
+                    CFrame.new(0, 1.5, 0),
+                    CFrame.new(0, -1.5, 0),
+                    CFrame.new(2.25, 1.5, -2.25),
+                    CFrame.new(-2.25, -1.5, 2.25)
+                } do
+                    -- تطبيق التعويض
+                    FPos(BasePart, offset + moveCompensation, CFrame.Angles(math.rad(angle), 0, 0))
+                    task.wait(0.0005)  -- ⬅️ أسرع (كان 0.001)
+                end
+            end
+        until BasePart.Velocity.Magnitude > 4000 or tick() - start > timeout  -- ⬅️ حد أقل (كان 5000)
+    end
+    
+    local BV = Instance.new("BodyVelocity")
+    BV.Name = "FlingVelocity"
+    BV.Velocity = Vector3.new(9e9, 9e9, 9e9)
+    BV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    BV.Parent = HumanoidRootPart
+    
+    Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+    
+    local target = TRootPart or THead or Handle
+    if target then 
+        SFBasePart(target) 
+    end
+    
+    BV:Destroy()
+    Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+    
+    -- ⚡ زيادة سرعة العودة
+    repeat 
+        task.wait(0.0005)  -- ⬅️ أسرع (كان 0.001)
+        Workspace.CurrentCamera.CameraSubject = Humanoid
+    until Workspace.CurrentCamera.CameraSubject == Humanoid
+    
+    repeat
+        local cf = OldPos * CFrame.new(0, .5, 0)
+        HumanoidRootPart.CFrame = cf
+        Character:SetPrimaryPartCFrame(cf)
+        Humanoid:ChangeState("GettingUp")
+        
+        for _, part in ipairs(Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+            end
+        end
+        
+        task.wait(0.0005)  -- ⬅️ أسرع (كان 0.001)
+    until (HumanoidRootPart.Position - OldPos.p).Magnitude < 20  -- ⬅️ عودة أبكر (كان 25)
+    
+    return true
 end
 
 -- ==================== إنشاء التبويب ====================
 local FlingTab = Window:MakeTab({
-    Title = "🎯 القذف الذكي",
+    Title = "🎯 القذف",
     Icon = "rbxassetid://4483345998"
 })
 
 -- ==================== تبويب القذف ====================
-FlingTab:AddSection("🎯 قذف الأدوار")
+FlingTab:AddSection("💨 قذف حسب الدور")
 
 FlingTab:AddButton({
-    Name = "قذف القاتل (ذكي)",
+    Name = "قذف القاتل",
     Callback = function()
         local roles = GetRoles()
-        local flingSuccess = false
+        local found = false
         
         for playerName, playerData in pairs(roles) do
             if playerData.Role == "Murderer" then
                 local murderer = Players:FindFirstChild(playerName)
                 if murderer and murderer ~= LocalPlayer then
-                    flingSuccess = SmartFling(murderer)
+                    local success = SHubFling(murderer)
+                    found = success
                     
                     Window:Notify({
-                        Title = flingSuccess and "💀 تم!" or "❌ مشكلة",
-                        Content = flingSuccess and "تم قذف القاتل: " .. murderer.Name or "لم يتمكن من مسك القاتل",
-                        Duration = 3
+                        Title = "💨 تم قذف القاتل",
+                        Content = success and "تم قذف: " .. murderer.Name or "قذف غير كامل",
+                        Duration = 2  -- ⬅️ وقت أقل
                     })
                     break
                 end
             end
         end
         
-        if not flingSuccess then
+        if not found then
             Window:Notify({
-                Title = "⚠️ لم يتم العثور",
-                Content = "لا يوجد قاتل في اللعبة",
-                Duration = 3
+                Title = "❌ خطأ",
+                Content = "لم يتم العثور على القاتل",
+                Duration = 2
             })
         end
     end
 })
 
 FlingTab:AddButton({
-    Name = "قذف الشريف/البطل (ذكي)",
+    Name = "قذف الشريف/البطل",
     Callback = function()
         local roles = GetRoles()
-        local flingSuccess = false
+        local found = false
         
         for playerName, playerData in pairs(roles) do
             if playerData.Role == "Sheriff" or playerData.Role == "Hero" then
                 local target = Players:FindFirstChild(playerName)
                 if target and target ~= LocalPlayer then
-                    flingSuccess = SmartFling(target)
+                    local success = SHubFling(target)
+                    found = success
                     
                     Window:Notify({
-                        Title = flingSuccess and "👮 تم!" or "❌ فشل",
-                        Content = flingSuccess and "تم قذف: " .. target.Name or "فشل القذف",
-                        Duration = 3
+                        Title = "💨 تم القذف",
+                        Content = success and "تم قذف: " .. target.Name or "قذف غير كامل",
+                        Duration = 2
                     })
                     break
                 end
             end
         end
         
-        if not flingSuccess then
+        if not found then
             Window:Notify({
-                Title = "⚠️ لم يتم العثور",
-                Content = "لا يوجد شريف أو بطل",
-                Duration = 3
+                Title = "❌ خطأ",
+                Content = "لم يتم العثور على الشريف أو البطل",
+                Duration = 2
             })
         end
     end
 })
 
-FlingTab:AddSection("🔥 قذف الجميع")
+FlingTab:AddSection("🔥 قذف الكل")
 
 local FlingAllEnabled = false
 local FlingAllLoop = nil
 
 FlingTab:AddToggle({
-    Name = "قذف جميع اللاعبين (ذكي)",
+    Name = "قذف جميع اللاعبين",
     Default = false,
     Callback = function(Value)
         FlingAllEnabled = Value
@@ -213,34 +218,36 @@ FlingTab:AddToggle({
         if Value then
             FlingAllLoop = task.spawn(function()
                 while FlingAllEnabled do
-                    local flingCount = 0
+                    local roles = GetRoles()
+                    local flungCount = 0
                     
-                    for _, player in ipairs(Players:GetPlayers()) do
-                        if player ~= LocalPlayer and player.Character then
-                            local success = SmartFling(player)
+                    for playerName, playerData in pairs(roles) do
+                        local player = Players:FindFirstChild(playerName)
+                        if player and player ~= LocalPlayer then
+                            local success = SHubFling(player)
                             if success then
-                                flingCount = flingCount + 1
+                                flungCount = flungCount + 1
                             end
-                            task.wait(0.25)  -- وقت بين القذف
+                            task.wait(0.2)  -- ⬅️ وقت أقل بين القذف
                         end
                     end
                     
-                    if flingCount > 0 then
+                    if flungCount > 0 then
                         Window:Notify({
-                            Title = "💥 تم قذف " .. flingCount .. " لاعب",
-                            Content = "جاري تكرار القذف...",
-                            Duration = 2
+                            Title = "💥 قذف مستمر",
+                            Content = "تم قذف " .. flungCount .. " لاعب",
+                            Duration = 1
                         })
                     end
                     
-                    task.wait(1.5)  -- انتظار قبل التكرار
+                    task.wait(1.5)  -- ⬅️ وقت أقل بين الدورات
                 end
             end)
             
             Window:Notify({
-                Title = "🔥 تم التفعيل",
-                Content = "جاري قذف جميع اللاعبين",
-                Duration = 3
+                Title = "🔥 تم تفعيل قذف الكل",
+                Content = "سيتم قذف جميع اللاعبين",
+                Duration = 2
             })
         else
             if FlingAllLoop then
@@ -249,72 +256,78 @@ FlingTab:AddToggle({
             end
             
             Window:Notify({
-                Title = "🛑 تم الإيقاف",
+                Title = "🛑 تم إيقاف قذف الكل",
                 Content = "توقف القذف الجماعي",
-                Duration = 3
+                Duration = 2
             })
         end
     end
 })
 
-FlingTab:AddSection("🎯 قذف محدد")
+FlingTab:AddSection("🎯 قذف لاعب محدد")
+
+-- قائمة اللاعبين
+local function GetPlayerNames()
+    local names = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(names, player.Name)
+        end
+    end
+    return names
+end
+
+local SelectedPlayer = nil
 
 local PlayerDropdown = FlingTab:AddDropdown({
     Name = "اختر لاعب",
-    Default = "",
-    Options = {},
+    Default = GetPlayerNames()[1] or "",
+    Options = GetPlayerNames(),
     Callback = function(Value)
-        -- تخزين اللاعب المحدد
-        _G.SelectedPlayer = Value
+        SelectedPlayer = Value
     end
 })
 
--- تحديث قائمة اللاعبين
-local function UpdatePlayerList()
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(playerNames, player.Name)
-        end
-    end
-    PlayerDropdown:NewOptions(playerNames)
+-- تحديث القائمة
+local function UpdateDropdown()
+    PlayerDropdown:NewOptions(GetPlayerNames())
 end
 
-UpdatePlayerList()
-Players.PlayerAdded:Connect(UpdatePlayerList)
-Players.PlayerRemoving:Connect(UpdatePlayerList)
+UpdateDropdown()
+Players.PlayerAdded:Connect(UpdateDropdown)
+Players.PlayerRemoving:Connect(UpdateDropdown)
 
 FlingTab:AddButton({
     Name = "قذف اللاعب المحدد",
     Callback = function()
-        if _G.SelectedPlayer then
-            local player = Players:FindFirstChild(_G.SelectedPlayer)
+        if SelectedPlayer then
+            local player = Players:FindFirstChild(SelectedPlayer)
             if player and player ~= LocalPlayer then
-                local success = SmartFling(player)
+                local success = SHubFling(player)
                 
                 Window:Notify({
-                    Title = success and "🎯 تم القذف" or "❌ فشل",
-                    Content = success and "تم قذف: " .. player.Name or "لم يتمكن من مسك اللاعب",
-                    Duration = 3
+                    Title = success and "💨 تم القذف" or "⚠️ قذف جزئي",
+                    Content = success and "تم قذف: " .. player.Name or "لم يكتمل القذف",
+                    Duration = 2
                 })
             else
                 Window:Notify({
-                    Title = "⚠️ لاعب غير موجود",
-                    Content = "اللاعب غير متوفر حالياً",
-                    Duration = 3
+                    Title = "❌ خطأ",
+                    Content = "اللاعب غير موجود",
+                    Duration = 2
                 })
             end
         else
             Window:Notify({
-                Title = "⚠️ لم تختر لاعب",
-                Content = "اختر لاعباً من القائمة أولاً",
-                Duration = 3
+                Title = "⚠️ تنبيه",
+                Content = "اختر لاعباً أولاً",
+                Duration = 2
             })
         end
     end
 })
 
-FlingTab:AddSection("⚡ أدوات إضافية")
+FlingTab:AddSection("⚙️ إعدادات القذف")
 
 FlingTab:AddButton({
     Name = "🔄 تحديث الشخصية",
@@ -325,66 +338,35 @@ FlingTab:AddButton({
         
         Window:Notify({
             Title = "✅ تم التحديث",
-            Content = "تم تحديث بيانات الشخصية",
-            Duration = 3
+            Content = "جاهز للقذف",
+            Duration = 2
         })
     end
 })
 
-FlingTab:AddButton({
-    Name = "🎯 اختبار القذف",
-    Callback = function()
-        -- اختبار على أول لاعب متاح
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                local success = SmartFling(player)
-                
-                Window:Notify({
-                    Title = success and "✅ اختبار ناجح" or "❌ اختبار فاشل",
-                    Content = success and "تم قذف " .. player.Name .. " بنجاح" or "فشل اختبار القذف",
-                    Duration = 4
-                })
-                return
-            end
-        end
-        
-        Window:Notify({
-            Title = "⚠️ لا يوجد لاعبين",
-            Content = "لا يوجد لاعبين آخرين للاختبار",
-            Duration = 3
-        })
-    end
-})
-
-FlingTab:AddParagraph("ℹ️ معلومات", [[
-🎯 القذف الذكي:
-• يتعقب اللاعبين المتحركين
-• يتنبأ بحركتهم
-• يعود لموقعك فوراً
-• لا يطيرك ولا يعلقك
-• يعمل مع الجميع
+FlingTab:AddParagraph("✨ معلومات", [[
+🎮 سكربت القذف المعدل:
+• وقت القذف: 0.3 ثانية (أسرع)
+• سرعة دوران: 700 درجة/إطار
+• تعويض حركة الهدف: ✓
+• وقت بين النقاط: 0.0005 ثانية
+• يعود لموقعه بسرعة
 ]])
 
--- ==================== تحديث الشخصية تلقائياً ====================
+-- ==================== تحديث الشخصية ====================
 LocalPlayer.CharacterAdded:Connect(function(newChar)
-    task.wait(0.5)
+    task.wait(0.3)  -- ⬅️ وقت أقل
     Character = newChar
-    Humanoid = Character:FindFirstChildOfClass("Humanoid")
-    HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-    
-    Window:Notify({
-        Title = "🔄 تم تحديث الشخصية",
-        Content = "جاهز للقذف مرة أخرى",
-        Duration = 3
-    })
+    Humanoid = Character:WaitForChild("Humanoid")
+    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 end)
 
 -- ==================== إشعار البدء ====================
-task.wait(1)
+task.wait(0.5)
 Window:Notify({
-    Title = "🚀 القذف الذكي جاهز",
-    Content = "يعمل مع المتحركين والثابتين",
-    Duration = 5
+    Title = "✅ سكربت القذف جاهز",
+    Content = "النسخة السريعة | كل شيء أسرع",
+    Duration = 3
 })
 
-print("🎯 سكربت القذف الذكي تم تحميله بنجاح!")
+print("🎯 سكربت القذف المعدل تم تحميله!")
