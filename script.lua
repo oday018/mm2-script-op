@@ -1,137 +1,267 @@
--- Основной GUI
+-- واجهة المستخدم العربية للقذف
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "PlayerActionGUI"
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false
 
--- Фоновый элемент меню (черное квадратно-округленное)
+-- متغيرات
+local SelectedPlayer = nil
+
+-- خلفية القائمة
 local menuBackground = Instance.new("Frame")
 menuBackground.Parent = screenGui
-menuBackground.Size = UDim2.new(0, 300, 0, 400) -- Размер меню
-menuBackground.Position = UDim2.new(0.5, -150, 0.5, -200) -- Центрирование
-menuBackground.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Черный цвет
-menuBackground.BorderSizePixel = 0 -- Убираем рамку
-menuBackground.BackgroundTransparency = 0 -- Прозрачность фона
+menuBackground.Size = UDim2.new(0, 320, 0, 450)
+menuBackground.Position = UDim2.new(0.5, -160, 0.5, -225)
+menuBackground.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+menuBackground.BorderSizePixel = 0
+menuBackground.BackgroundTransparency = 0.1
 
--- Кнопка для выбора игроков (белая квадратно-круглая)
+-- زوايا مستديرة
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = menuBackground
+
+-- ظل
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Parent = menuBackground
+UIStroke.Color = Color3.fromRGB(60, 60, 60)
+UIStroke.Thickness = 2
+
+-- عنوان
+local title = Instance.new("TextLabel")
+title.Parent = menuBackground
+title.Size = UDim2.new(1, 0, 0, 50)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.Text = "🎮 نظام القذف"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.BackgroundTransparency = 1
+title.TextSize = 24
+title.Font = Enum.Font.GothamBold
+
+-- زر اختيار لاعب
 local playerListButton = Instance.new("TextButton")
 playerListButton.Parent = menuBackground
-playerListButton.Size = UDim2.new(0, 200, 0, 50) -- Размер кнопки
-playerListButton.Position = UDim2.new(0.5, -100, 0.4, 0) -- Положение кнопки
-playerListButton.Text = "Выбрать игрока"
-playerListButton.TextSize = 20
-playerListButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Белый цвет
-playerListButton.TextColor3 = Color3.fromRGB(0, 0, 0) -- Черный текст
-playerListButton.AutoButtonColor = false -- Отключаем изменение цвета при наведении
-playerListButton.BorderSizePixel = 0 -- Убираем рамку
-playerListButton.ClipsDescendants = true -- Обрезка дочерних элементов
-local UICorner1 = Instance.new("UICorner") -- Края кнопки
-UICorner1.CornerRadius = UDim.new(0.2, 0) -- Радиус округления
-UICorner1.Parent = playerListButton
+playerListButton.Size = UDim2.new(0.8, 0, 0, 50)
+playerListButton.Position = UDim2.new(0.1, 0, 0.15, 0)
+playerListButton.Text = "👤 اختر لاعب"
+playerListButton.TextSize = 18
+playerListButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+playerListButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerListButton.AutoButtonColor = true
+playerListButton.BorderSizePixel = 0
 
--- Кнопка для флинга (внизу, белая квадратно-круглая)
+local btnCorner1 = Instance.new("UICorner")
+btnCorner1.CornerRadius = UDim.new(0, 8)
+btnCorner1.Parent = playerListButton
+
+-- زر القذف
 local flingButton = Instance.new("TextButton")
 flingButton.Parent = menuBackground
-flingButton.Size = UDim2.new(0, 200, 0, 50) -- Размер кнопки
-flingButton.Position = UDim2.new(0.5, -100, 0.6, 0) -- Положение кнопки
-flingButton.Text = "Флинг"
-flingButton.TextSize = 20
-flingButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Белый цвет
-flingButton.TextColor3 = Color3.fromRGB(0, 0, 0) -- Черный текст
-flingButton.AutoButtonColor = false -- Отключаем изменение цвета при наведении
-flingButton.BorderSizePixel = 0 -- Убираем рамку
-local UICorner2 = Instance.new("UICorner") -- Края кнопки
-UICorner2.CornerRadius = UDim.new(0.2, 0) -- Радиус округления
-UICorner2.Parent = flingButton
+flingButton.Size = UDim2.new(0.8, 0, 0, 50)
+flingButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+flingButton.Text = "💨 قذف الآن"
+flingButton.TextSize = 18
+flingButton.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+flingButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+flingButton.AutoButtonColor = true
+flingButton.BorderSizePixel = 0
 
--- Функция для показа списка игроков
+local btnCorner2 = Instance.new("UICorner")
+btnCorner2.CornerRadius = UDim.new(0, 8)
+btnCorner2.Parent = flingButton
+
+-- زر التبديل التلقائي
+local autoSwitchButton = Instance.new("TextButton")
+autoSwitchButton.Parent = menuBackground
+autoSwitchButton.Size = UDim2.new(0.8, 0, 0, 50)
+autoSwitchButton.Position = UDim2.new(0.1, 0, 0.45, 0)
+autoSwitchButton.Text = "🔄 تبديل تلقائي"
+autoSwitchButton.TextSize = 18
+autoSwitchButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
+autoSwitchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoSwitchButton.AutoButtonColor = true
+autoSwitchButton.BorderSizePixel = 0
+
+local btnCorner3 = Instance.new("UICorner")
+btnCorner3.CornerRadius = UDim.new(0, 8)
+btnCorner3.Parent = autoSwitchButton
+
+-- زر الرجوع
+local returnButton = Instance.new("TextButton")
+returnButton.Parent = menuBackground
+returnButton.Size = UDim2.new(0.8, 0, 0, 50)
+returnButton.Position = UDim2.new(0.1, 0, 0.6, 0)
+returnButton.Text = "🏠 العودة"
+returnButton.TextSize = 18
+returnButton.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
+returnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+returnButton.AutoButtonColor = true
+returnButton.BorderSizePixel = 0
+
+local btnCorner4 = Instance.new("UICorner")
+btnCorner4.CornerRadius = UDim.new(0, 8)
+btnCorner4.Parent = returnButton
+
+-- مؤشر اللاعب المحدد
+local selectedLabel = Instance.new("TextLabel")
+selectedLabel.Parent = menuBackground
+selectedLabel.Size = UDim2.new(0.8, 0, 0, 40)
+selectedLabel.Position = UDim2.new(0.1, 0, 0.75, 0)
+selectedLabel.Text = "👤 لا يوجد لاعب محدد"
+selectedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+selectedLabel.BackgroundTransparency = 1
+selectedLabel.TextSize = 16
+selectedLabel.Font = Enum.Font.Gotham
+
+-- زر الإغلاق
+local closeButton = Instance.new("TextButton")
+closeButton.Parent = menuBackground
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(0.9, -15, 0.02, 0)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+closeButton.BackgroundTransparency = 1
+closeButton.TextSize = 20
+
+-- دالة عرض قائمة اللاعبين
 local function showPlayerList()
-    -- Удаляем предыдущие кнопки (если есть)
-    for _, button in pairs(menuBackground:GetChildren()) do
-        if button:IsA("TextButton") and button.Name == "PlayerButton" then
-            button:Destroy()
+    -- مسح الأزرار القديمة
+    for _, child in pairs(menuBackground:GetChildren()) do
+        if child.Name == "PlayerOption" then
+            child:Destroy()
         end
     end
     
-    -- Создаём кнопку для каждого игрока
-    local yOffset = 0.3
+    -- إنشاء قائمة اللاعبين
+    local yOffset = 0.15
+    local players = {}
+    
     for _, player in pairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
-            local playerButton = Instance.new("TextButton")
-            playerButton.Parent = menuBackground
-            playerButton.Size = UDim2.new(0, 200, 0, 40) -- Размер кнопки
-            playerButton.Position = UDim2.new(0.5, -100, yOffset, 0) -- Положение кнопки
-            playerButton.Text = player.Name
-            playerButton.Name = "PlayerButton"
-            playerButton.BackgroundColor3 = Color3.fromRGB(0, 200, 150) -- Цвет кнопки
-            playerButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- Белый текст
-            playerButton.AutoButtonColor = false -- Отключаем изменение цвета при наведении
-            playerButton.BorderSizePixel = 0 -- Убираем рамку
-            local UICorner3 = Instance.new("UICorner") -- Края кнопки
-            UICorner3.CornerRadius = UDim.new(0.2, 0) -- Радиус округления
-            UICorner3.Parent = playerButton
-
-            -- Обработка нажатия на игрока
-            playerButton.MouseButton1Click:Connect(function()
-                print("Вы выбрали игрока:", player.Name)
-                -- Выполняем эффект "флинга"
-                local character = player.Character or player.CharacterAdded:Wait()
-                local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-                -- Создаем вращение
-                for i = 1, 6 do -- Вращаем 6 раз (примерно 6 секунд)
-                    humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.Angles(0, math.rad(60), 0) -- Вращение вокруг Y-оси
-                    wait(0.1) -- Ожидание между вращениями
-                end
-                
-                -- Возвращаем игрока в исходное положение
-                humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position)
-            end)
-            
-            yOffset = yOffset + 0.1 -- Смещение для следующей кнопки
+            table.insert(players, player)
         end
     end
-end
-
--- Перемещение меню
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
-local function onDragStart(input)
-    dragging = true
-    dragStart = input.Position
-    startPos = menuBackground.Position
-end
-
-local function onDragMove(input)
-    if dragging then
-        local delta = input.Position - dragStart
-        menuBackground.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    
+    if #players == 0 then
+        local noPlayers = Instance.new("TextLabel")
+        noPlayers.Parent = menuBackground
+        noPlayers.Name = "PlayerOption"
+        noPlayers.Size = UDim2.new(0.8, 0, 0, 40)
+        noPlayers.Position = UDim2.new(0.1, 0, yOffset, 0)
+        noPlayers.Text = "⚠️ لا يوجد لاعبين"
+        noPlayers.TextColor3 = Color3.fromRGB(255, 255, 255)
+        noPlayers.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        noPlayers.BackgroundTransparency = 0.5
+        return
+    end
+    
+    for _, player in pairs(players) do
+        local playerButton = Instance.new("TextButton")
+        playerButton.Parent = menuBackground
+        playerButton.Name = "PlayerOption"
+        playerButton.Size = UDim2.new(0.8, 0, 0, 40)
+        playerButton.Position = UDim2.new(0.1, 0, yOffset, 0)
+        playerButton.Text = "🎮 " .. player.Name
+        playerButton.TextSize = 16
+        playerButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        playerButton.AutoButtonColor = true
+        playerButton.BorderSizePixel = 0
+        
+        local playerCorner = Instance.new("UICorner")
+        playerCorner.CornerRadius = UDim.new(0, 6)
+        playerCorner.Parent = playerButton
+        
+        -- حدث الاختيار
+        playerButton.MouseButton1Click:Connect(function()
+            SelectedPlayer = player
+            selectedLabel.Text = "✅ تم اختيار: " .. player.Name
+            selectedLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+            
+            -- إغلاق القائمة
+            for _, btn in pairs(menuBackground:GetChildren()) do
+                if btn.Name == "PlayerOption" then
+                    btn:Destroy()
+                end
+            end
+        end)
+        
+        yOffset = yOffset + 0.12
     end
 end
 
-local function onDragEnd()
-    dragging = false
+-- دالة القذف باستخدام دالتك الأصلية
+local function performFling()
+    if not SelectedPlayer then
+        selectedLabel.Text = "❌ اختر لاعب أولاً"
+        selectedLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        return
+    end
+    
+    -- استخدام دالة القذف الخاصة بك
+    if SHubFling then
+        SHubFling(SelectedPlayer)
+        selectedLabel.Text = "💨 تم قذف: " .. SelectedPlayer.Name
+        selectedLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
+    else
+        selectedLabel.Text = "❌ دالة القذف غير موجودة"
+        selectedLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
 end
 
--- Поддержка сенсорного управления
-menuBackground.TouchStarted:Connect(function(touch)
-    onDragStart(touch)
-end)
-
-menuBackground.TouchMoved:Connect(function(touch)
-    onDragMove(touch)
-end)
-
-menuBackground.TouchEnded:Connect(function(touch)
-    onDragEnd()
-end)
-
--- Связь кнопки для отображения игроков
+-- أحداث الأزرار
 playerListButton.MouseButton1Click:Connect(showPlayerList)
+flingButton.MouseButton1Click:Connect(performFling)
 
--- Обработка нажатия на кнопку флинга
-flingButton.MouseButton1Click:Connect(function()
-    print("Флинг активирован")
-    -- Логика для флинга (пока не реализована, можно добавить)
+autoSwitchButton.MouseButton1Click:Connect(function()
+    -- تفعيل نظام التبديل التلقائي
+    if AutoSwitchEnabled ~= nil then
+        AutoSwitchEnabled = not AutoSwitchEnabled
+        autoSwitchButton.Text = AutoSwitchEnabled and "🛑 أوقف التبديل" or "🔄 تبديل تلقائي"
+        autoSwitchButton.BackgroundColor3 = AutoSwitchEnabled and Color3.fromRGB(255, 69, 0) or Color3.fromRGB(50, 205, 50)
+    end
 end)
+
+returnButton.MouseButton1Click:Connect(function()
+    -- الرجوع للمكان الأصلي
+    if OriginalPosition and HumanoidRootPart then
+        HumanoidRootPart.CFrame = OriginalPosition
+        selectedLabel.Text = "🏠 تم الرجوع للمكان الأصلي"
+        selectedLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- إمكانية السحب
+local dragging = false
+local dragStart, startPos
+
+menuBackground.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = menuBackground.Position
+    end
+end)
+
+menuBackground.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        menuBackground.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+menuBackground.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+-- إشعار البدء
+selectedLabel.Text = "🎮 GUI للقذف جاهز"
