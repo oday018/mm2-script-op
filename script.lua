@@ -241,7 +241,7 @@ if game.PlaceId == 142823291 then
                 
                 if Character and HumanoidRootPart then
                     HumanoidRootPart.CFrame = coin.CFrame
-                    task.wait(0.09) -- ⚡ 90 جزء من الثانية
+                    task.wait(1) -- ⚡ 90 جزء من الثانية
                     collected = collected + 1
                 end
             end
@@ -425,3 +425,4 @@ if game.PlaceId == 142823291 then
         end
     end)
 end
+
