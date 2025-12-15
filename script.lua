@@ -25,7 +25,7 @@ coinFarmToggle = FarmingTab:AddToggle({
     Callback = function(Value)
         getgenv().coinFarmEnabled = Value
         if Value then
-            startCoinFarming()
+            coinFarm() -- Start the coin farming function
         end
     end
 })
@@ -70,74 +70,4 @@ local function moveSmoothlyToCoin(coin)
     local characterRoot = game.Players.LocalPlayer.Character.HumanoidRootPart
     local targetPosition = coin.Position
     
-    -- Calculate flight path (ghost movement)
-    local distance = (targetPosition - characterRoot.Position).Magnitude
-    local duration = distance / (getgenv().movementSpeed or 50)
-    
-    -- Create smooth movement using TweenService
-    local tweenInfo = TweenInfo.new(
-        duration,
-        Enum.EasingStyle.Sine,
-        Enum.EasingDirection.Out,
-        1,
-        false,
-        0
-    )
-    
-    local goal = {
-        CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 8, targetPosition.Z) -- Fly above the coin
-    }
-    
-    local tween = game:GetService("TweenService"):Create(characterRoot, tweenInfo, goal)
-    tween:Play()
-    
-    -- Add floating effect
-    local floatTween = game:GetService("TweenService"):Create(characterRoot, 
-        TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-        {CFrame = characterRoot.CFrame * CFrame.new(0, 3, 0)}
-    )
-    floatTween:Play()
-end
-
--- Main coin farming function
-local function startCoinFarming()
-    while getgenv().coinFarmEnabled do
-        -- Find the nearest coin
-        local nearestCoin = findNearestCoin()
-        
-        if nearestCoin then
-            moveSmoothlyToCoin(nearestCoin)
-            -- Wait before moving to next coin
-            task.wait(2)
-        else
-            -- No coins found, wait and try again
-            task.wait(1)
-        end
-    end
-end
-
--- Add a notification when script loads
-Window:Notify({
-    Title = "Coin Farming Hub",
-    Content = "Script loaded successfully! Enable coin farming to start collecting.",
-    Image = "rbxassetid://10734953451",
-    Duration = 5
-})
-
--- Add debug button to test movement
-FarmingTab:AddButton({
-    Name = "Test Movement",
-    Callback = function()
-        -- Find nearest coin and move to it manually
-        local nearestCoin = findNearestCoin()
-        if nearestCoin then
-            moveSmoothlyToCoin(nearestCoin)
-        else
-            Window:Notify({
-                Title = "Test Failed",
-                Content = "No coins found nearby!",
-                Duration = 3
-            })
-        end
-    end
-})
+    -- Calculate flight path (
