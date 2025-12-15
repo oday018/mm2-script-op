@@ -35,6 +35,9 @@ coinFarmToggle = FarmingTab:AddToggle({
             task.spawn(function()
                 coinFarmLoop()
             end)
+        else
+            -- Stop flight when disabling
+            disableFlight()
         end
     end
 })
@@ -68,8 +71,9 @@ local function enableFlight()
     local player = game.Players.LocalPlayer
     if not player or not player.Character then return end
     
-    -- Enable noclip
     local character = player.Character
+    
+    -- Enable noclip
     for _, part in pairs(character:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -77,16 +81,22 @@ local function enableFlight()
     end
     
     -- Add BodyVelocity for flight if not exists
-    if not character:FindFirstChild("FlightBodyVelocity") then
-        local bodyVelocity = Instance.new("BodyVelocity")
-        bodyVelocity.Name = "FlightBodyVelocity"
-        bodyVelocity.Parent = character.HumanoidRootPart
-        bodyVelocity.MaxForce = Vector3.new(40000, 40000, 40000)
-        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if rootPart then
+        local existingBodyVelocity = rootPart:FindFirstChild("FlightBodyVelocity")
+        if not existingBodyVelocity then
+            local bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.Name = "FlightBodyVelocity"
+            bodyVelocity.Parent = rootPart
+            bodyVelocity.MaxForce = Vector3.new(40000, 40000, 40000)
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        end
     end
     
     -- Enable flying
-    character.Humanoid.PlatformStand = true
+    if character:FindFirstChild("Humanoid") then
+        character.Humanoid.PlatformStand = true
+    end
 end
 
 -- Function to disable flight
@@ -104,13 +114,18 @@ local function disableFlight()
     end
     
     -- Remove BodyVelocity
-    local bodyVelocity = character:FindFirstChild("FlightBodyVelocity")
-    if bodyVelocity then
-        bodyVelocity:Destroy()
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if rootPart then
+        local bodyVelocity = rootPart:FindFirstChild("FlightBodyVelocity")
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+        end
     end
     
     -- Disable flying
-    character.Humanoid.PlatformStand = false
+    if character:FindFirstChild("Humanoid") then
+        character.Humanoid.PlatformStand = false
+    end
 end
 
 -- Function to fly to position
@@ -133,12 +148,14 @@ local function flyToPosition(targetPosition)
     local distance = (targetWithHeight - rootPart.Position).Magnitude
     
     -- Set flight velocity
-    local bodyVelocity = character:FindFirstChild("FlightBodyVelocity")
+    local bodyVelocity = rootPart:FindFirstChild("FlightBodyVelocity")
     if bodyVelocity then
         bodyVelocity.Velocity = direction * getgenv().flightSpeed
         
         -- Fly until reached or coin farming disabled
-        while distance > 5 and getgenv().coinFarmEnabled do
+        local startTime = tick()
+        while distance > 5 and getgenv().coinFarmEnabled and (tick() - startTime) < 10 do
+            -- Update distance
             distance = (targetWithHeight - rootPart.Position).Magnitude
             task.wait(0.1)
         end
@@ -174,7 +191,6 @@ local function findNearestCoin()
     local coins = getAllCoins()
     
     if #coins == 0 then
-        print("لا توجد عملات في الخريطة!")
         return nil
     end
     
@@ -186,8 +202,7 @@ local function findNearestCoin()
         end
     end
     
-    print("أقرب عملة على بعد: " .. math.floor(shortestDistance) .. " متر")
-    return nearestCoin
+    return nearestCoin, shortestDistance
 end
 
 -- Function to collect coin
@@ -199,10 +214,13 @@ local function collectCoin(coin)
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     if not rootPart then return end
     
+    -- Check if coin still exists
+    if not coin or not coin.Parent then return end
+    
     -- Move close to coin
     local targetPos = Vector3.new(
         coin.Position.X,
-        coin.Position.Y + 2, -- Slightly above coin
+        coin.Position.Y + 2,
         coin.Position.Z
     )
     
@@ -212,70 +230,82 @@ local function collectCoin(coin)
     -- Collect coin
     if coin and coin.Parent then
         firetouchinterest(rootPart, coin, 0)
-        task.wait(0.1)
+        task.wait(0.05)
         firetouchinterest(rootPart, coin, 1)
-        print("تم جمع العملة!")
     end
 end
 
 -- Main farming loop
 local function coinFarmLoop()
-    print("بدء جمع العملات...")
+    print("Starting coin farming...")
     
     -- Enable flight
     enableFlight()
+    task.wait(1)
     
     while getgenv().coinFarmEnabled do
         -- Check if player exists
         local player = game.Players.LocalPlayer
         if not player or not player.Character then
             task.wait(1)
-            goto continue
+            continue
+        end
+        
+        local rootPart = player.Character:FindFirstChild("HumanoidRootPart")
+        if not rootPart then
+            task.wait(1)
+            continue
         end
         
         -- Find nearest coin
-        local nearestCoin = findNearestCoin()
+        local nearestCoin, distance = findNearestCoin()
         
         if nearestCoin then
-            print("التوجه إلى أقرب عملة...")
+            print("Moving to nearest coin, distance: " .. math.floor(distance))
             collectCoin(nearestCoin)
-            task.wait(0.5) -- Wait before next coin
+            task.wait(0.3) -- Wait before next coin
         else
-            print("جاري البحث عن عملات...")
+            print("No coins found, searching...")
             task.wait(1)
         end
-        
-        ::continue::
     end
     
     -- Disable flight when stopping
     disableFlight()
-    print("توقف جمع العملات")
+    print("Coin farming stopped")
 end
 
--- Auto-enable flight when farming starts
-game:GetService("RunService").Heartbeat:Connect(function()
+-- Auto-enable noclip when farming
+game:GetService("RunService").Stepped:Connect(function()
     if getgenv().coinFarmEnabled then
-        enableFlight()
+        local player = game.Players.LocalPlayer
+        if player and player.Character then
+            -- Keep noclip enabled
+            for _, part in pairs(player.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end
     end
 end)
 
 -- Add a notification when script loads
 Window:Notify({
     Title = "Coin Farming Hub",
-    Content = "تم تحميل السكربت! شغل جمع العملات للبدء.",
+    Content = "Script loaded! Enable coin farming to start.",
     Image = "rbxassetid://10734953451",
     Duration = 5
 })
 
 -- Add test button
 FarmingTab:AddButton({
-    Name = "تجربة الطيران",
+    Name = "Test Flight",
     Callback = function()
         enableFlight()
         Window:Notify({
-            Title = "تجربة ناجحة",
-            Content = "تم تفعيل الطيران! تحرك باستخدام W A S D",
+            Title = "Flight Enabled",
+            Content = "Flight mode activated!",
             Duration = 3
         })
     end
@@ -283,12 +313,12 @@ FarmingTab:AddButton({
 
 -- Add stop flight button
 FarmingTab:AddButton({
-    Name = "إيقاف الطيران",
+    Name = "Stop Flight",
     Callback = function()
         disableFlight()
         Window:Notify({
-            Title = "تم الإيقاف",
-            Content = "تم إيقاف وضع الطيران",
+            Title = "Flight Disabled",
+            Content = "Flight mode deactivated",
             Duration = 3
         })
     end
@@ -296,21 +326,26 @@ FarmingTab:AddButton({
 
 -- Add check coins button
 FarmingTab:AddButton({
-    Name = "فحص العملات",
+    Name = "Check Coins",
     Callback = function()
         local coins = getAllCoins()
         Window:Notify({
-            Title = "عدد العملات",
-            Content = "تم العثور على " .. #coins .. " عملة",
+            Title = "Coins Found",
+            Content = "Found " .. #coins .. " coins in workspace",
             Duration = 3
         })
     end
 })
 
--- Auto-stop when player leaves
-game.Players.LocalPlayer.CharacterAdded:Connect(function()
+-- Auto setup when character spawns
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    task.wait(2) -- Wait for character to load
     if getgenv().coinFarmEnabled then
-        task.wait(2)
         enableFlight()
     end
+end)
+
+-- Handle character removal
+game.Players.LocalPlayer.CharacterRemoving:Connect(function()
+    -- Nothing needed here
 end)
