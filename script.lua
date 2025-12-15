@@ -17,6 +17,11 @@ local FarmingTab = Window:MakeTab({
     Icon = "Coin"
 })
 
+-- Global variables
+getgenv().coinFarmEnabled = false
+getgenv().movementSpeed = 50
+getgenv().coinFarmRunning = false
+
 -- Add a toggle for coin farming
 local coinFarmToggle
 coinFarmToggle = FarmingTab:AddToggle({
@@ -24,8 +29,15 @@ coinFarmToggle = FarmingTab:AddToggle({
     Default = false,
     Callback = function(Value)
         getgenv().coinFarmEnabled = Value
-        if Value then
-            coinFarm() -- Start the coin farming function
+        
+        if Value and not getgenv().coinFarmRunning then
+            -- Start farming in a separate coroutine
+            task.spawn(function()
+                getgenv().coinFarmRunning = true
+                coinFarm()
+            end)
+        else
+            getgenv().coinFarmRunning = false
         end
     end
 })
@@ -50,11 +62,16 @@ local function findNearestCoin()
     
     -- Wait for player character to load
     local player = game.Players.LocalPlayer
-    if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+    if not player or not player.Character then
         return nil
     end
     
-    playerPosition = player.Character.HumanoidRootPart.Position
+    local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return nil
+    end
+    
+    playerPosition = humanoidRootPart.Position
     
     -- Search for coins
     local coinsFound = 0
@@ -69,83 +86,98 @@ local function findNearestCoin()
         end
     end
     
-    if coinsFound > 0 then
-        print("Found " .. coinsFound .. " coins, moving to nearest one")
-    else
-        print("No coins found in workspace")
-    end
-    
-    return nearestCoin
+    return nearestCoin, coinsFound
 end
 
 -- Function to move smoothly to coin with better error handling
 local function moveSmoothlyToCoin(coin)
     local player = game.Players.LocalPlayer
-    if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+    if not player or not player.Character then
         print("Error: Player or character not found")
-        return
+        return false
     end
     
-    local characterRoot = player.Character.HumanoidRootPart
-    local targetPosition = coin.Position
+    local characterRoot = player.Character:FindFirstChild("HumanoidRootPart")
+    if not characterRoot then
+        return false
+    end
     
-    print("Moving to coin at position: " .. tostring(targetPosition))
+    local targetPosition = coin.Position
     
     -- Calculate flight path
     local distance = (targetPosition - characterRoot.Position).Magnitude
-    local duration = distance / (getgenv().movementSpeed or 50)
+    if distance < 5 then
+        -- Already close to coin, just collect it
+        characterRoot.CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 2, targetPosition.Z)
+        return true
+    end
     
-    -- Create smooth movement using TweenService
-    local tweenInfo = TweenInfo.new(
-        duration,
-        Enum.EasingStyle.Sine,
-        Enum.EasingDirection.Out,
-        1,
-        false,
-        0
-    )
+    -- Use simpler movement for reliability
+    local direction = (targetPosition - characterRoot.Position).Unit
+    local speed = getgenv().movementSpeed or 50
     
-    local goal = {
-        CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 8, targetPosition.Z) -- Fly above the coin
-    }
+    -- Move towards coin in steps
+    local steps = math.ceil(distance / (speed / 30))
+    for i = 1, steps do
+        if not getgenv().coinFarmEnabled then break end
+        
+        if coin and coin.Parent then
+            characterRoot.CFrame = characterRoot.CFrame:Lerp(
+                CFrame.new(targetPosition.X, targetPosition.Y + 2, targetPosition.Z),
+                0.1
+            )
+            task.wait(0.03) -- Smooth movement
+        else
+            -- Coin disappeared or collected
+            break
+        end
+    end
     
-    -- Create and play the tween
-    local tween = game:GetService("TweenService"):Create(characterRoot, tweenInfo, goal)
-    tween:Play()
-    
-    -- Add floating effect
-    local floatTween = game:GetService("TweenService"):Create(characterRoot, 
-        TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-        {CFrame = characterRoot.CFrame * CFrame.new(0, 3, 0)}
-    )
-    floatTween:Play()
-    
-    print("Movement started, waiting for completion...")
+    return true
 end
 
 -- Main coin farming function with better error handling
 local function coinFarm()
+    print("Coin farming started!")
+    
     while getgenv().coinFarmEnabled do
         -- Wait for player character to be ready
         local player = game.Players.LocalPlayer
         if not player or not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
             print("Waiting for character to load...")
             task.wait(1)
-            continue
+            goto continue
         end
         
         -- Find the nearest coin
-        local nearestCoin = findNearestCoin()
+        local nearestCoin, coinsFound = findNearestCoin()
         
         if nearestCoin then
+            print("Moving to coin...")
             moveSmoothlyToCoin(nearestCoin)
-            -- Wait for movement to complete plus extra time
-            task.wait(duration or 2)
+            
+            -- Wait at coin position briefly
+            task.wait(0.5)
+            
+            -- After reaching, check if coin still exists
+            if nearestCoin and nearestCoin.Parent then
+                -- Try to collect coin
+                firetouchinterest(player.Character.HumanoidRootPart, nearestCoin, 0)
+                task.wait(0.1)
+                firetouchinterest(player.Character.HumanoidRootPart, nearestCoin, 1)
+            end
+            
+            task.wait(0.5) -- Wait before searching for next coin
         else
             -- No coins found, wait and try again
             task.wait(1)
         end
+        
+        ::continue::
     end
+    
+    getgenv().coinFarmRunning = false
+    print("Coin farming stopped!")
 end
 
 -- Add a notification when script loads
@@ -164,6 +196,11 @@ FarmingTab:AddButton({
         local nearestCoin = findNearestCoin()
         if nearestCoin then
             moveSmoothlyToCoin(nearestCoin)
+            Window:Notify({
+                Title = "Test Successful",
+                Content = "Movement test completed!",
+                Duration = 3
+            })
         else
             Window:Notify({
                 Title = "Test Failed",
@@ -178,12 +215,7 @@ FarmingTab:AddButton({
 FarmingTab:AddButton({
     Name = "Check Coins",
     Callback = function()
-        local coinsFound = 0
-        for _, coin in ipairs(game.Workspace:GetDescendants()) do
-            if coin.Name == "Coin_Server" and coin:IsA("BasePart") then
-                coinsFound = coinsFound + 1
-            end
-        end
+        local _, coinsFound = findNearestCoin()
         Window:Notify({
             Title = "Coin Check",
             Content = "Found " .. coinsFound .. " coins in workspace",
@@ -191,3 +223,10 @@ FarmingTab:AddButton({
         })
     end
 })
+
+-- Auto-stop farming when player leaves
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+    if getgenv().coinFarmEnabled then
+        task.wait(2) -- Wait for character to fully load
+    end
+end)
