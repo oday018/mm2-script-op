@@ -19,17 +19,16 @@ getgenv().FarmCoins = false
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 1000   -- مدى البحث كبير لتقريب العملات بسرعة
-local SPEED = 1      -- سرعة Lerp (1 = مباشر تقريبًا)
+local SPEED = 0.4  -- نسبة Lerp، كلما أكبر أسرع جداً
 
 ------------------------------------------------
--- أقرب عملة
+-- إيجاد أقرب عملة
 ------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
     local closestCoin
-    local shortest = RANGE
+    local shortest = math.huge
 
     for _,v in ipairs(workspace:GetDescendants()) do
         if v:IsA("BasePart") and v.Name:lower():find("coin") and v.Parent then
@@ -44,20 +43,20 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- التحرك بسلاسة شديدة
+-- التحرك السلس والفائق السرعة
 ------------------------------------------------
-local function goToCoinSmooth(coin)
+local function farmCoins()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
 
     while getgenv().FarmCoins do
         local coin = getClosestCoin()
         if coin and coin.Parent then
-            -- تحرك بسلاسة لكن سريع جدًا نحو العملة
-            local targetPos = Vector3.new(coin.Position.X, coin.Position.Y, coin.Position.Z)
+            -- تحرك مباشرة نحو العملة بدون رفع الشخصية
+            local targetPos = Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z)
             root.CFrame = root.CFrame:Lerp(CFrame.new(targetPos), SPEED)
         else
-            task.wait(0.01) -- قليل جدًا للتحديث
+            task.wait(0.01) -- تحديث سريع جداً للبحث عن العملات التالية
         end
         task.wait()
     end
@@ -71,8 +70,6 @@ btn.MouseButton1Click:Connect(function()
     btn.Text = getgenv().FarmCoins and "Farm: ON" or "Farm: OFF"
 
     if getgenv().FarmCoins then
-        task.spawn(function()
-            goToCoinSmooth()
-        end)
+        task.spawn(farmCoins)
     end
 end)
