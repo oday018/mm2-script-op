@@ -50,36 +50,35 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- الانتقال السلس (BodyVelocity)
+-- BodyVelocity جاهز مسبقًا
 ------------------------------------------------
-local function flyTo(pos)
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = lp.Character.HumanoidRootPart
-
-    local bv = Instance.new("BodyVelocity")
-    bv.MaxForce = Vector3.new(1e9,1e9,1e9)
-    bv.Parent = root
-
-    while (pos - root.Position).Magnitude > 1 do
-        if not getgenv().FarmCoins then break end
-        local dir = (pos - root.Position).Unit
-        bv.Velocity = dir * SPEED
-        task.wait(0.03)
-    end
-
-    bv:Destroy()
-end
-
-------------------------------------------------
--- Farm Loop
-------------------------------------------------
+local bv
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.03)
+        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then continue end
+        local root = lp.Character.HumanoidRootPart
+
         if getgenv().FarmCoins then
             local coin = getClosestCoin()
             if coin then
-                flyTo(coin.Position + Vector3.new(0,Y_OFFSET,0))
+                if not bv then
+                    bv = Instance.new("BodyVelocity")
+                    bv.MaxForce = Vector3.new(1e9,1e9,1e9)
+                    bv.Parent = root
+                end
+                local dir = (coin.Position + Vector3.new(0,Y_OFFSET,0) - root.Position).Unit
+                bv.Velocity = dir * SPEED
+            else
+                if bv then
+                    bv:Destroy()
+                    bv = nil
+                end
+            end
+        else
+            if bv then
+                bv:Destroy()
+                bv = nil
             end
         end
     end
