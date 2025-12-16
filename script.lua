@@ -1,35 +1,21 @@
--- UI
-local ui = Instance.new("ScreenGui", game.CoreGui)
-local btn = Instance.new("TextButton", ui)
-
-btn.Size = UDim2.new(0, 120, 0, 40)
-btn.Position = UDim2.new(0, 20, 0, 100)
-btn.Text = "Farm: OFF"
-btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-btn.TextColor3 = Color3.fromRGB(255,255,255)
-btn.TextSize = 20
-btn.Draggable = true
-btn.Active = true
-
--- Global toggle
-getgenv().FarmCoins = false
-
-btn.MouseButton1Click:Connect(function()
-    FarmCoins = not FarmCoins
-    btn.Text = FarmCoins and "Farm: ON" or "Farm: OFF"
-end)
+-- نفس الواجهة UI...
 
 ------------------------------------------------
--- إعدادات
+-- إعدادات متقدمة
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 200        -- مدى البحث
-local TELEPORT_DELAY = 0.12
-local Y_OFFSET = -3     -- الزخم المطلوب
+local RANGE = 200
+local TELEPORT_DELAY = 0.3  -- زيادة التأخير
+local Y_OFFSET = -3
+local SAFE_DELAY = 0.08  -- تأخير أمان إضافي
+
+-- متغيرات التتبع
+local isTeleporting = false
+local lastCoin = nil
 
 ------------------------------------------------
--- أقرب عملة
+-- أقرب عملة مع تجنب التكرار
 ------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -38,7 +24,7 @@ local function getClosestCoin()
     local shortest = RANGE
 
     for _,v in ipairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and v.Name:lower():find("coin") then
+        if v:IsA("BasePart") and v.Name:lower():find("coin") and v ~= lastCoin then
             local dist = (v.Position - root.Position).Magnitude
             if dist <= shortest then
                 shortest = dist
@@ -50,25 +36,54 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- انتقال مباشر
+-- انتقال آمن
 ------------------------------------------------
-local function goToCoin(coin)
+local function safeTeleportToCoin(coin)
+    if not coin or not coin:IsDescendantOf(workspace) then return end
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
+    if isTeleporting then return end
+    
+    isTeleporting = true
     local root = lp.Character.HumanoidRootPart
+    
+    -- الانتقال إلى العملة
     root.CFrame = coin.CFrame * CFrame.new(0, Y_OFFSET, 0)
+    task.wait(SAFE_DELAY)
+    
+    -- حركة بسيطة للتأكد من الجمع
+    root.CFrame = root.CFrame * CFrame.new(0, 1, 0)
+    
+    -- تذكر آخر عملة
+    lastCoin = coin
+    task.wait(0.05)
+    isTeleporting = false
 end
 
 ------------------------------------------------
--- Farm Loop (خفيف جدًا)
+-- Farm Loop الرئيسي
 ------------------------------------------------
 task.spawn(function()
     while true do
-        task.wait(0.1)
         if FarmCoins then
             local coin = getClosestCoin()
             if coin then
-                goToCoin(coin)
+                safeTeleportToCoin(coin)
+                task.wait(TELEPORT_DELAY)
+            else
+                -- إعادة تعيين إذا لم توجد عملات
+                lastCoin = nil
+                task.wait(1)
             end
+        else
+            task.wait(1)
         end
+    end
+end)
+
+-- تنظيف عند الخروج
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+    if player == lp then
+        FarmCoins = false
+        if ui then ui:Destroy() end
     end
 end)
