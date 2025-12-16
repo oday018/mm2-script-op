@@ -18,13 +18,12 @@ getgenv().FarmCoins = false
 -- إعدادات
 ------------------------------------------------
 local Players = game:GetService("Players")
-local PathfindingService = game:GetService("PathfindingService")
 local lp = Players.LocalPlayer
-local RANGE = 100        -- قلل النطاق لتجنب العملات البعيدة
+local RANGE = 100
 local SPEED = 200
 
 ------------------------------------------------
--- أقرب عملة قابلة للوصول
+-- أقرب عملة
 ------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -36,13 +35,8 @@ local function getClosestCoin()
         if v:IsA("BasePart") and v.Name:lower():find("coin") and v.Parent then
             local dist = (v.Position - root.Position).Magnitude
             if dist <= shortest then
-                -- تحقق من إمكانية الوصول عبر خط مباشر (تجنب الجدران)
-                local ray = Ray.new(root.Position, (v.Position - root.Position).Unit * dist)
-                local hit = workspace:FindPartOnRay(ray, lp.Character)
-                if not hit or hit == v then
-                    shortest = dist
-                    closestCoin = v
-                end
+                shortest = dist
+                closestCoin = v
             end
         end
     end
@@ -50,22 +44,16 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- التحرك نحو العملة باستخدام Pathfinding
+-- التحرك نحو العملة
 ------------------------------------------------
-local function goToCoin(coin)
+local function goToCoinSmooth(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local humanoid = lp.Character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
+    local root = lp.Character.HumanoidRootPart
 
-    local path = PathfindingService:CreatePath()
-    path:ComputeAsync(lp.Character.HumanoidRootPart.Position, coin.Position)
-    local waypoints = path:GetWaypoints()
-
-    for _, waypoint in ipairs(waypoints) do
-        if not getgenv().FarmCoins then break end
-        humanoid:MoveTo(waypoint.Position)
-        local reached = humanoid.MoveToFinished:Wait()
-        if not coin or not coin.Parent then break end
+    while coin and coin.Parent and getgenv().FarmCoins do
+        local direction = (Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z) - root.Position).Unit
+        root.CFrame = root.CFrame + direction * math.min(SPEED * task.wait(), (coin.Position - root.Position).Magnitude)
+        task.wait()
     end
 end
 
@@ -81,7 +69,7 @@ btn.MouseButton1Click:Connect(function()
             while getgenv().FarmCoins do
                 local coin = getClosestCoin()
                 if coin then
-                    goToCoin(coin)
+                    goToCoinSmooth(coin)
                 else
                     task.wait(0.2)
                 end
