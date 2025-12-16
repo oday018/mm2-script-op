@@ -14,19 +14,14 @@ btn.Active = true
 -- Global toggle
 getgenv().FarmCoins = false
 
-btn.MouseButton1Click:Connect(function()
-    FarmCoins = not FarmCoins
-    btn.Text = FarmCoins and "Farm: ON" or "Farm: OFF"
-end)
-
 ------------------------------------------------
 -- إعدادات
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local RANGE = 200        -- مدى البحث
-local SPEED = 0.3        -- سرعة الحركة (0.1-1 سلسة جداً)
-local Y_OFFSET = -3      -- ارتفاع ثابت
+local Y_OFFSET = 3      -- ارتفاع الشخصية فوق العملة
+local SPEED = 50        -- سرعة الحركة (كلما أكبر أسرع)
 
 ------------------------------------------------
 -- أقرب عملة
@@ -50,19 +45,40 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- Farm Loop (سلس جدًا)
+-- حركة سلسة
 ------------------------------------------------
-task.spawn(function()
-    while true do
-        task.wait(0.03)
-        if FarmCoins and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-            local root = lp.Character.HumanoidRootPart
-            local coin = getClosestCoin()
-            if coin then
-                -- استخدام Lerp للحركة السلسة
-                local targetPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
-                root.CFrame = root.CFrame:Lerp(CFrame.new(targetPos), SPEED)
+local function goToCoinSmooth(coin)
+    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
+    local root = lp.Character.HumanoidRootPart
+    local startPos = root.Position
+    local endPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
+    local distance = (endPos - startPos).Magnitude
+    local duration = distance / SPEED
+    local t = 0
+
+    while t < 1 and FarmCoins do
+        t = t + task.wait() / duration
+        root.CFrame = CFrame.new(startPos:Lerp(endPos, t))
+    end
+end
+
+------------------------------------------------
+-- زر التشغيل
+------------------------------------------------
+btn.MouseButton1Click:Connect(function()
+    FarmCoins = not FarmCoins
+    btn.Text = FarmCoins and "Farm: ON" or "Farm: OFF"
+
+    if FarmCoins then
+        task.spawn(function()
+            while FarmCoins do
+                local coin = getClosestCoin()
+                if coin then
+                    goToCoinSmooth(coin)
+                else
+                    task.wait(0.1)
+                end
             end
-        end
+        end)
     end
 end)
