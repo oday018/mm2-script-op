@@ -20,8 +20,7 @@ getgenv().FarmCoins = false
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local RANGE = 200        -- مدى البحث
-local Y_OFFSET = 3      -- ارتفاع الشخصية فوق العملة
-local SPEED = 50        -- سرعة الحركة (كلما أكبر أسرع)
+local SPEED = 50         -- سرعة الحركة (كلما أكبر أسرع)
 
 ------------------------------------------------
 -- أقرب عملة
@@ -45,18 +44,18 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- حركة سلسة
+-- حركة سلسة بدون رفع الشخصية
 ------------------------------------------------
 local function goToCoinSmooth(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
     local startPos = root.Position
-    local endPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
+    local endPos = Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z) -- ثابت على نفس الارتفاع
     local distance = (endPos - startPos).Magnitude
     local duration = distance / SPEED
     local t = 0
 
-    while t < 1 and FarmCoins do
+    while t < 1 and getgenv().FarmCoins do
         t = t + task.wait() / duration
         root.CFrame = CFrame.new(startPos:Lerp(endPos, t))
     end
@@ -66,12 +65,12 @@ end
 -- زر التشغيل
 ------------------------------------------------
 btn.MouseButton1Click:Connect(function()
-    FarmCoins = not FarmCoins
-    btn.Text = FarmCoins and "Farm: ON" or "Farm: OFF"
+    getgenv().FarmCoins = not getgenv().FarmCoins
+    btn.Text = getgenv().FarmCoins and "Farm: ON" or "Farm: OFF"
 
-    if FarmCoins then
+    if getgenv().FarmCoins then
         task.spawn(function()
-            while FarmCoins do
+            while getgenv().FarmCoins do
                 local coin = getClosestCoin()
                 if coin then
                     goToCoinSmooth(coin)
