@@ -1,7 +1,8 @@
 -- UI
-local ui = Instance.new("ScreenGui", game.CoreGui)
-local btn = Instance.new("TextButton", ui)
+local ui = Instance.new("ScreenGui", game.CoreGui)  -- إنشاء واجهة جديدة
+local btn = Instance.new("TextButton", ui)          -- إنشاء زر على الواجهة
 
+-- إعدادات الزر
 btn.Size = UDim2.new(0, 120, 0, 40)
 btn.Position = UDim2.new(0, 20, 0, 100)
 btn.Text = "Farm: OFF"
@@ -12,18 +13,18 @@ btn.Draggable = true
 btn.Active = true
 
 -- Global toggle
-getgenv().FarmCoins = false
+getgenv().FarmCoins = false  -- حالة تشغيل/إيقاف الجمع
 
 ------------------------------------------------
--- إعدادات
+-- إعدادات عامة
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 200        -- مدى البحث
-local SPEED = 50         -- سرعة الحركة (كلما أكبر أسرع)
+local RANGE = 200        -- مدى البحث عن العملات
+local SPEED = 50         -- سرعة الحركة
 
 ------------------------------------------------
--- أقرب عملة
+-- دالة إيجاد أقرب عملة
 ------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -31,6 +32,7 @@ local function getClosestCoin()
     local closestCoin
     local shortest = RANGE
 
+    -- البحث في كل أجزاء الـ Workspace
     for _,v in ipairs(workspace:GetDescendants()) do
         if v:IsA("BasePart") and v.Name:lower():find("coin") then
             local dist = (v.Position - root.Position).Magnitude
@@ -44,21 +46,27 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- حركة سلسة بدون رفع الشخصية + التحقق من وجود العملة
+-- دالة الحركة خطوة بخطوة للأمام
 ------------------------------------------------
 local function goToCoinSmooth(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
-    local startPos = root.Position
-    local distance = (coin.Position - startPos).Magnitude
-    local duration = (distance / SPEED) * 0.5  -- تقصير الوقت للنصف
-    local t = 0
 
-    while t < 1 and getgenv().FarmCoins do
-        if not coin or not coin.Parent then break end  -- تأكد أن العملة موجودة
-        t = t + task.wait() / duration
-        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then break end
-        root.CFrame = CFrame.new(startPos:Lerp(Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z), t))
+    -- حلقة مستمرة حتى نصل للعملة أو تختفي أو يتوقف الجمع
+    while coin and coin.Parent and getgenv().FarmCoins do
+        -- تحديث موقع الهدف لكل خطوة
+        local targetPos = Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z)
+        local direction = (targetPos - root.Position)
+        local distance = direction.Magnitude
+
+        if distance < 1 then break end -- وصلنا تقريباً للعملة
+
+        -- خطوة صغيرة باتجاه العملة
+        local step = direction.Unit * math.min(distance, SPEED * task.wait())
+        root.CFrame = root.CFrame + step
+
+        -- تحقق إذا العملة لا تزال موجودة
+        if not coin or not coin.Parent then break end
     end
 end
 
@@ -76,7 +84,7 @@ btn.MouseButton1Click:Connect(function()
                 if coin then
                     goToCoinSmooth(coin)
                 else
-                    task.wait(0.1)
+                    task.wait(0.1)  -- لا توجد عملة، انتظر قليل قبل البحث مجدداً
                 end
             end
         end)
