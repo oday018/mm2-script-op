@@ -19,8 +19,8 @@ getgenv().FarmCoins = false
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 200        -- مدى البحث
-local SPEED = 50         -- سرعة الحركة (كلما أكبر أسرع)
+local RANGE = 300        -- مدى البحث
+local SPEED = 200         -- سرعة الحركة (كلما أكبر أسرع)
 
 ------------------------------------------------
 -- أقرب عملة
@@ -82,3 +82,4 @@ btn.MouseButton1Click:Connect(function()
         end)
     end
 end)
+
