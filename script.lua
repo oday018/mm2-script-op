@@ -1,697 +1,1532 @@
-print("Loaded all settings    [1/6]")
-if game.PlaceId ~= 142823291 then game:GetService("TeleportService"):Teleport(142823291) end
-if typeof(getgenv().mm2) == "Instance" then getgenv().mm2:Destroy() end
-local ss = getgenv().Settings
-local players = game:GetService("Players")
-local player = players.LocalPlayer
-local camera = workspace.CurrentCamera
-local mouse = player:GetMouse()
-local UIS = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-print("Loaded all variables   [2/6]")
-local MM2 = Instance.new("ScreenGui")
-local Topbar = Instance.new("Frame")
-local Main = Instance.new("Frame")
-local UICorner = Instance.new("UICorner")
-local Murderer = Instance.new("TextButton")
-local UICorner_2 = Instance.new("UICorner")
-local Sheriff = Instance.new("TextButton")
-local UICorner_3 = Instance.new("UICorner")
-local MurdererText = Instance.new("TextLabel")
-local SheriffText = Instance.new("TextLabel")
-local GunDropText = Instance.new("TextLabel")
-local GunDrop = Instance.new("TextButton")
-local UICorner_4 = Instance.new("UICorner")
-local UICorner_5 = Instance.new("UICorner")
-local Title = Instance.new("TextLabel")
-local Credit = Instance.new("TextLabel")
-local Spectating = Instance.new("TextLabel")
-print("Loaded all instances   [3/6]")
-if game.PlaceId ~= 142823291 then MM2:Destroy() end
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-MM2.Name = "MM2"
-MM2.Parent = game:GetService("CoreGui")
-getgenv().mm2 = MM2
+local Window = Rayfield:CreateWindow({
+   Name = "AcronHub",
+   LoadingTitle = "AcronHub",
+   LoadingSubtitle = "by Acron",
+   ConfigurationSaving = {
+      Enabled = false,
+   }
+})
 
-Topbar.Name = "Topbar"
-Topbar.Parent = MM2
-Topbar.AnchorPoint = Vector2.new(0.5,0.5)
-Topbar.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
-Topbar.Position = UDim2.new(0.5, 0, 0.375, 0)
-Topbar.Size = UDim2.new(0, 170, 0, 30)
-Topbar.ZIndex = 11
+-- MM2 Tab
+local TabMM2 = Window:CreateTab("MM2", 0)
+TabMM2:CreateSection("Farm")
 
-Main.Name = "Main"
-Main.Parent = Topbar
-Main.AnchorPoint = Vector2.new(0.5,0)
-Main.ClipsDescendants = true
-Main.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
-Main.Position = UDim2.new(0.5, 0, 0, 0)
-Main.Size = UDim2.new(0, 170, 0, 209)
-Main.ZIndex = 10
-
-UICorner.Name = "UICorner"
-UICorner.CornerRadius = UDim.new(0, 6)
-UICorner.Parent = Main
-
-Murderer.Name = "Murderer"
-Murderer.Parent = Main
-Murderer.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
-Murderer.Position = UDim2.new(0.0602940023, 0, 0.142000005, 25)
-Murderer.Size = UDim2.new(0, 150, 0, 30)
-Murderer.ZIndex = 11
-Murderer.Font = Enum.Font.GothamBold
-Murderer.Text = "None"
-Murderer.TextColor3 = Color3.fromRGB(255, 100, 100)
-Murderer.TextSize = 16.000
-Murderer.AutoButtonColor = false
-
-UICorner_2.Name = "UICorner"
-UICorner_2.CornerRadius = UDim.new(0, 6)
-UICorner_2.Parent = Murderer
-
-Sheriff.Name = "Sheriff"
-Sheriff.Parent = Main
-Sheriff.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
-Sheriff.Position = UDim2.new(0.0602940321, 0, 0.400999993, 25)
-Sheriff.Size = UDim2.new(0, 150, 0, 30)
-Sheriff.ZIndex = 11
-Sheriff.Font = Enum.Font.GothamBold
-Sheriff.Text = "None"
-Sheriff.TextColor3 = Color3.fromRGB(100, 100, 255)
-Sheriff.TextSize = 16.000
-Sheriff.AutoButtonColor = false
-
-UICorner_3.Name = "UICorner"
-UICorner_3.CornerRadius = UDim.new(0, 6)
-UICorner_3.Parent = Sheriff
-
-MurdererText.Name = "MurdererText"
-MurdererText.Parent = Main
-MurdererText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MurdererText.BackgroundTransparency = 1.000
-MurdererText.Position = UDim2.new(0.0544118881, 0, 0.144037277, 0)
-MurdererText.Size = UDim2.new(0, 150, 0, 24)
-MurdererText.ZIndex = 11
-MurdererText.Font = Enum.Font.GothamBold
-MurdererText.Text = "Murderer"
-MurdererText.TextColor3 = Color3.fromRGB(255, 0, 0)
-MurdererText.TextSize = 16.000
-
-SheriffText.Name = "SheriffText"
-SheriffText.Parent = Main
-SheriffText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SheriffText.BackgroundTransparency = 1.000
-SheriffText.Position = UDim2.new(0.0602941513, 0, 0.403182238, 0)
-SheriffText.Size = UDim2.new(0, 150, 0, 24)
-SheriffText.ZIndex = 11
-SheriffText.Font = Enum.Font.GothamBold
-SheriffText.Text = "Sheriff"
-SheriffText.TextColor3 = Color3.fromRGB(0, 0, 255)
-SheriffText.TextSize = 16.000
-
-GunDropText.Name = "GunDropText"
-GunDropText.Parent = Main
-GunDropText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-GunDropText.BackgroundTransparency = 1.000
-GunDropText.Position = UDim2.new(0.0602941513, 0, 0.661555469, 0)
-GunDropText.Size = UDim2.new(0, 150, 0, 24)
-GunDropText.ZIndex = 11
-GunDropText.Font = Enum.Font.GothamBold
-GunDropText.Text = "Gun Dropped"
-GunDropText.TextColor3 = Color3.fromRGB(0, 255, 0)
-GunDropText.TextSize = 16.000
-
-GunDrop.Name = "GunDrop"
-GunDrop.Parent = Main
-GunDrop.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
-GunDrop.Position = UDim2.new(0.0602940321, 0, 0.660000026, 25)
-GunDrop.Size = UDim2.new(0, 150, 0, 30)
-GunDrop.ZIndex = 11
-GunDrop.Font = Enum.Font.GothamBold
-GunDrop.Text = "nil"
-GunDrop.TextColor3 = Color3.fromRGB(255, 255, 255)
-GunDrop.TextSize = 16.000
-GunDrop.AutoButtonColor = false
-
-UICorner_4.Name = "UICorner"
-UICorner_4.CornerRadius = UDim.new(0, 6)
-UICorner_4.Parent = GunDrop
-
-UICorner_5.Name = "UICorner"
-UICorner_5.CornerRadius = UDim.new(0, 6)
-UICorner_5.Parent = Topbar
-
-Title.Name = "Title"
-Title.Parent = Topbar
-Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundTransparency = 1.000
-Title.BorderSizePixel = 0
-Title.Position = UDim2.new(0.247058824, 0, 0, 0)
-Title.Size = UDim2.new(0, 85, 0, 30)
-Title.ZIndex = 12
-Title.Font = Enum.Font.GothamBold
-Title.Text = "Error Occurred" -- dont change
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16.000
-
-Credit.Name = "Credit"
-Credit.Parent = Main
-Credit.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Credit.BackgroundTransparency = 1.000
-Credit.Position = UDim2.new(0.06, 0, 0.923, 0)
-Credit.Size = UDim2.new(0, 150, 0, 15)
-Credit.ZIndex = 11
-Credit.Font = Enum.Font.GothamBold
-Credit.Text = "Made by KayTheNigerianPrince#0001"
-Credit.TextColor3 = Color3.fromRGB(255, 255, 255)
-Credit.TextSize = 12.000
-
-Spectating.Name = "Spectating"
-Spectating.Parent = MM2
-Spectating.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Spectating.BackgroundTransparency = 1.000
-Spectating.Position = UDim2.new(0.5, 0, 0.8, 0)
-Spectating.Size = UDim2.new(0, 150, 0, 15)
-Spectating.ZIndex = 15
-Spectating.Font = Enum.Font.GothamBold
-Spectating.Text = "Spectating: None"
-Spectating.TextColor3 = Color3.fromRGB(255, 255, 255)
-Spectating.TextSize = 32.000
-Spectating.AnchorPoint = Vector2.new(0.5,0.5)
-Spectating.Visible = false
-print("Loaded all properties  [4/6]")
-local folder = Instance.new("Folder")
-folder.Parent = MM2
-folder.Name = "Folder"
-function notif(text)
-	if typeof(text) == "string" and ss.Notifications then
-		game.StarterGui:SetCore("SendNotification", {
-			Title = "MM2 Utilities",
-			Text = text,
-			Duration = 1.5,
-		})
-	end
+local coinFarmConn = nil
+local coinFarmEnabled = false
+local lastCoinPos = nil
+local lastTeleportTime = 0
+local function findClosestCoin()
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+    local rootPart = char.HumanoidRootPart
+    local playerPos = rootPart.Position
+    local closestCoin = nil
+    local closestDistance = math.huge
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        local name = obj.Name:lower()
+        if (name:find("coin") or name:find("money") or name:find("cash") or 
+            name:find("gold") or name:find("gem") or name:find("dollar")) and
+           obj:IsA("BasePart") and obj.Parent and obj.Parent.Name ~= "Character" then
+            local distance = (obj.Position - playerPos).Magnitude
+            if distance < closestDistance then
+                closestDistance = distance
+                closestCoin = obj
+            end
+        end
+    end
+    return closestCoin
 end
-local aimbottoggled = false
-UIS.InputBegan:Connect(function(input, gameProcessed)
-	if input.KeyCode == Enum.KeyCode.Y then
-		aimbottoggled = not aimbottoggled
-		notif("Aimbot toggled: "..tostring(aimbottoggled))
-	end
-end)
-function bruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruh()
-	for i,v in pairs(folder:GetChildren()) do
-		v:Destroy()
-	end
-	for i,v in pairs(workspace:GetDescendants()) do
-		if v.Name == "Raggy" and ss.RemoveRagdolls then
-			v:Destroy()
-		elseif v.Name == "GlitchProof" and v.ClassName == "Model" and ss.RemoveBarriers then
-			v:Destroy()
-		end
-	end
-	for i,v in pairs(players:GetChildren()) do
-		if v.Name ~= player.Name and not folder:FindFirstChild(v.Name) then
-			if ss.NameEsp then
-				local Billboard = Instance.new("BillboardGui", folder)
-				local Name = Instance.new("TextLabel", Billboard)
-				Billboard.Name = v.Name
-				Billboard.Adornee = v.Character.Head
-				Billboard.Size = UDim2.new(10, 0, 4, 0)
-				Billboard.ExtentsOffset = Vector3.new(0, 3, 0)
-				Billboard.AlwaysOnTop = true
-				Billboard.MaxDistance = math.huge
-				Name.Name = "Name"
-				Name.BackgroundTransparency = 1
-				Name.TextTransparency = ss.NameTextTransparency
-				Name.BorderSizePixel = 0
-				Name.Font = ss.NameFont
-				Name.Size = UDim2.new(1, 0, 1, 0)
-				Name.Text = v.Name
-				Name.TextColor3 = ss.InnocentColor
-				Name.TextScaled = false
-				Name.TextSize = 18
-				if v.Backpack:FindFirstChild("Knife") or v.Character:FindFirstChild("Knife") then
-					Murderer.Text = v.Name
-					Name.TextColor3 = ss.MurdererColor
-					if not Murderer.TextFits then
-						Murderer.TextScaled = true
-					else
-						Murderer.TextScaled = false
-					end
-				elseif v.Backpack:FindFirstChild("Gun") or v.Character:FindFirstChild("Gun") then
-					Sheriff.Text = v.Name
-					Name.TextColor3 = ss.SheriffColor
-					if not Sheriff.TextFits then
-						Sheriff.TextScaled = true
-					else
-						Sheriff.TextScaled = false
-					end
-				elseif ss.AvoidInnocents and not v.Backpack:FindFirstChild("Knife") or v.Character:FindFirstChild("Knife") or v.Backpack:FindFirstChild("Gun") or v.Character:FindFirstChild("Gun") then
-					Billboard:Destroy()
-				end
-			end -- ss.NameEsp
-		end -- Name Check
-	end -- for i,v
-	if workspace:FindFirstChild("GunDrop",true) then
-		if ss.GunEsp then
-			local GunEsp = Instance.new("BoxHandleAdornment", folder)
-			GunEsp.Name = "Gun"
-			GunEsp.Adornee = game.Workspace.GunDrop
-			GunEsp.AlwaysOnTop = true
-			GunEsp.Color3 = ss.GunEspColor
-			GunEsp.Size = game.Workspace.GunDrop.Size
-			GunEsp.Transparency = 0.6
-			GunEsp.ZIndex = 0
-			if ss.GunNameEsp then
-				local Billboard = Instance.new("BillboardGui", folder)
-				local Name = Instance.new("TextLabel", Billboard)
-				Billboard.Name = "Gun"
-				Billboard.Adornee = game.Workspace.GunDrop
-				Billboard.Size = UDim2.new(10, 0, 4, 0)
-				Billboard.ExtentsOffset = Vector3.new(0, 3, 0)
-				Billboard.AlwaysOnTop = true
-				Billboard.MaxDistance = math.huge
-				Name.Name = "Name"
-				Name.BackgroundTransparency = 1
-				Name.TextTransparency = ss.GunNameTransparency
-				Name.BorderSizePixel = 0
-				Name.Font = ss.NameFont
-				Name.Size = UDim2.new(1, 0, 1, 0)
-				Name.Text = "Gun"
-				Name.TextColor3 = ss.GunNameColor
-				Name.TextScaled = false
-				Name.TextSize = 18
-			end
-		end
-		if ss.AutoPickupGun then
-			local hrp = player.Character.HumanoidRootPart
-			local OldCF = hrp.CFrame
-			hrp.CFrame = game.Workspace.GunDrop.CFrame
-			wait(0.2)
-			hrp.CFrame = OldCF
-		end
-		GunDrop.Text = "True"
-		GunDrop.TextColor3 = ss.GColorT
-	else
-		GunDrop.Text = "False"
-		GunDrop.TextColor3 = ss.GColorF
-	end
-	if ss.Aimbot then
-		local keypressed = false
-		local team
-		local target
-		mouse.Button2Down:Connect(function()
-			keypressed = true
-		end)
-		mouse.Button2Up:Connect(function()
-			keypressed = false
-		end)
-		if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
-			team = "Murderer"
-			target = players[Sheriff.Text].Character.HumanoidRootPart
-			if ss.AimbotAsMurderer then
-				aimbottoggled = true
-				notif("Aimbot toggled: true (Murderer)")
-				repeat
-					if keypressed and aimbottoggled then
-						camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
-					end
-					RunService.RenderStepped:Wait()
-				until players[Sheriff.Text].Character.Humanoid.Health < 1 or team == nil or ss.Aimbot == false or ss.AimbotAsMurderer == false
-			end
-		elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
-			team = "Sheriff"
-			target = players[Murderer.Text].Character.HumanoidRootPart
-			if ss.AimbotAsSheriff then
-				aimbottoggled = true
-				notif("Aimbot toggled: true (Sheriff)")
-				repeat
-					if keypressed and aimbottoggled then
-						camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
-					end
-					RunService.RenderStepped:Wait()
-				until players[Murderer.Text].Character.Humanoid.Health < 1 or team == nil or ss.Aimbot == false or ss.AimbotAsSheriff == false
-			end
-		else
-			team = nil
-			target = nil
-			aimbottoggled = false
-		end
-	end
+local function startCoinFarm()
+    if coinFarmConn then coinFarmConn:Disconnect() coinFarmConn = nil end
+    coinFarmConn = game:GetService("RunService").Heartbeat:Connect(function()
+        if not coinFarmEnabled then return end
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        local rootPart = char.HumanoidRootPart
+        local closestCoin, closestDistance = nil, math.huge
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            local name = obj.Name:lower()
+            if (name:find("coin") or name:find("money") or name:find("cash") or 
+                name:find("gold") or name:find("gem") or name:find("dollar")) and
+                obj:IsA("BasePart") and obj.Parent and obj.Parent.Name ~= "Character" then
+                local distance = (obj.Position - rootPart.Position).Magnitude
+                if distance < closestDistance then
+                    closestDistance = distance
+                    closestCoin = obj
+                end
+            end
+        end
+        if closestCoin then
+            rootPart.CFrame = CFrame.new(closestCoin.Position + Vector3.new(0, 1, 0))
+        end
+    end)
 end
-local object = workspace
-function XrayOn(object)
-	for i,v in pairs(object:GetChildren()) do
-		if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
-			v.LocalTransparencyModifier = 0.9
-		end
-		XrayOn(v)
-	end
+TabMM2:CreateToggle({
+    Name = "Автофарм монет",
+    CurrentValue = false,
+    Callback = function(state)
+        coinFarmEnabled = state
+        if state then
+            startCoinFarm()
+        else
+            if coinFarmConn then
+                coinFarmConn:Disconnect()
+                coinFarmConn = nil
+            end
+        end
+    end
+})
+
+TabMM2:CreateSection("ESP")
+local espConn = nil
+local espObjects = {}
+local gunESP = nil
+local function clearESP()
+    for _, obj in pairs(espObjects) do
+        if obj and obj.Parent then obj:Destroy() end
+    end
+    espObjects = {}
+    if gunESP and gunESP.Parent then gunESP:Destroy() gunESP = nil end
 end
-function XrayOff(object)
-	for i,v in pairs(object:GetChildren()) do
-		if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
-			v.LocalTransparencyModifier = 0
-		end
-		XrayOff(v)
-	end
+local function getRole(plr)
+    local function hasTool(name)
+        for _, tool in ipairs((plr.Backpack and plr.Backpack:GetChildren()) or {}) do
+            if tool.Name:lower():find(name) then return true end
+        end
+        for _, tool in ipairs((plr.Character and plr.Character:GetChildren()) or {}) do
+            if tool:IsA("Tool") and tool.Name:lower():find(name) then return true end
+        end
+        return false
+    end
+    if hasTool("knife") then return "murder" end
+    if hasTool("gun") or hasTool("revolver") then return "sheriff" end
+    return "innocent"
 end
-local noclip = false
-local xray = false
-local toggle1 = false
-local emotes = false
-function stuff(input, gameProcessed)
-	if not gameProcessed then
-		if input.KeyCode == Enum.KeyCode.R and ss.Noclip then
-			noclip = not noclip
-			notif("Noclip toggled: "..tostring(noclip))
-			player.Character.Humanoid:ChangeState(11)
-			repeat
-				player.Character.Humanoid:ChangeState(11)
-				RunService.Stepped:Wait()
-			until noclip == false
-		end
-		if input.KeyCode == Enum.KeyCode.T and ss.Xray then
-			xray = not xray
-			notif("Xray toggled: "..tostring(xray))
-			if xray then
-				XrayOn(object)
-			else
-				XrayOff(object)
-			end
-		end
-		if input.KeyCode == Enum.KeyCode.RightControl then
-			toggle1 = not toggle1
-			if toggle1 then
-				Topbar.Visible = false
-				notif("Gui is now invisible")
-			else
-				Topbar.Visible = true
-				notif("Gui is now visible")
-			end
-		end
-	end
+local function getColorByRole(role)
+    if role == "murder" then return Color3.fromRGB(255,0,0) end
+    if role == "sheriff" then return Color3.fromRGB(0,150,255) end
+    return Color3.fromRGB(0,255,0)
 end
-UIS.InputBegan:Connect(stuff)
-local ctrlpressed = false
-mouse.Button1Down:Connect(function()
-	if ctrlpressed and ss.CtrlClickTP then
-		player.Character:MoveTo(mouse.Hit.p)
-	end
-end)
-UIS.InputBegan:Connect(function(input, gameProcessed)
-	if input.KeyCode == Enum.KeyCode.LeftControl and not gameProcessed then
-		ctrlpressed = true
-	end
-end)
-UIS.InputEnded:Connect(function(input, gameProcessed)
-	if input.KeyCode == Enum.KeyCode.LeftControl and not gameProcessed then
-		ctrlpressed = false
-	end
-end)
-local mbtn = false -- murderer button
-local sbtn = false -- sheriff button
-Murderer.MouseButton1Click:Connect(function()
-	if Murderer.Text ~= "None" then
-		if mbtn == false then
-			camera.CameraSubject = players[Murderer.Text].Character.Humanoid
-			Spectating.Visible = true
-			Spectating.Text = "Spectating: "..Murderer.Text
-			Spectating.TextColor3 = Color3.fromRGB(255, 0, 0)
-			mbtn = true
-			sbtn = false
-		elseif mbtn == true then
-			camera.CameraSubject = player.Character.Humanoid
-			Spectating.Visible = false
-			Spectating.Text = "Spectating: None"
-			Spectating.TextColor3 = Color3.fromRGB(255, 255, 255)
-			mbtn = false
-		end
-	end
-end)
-Sheriff.MouseButton1Click:Connect(function()
-	if Sheriff.Text ~= "None" then
-		if sbtn == false then
-			camera.CameraSubject = players[Sheriff.Text].Character.Humanoid
-			Spectating.Visible = true
-			Spectating.Text = "Spectating: "..Sheriff.Text
-			Spectating.TextColor3 = Color3.fromRGB(0, 0, 255)
-			sbtn = true
-			mbtn = false
-		elseif sbtn == true then
-			camera.CameraSubject = player.Character.Humanoid
-			Spectating.Visible = false
-			Spectating.Text = "Spectating: None"
-			Spectating.TextColor3 = Color3.fromRGB(255, 255, 255)
-			sbtn = false
-		end
-	end
-end)
-GunDrop.MouseButton1Click:Connect(function()
-	pcall(function()
-		if workspace:FindFirstChild("GunDrop",true) and GunDrop.Text == "True" then
-			local hrp = player.Character.HumanoidRootPart
-			local OldCF = hrp.CFrame
-			hrp.CFrame = workspace.GunDrop.CFrame
-			wait(0.2)
-			hrp.CFrame = OldCF
-		end
-	end)
-end)
-if ss.UnlockEmotes and player.PlayerGui.MainGUI then -- did not make this btw
-	for i,v in pairs(player.PlayerGui.MainGUI.Game.Emotes.EmotePages:GetChildren()) do
-		if v.Name == "MM2 Utilities" then v:Destroy() end
-	end
-	local emote = require(game:GetService("ReplicatedStorage").Modules.EmoteModule).GeneratePage
-	local target = player.PlayerGui.MainGUI.Game.Emotes
-	local emotelist = { "headless","zombie","zen","ninja","floss","dab" }
-	emote(emotelist,target,"MM2 Utilities")
+local function createESP(plr, color)
+    if not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
+    local root = plr.Character.HumanoidRootPart
+    local box = Instance.new("BoxHandleAdornment")
+    box.Adornee = root
+    box.AlwaysOnTop = true
+    box.ZIndex = 10
+    box.Size = root.Size + Vector3.new(0.5,0.5,0.5)
+    box.Color3 = color
+    box.Transparency = 0.5
+    box.Parent = root
+    espObjects[plr] = box
 end
-function dragify(Frame)
-	dragToggle = nil
-	local dragSpeed = 0.5
-	dragInput = nil
-	dragStart = nil
-	local dragPos = nil
-	function updateInput(input)
-		local Delta = input.Position - dragStart
-		local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
-		TweenService:Create(Frame, TweenInfo.new(0.25), {Position = Position}):Play()
-	end
-	Frame.InputBegan:Connect(function(input)
-		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
-			dragToggle = true
-			dragStart = input.Position
-			startPos = Frame.Position
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragToggle = false
-				end
-			end)
-		end
-	end)
-	Frame.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
-	end)
-	game:GetService("UserInputService").InputChanged:Connect(function(input)
-		if input == dragInput and dragToggle then
-			updateInput(input)
-		end
-	end)
+local function isPlayerCharacter(model)
+    return model and model:IsA("Model") and model:FindFirstChildOfClass("Humanoid")
 end
-dragify(Topbar) -- credit to this guy: https://www.roblox.com/library/5021849770/Smooth-Drag
-print("Loaded all scripts     [5/6]")
-function ApplyTheme(Color1, Color2, Color3, MColor1, MColor2, SColor1, SColor2, GColor1, TextFont, TextColor)
-	Topbar.BackgroundColor3 = Color1
-	Murderer.BackgroundColor3 = Color2
-	Sheriff.BackgroundColor3 = Color2
-	GunDrop.BackgroundColor3 = Color2
-	Main.BackgroundColor3 = Color3
-	MurdererText.TextColor3 = MColor1
-	Murderer.TextColor3 = MColor2
-	SheriffText.TextColor3 = SColor1
-	Sheriff.TextColor3 = SColor2
-	GunDropText.TextColor3 = GColor1
-	Title.Font = TextFont
-	Murderer.Font = TextFont
-	MurdererText.Font = TextFont
-	Sheriff.Font = TextFont
-	SheriffText.Font = TextFont
-	GunDrop.Font = TextFont
-	GunDropText.Font = TextFont
-	Credit.Font = TextFont
-	Title.TextColor3 = TextColor
-	Credit.TextColor3 = TextColor
+local function updateESP()
+    clearESP()
+    local players = game.Players:GetPlayers()
+    for _, plr in ipairs(players) do
+        if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local root = plr.Character.HumanoidRootPart
+            if not espObjects[plr] then
+                local box = Instance.new("BoxHandleAdornment")
+                box.Adornee = root
+                box.AlwaysOnTop = true
+                box.ZIndex = 10
+                box.Size = root.Size + Vector3.new(0.5,0.5,0.5)
+                box.Color3 = getColorByRole(getRole(plr))
+                box.Transparency = 0.5
+                box.Parent = root
+                espObjects[plr] = box
+            end
+        end
+    end
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        local name = obj.Name:lower()
+        if (name:find("gun") or name:find("revolver")) and obj:IsA("BasePart") then
+            local parent = obj.Parent
+            if not isPlayerCharacter(parent) then
+                if not gunESP or gunESP.Adornee ~= obj then
+                    if gunESP and gunESP.Parent then gunESP:Destroy() end
+                    gunESP = Instance.new("BoxHandleAdornment")
+                    gunESP.Adornee = obj
+                    gunESP.AlwaysOnTop = true
+                    gunESP.ZIndex = 10
+                    gunESP.Size = obj.Size + Vector3.new(0.5,0.5,0.5)
+                    gunESP.Color3 = Color3.fromRGB(255, 140, 0)
+                    gunESP.Transparency = 0.3
+                    gunESP.Parent = obj
+                end
+                break
+            end
+        end
+    end
 end
-ApplyTheme(ss.Color1, ss.Color2, ss.Color3, ss.MColor1, ss.MColor2, ss.SColor1, ss.SColor2, ss.GColor1, ss.TextFont, ss.MainTextColor)
-function PresetTheme(Theme)
-	local theme
-	if Theme == "Carbon" then
-		theme = {
-			Color1 = Color3.fromRGB(19,19,19),
-			Color2 = Color3.fromRGB(19,19,19),
-			Color3 = Color3.fromRGB(24,24,24),
-			MColor1 = Color3.fromRGB(255,0,0),
-			MColor2 = Color3.fromRGB(255,255,255),
-			SColor1 = Color3.fromRGB(0,0,255),
-			SColor2 = Color3.fromRGB(255,255,255),
-			GColor1 = Color3.fromRGB(0,255,0),
-			GColorT = Color3.fromRGB(100,255,100),
-			GColorF = Color3.fromRGB(255,100,100),
-			TextFont = ss.TextFont,
-			MainTextColor = Color3.fromRGB(255,255,255)
-		}
-		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
-	elseif Theme == "Strawberry" then
-		theme = {
-			Color1 = Color3.fromRGB(244,143,177),
-			Color2 = Color3.fromRGB(244,143,177),
-			Color3 = Color3.fromRGB(248,187,208),
-			MColor1 = Color3.fromRGB(255,0,170),
-			MColor2 = Color3.fromRGB(255,255,255),
-			SColor1 = Color3.fromRGB(255,0,170),
-			SColor2 = Color3.fromRGB(255,255,255),
-			GColor1 = Color3.fromRGB(255,0,170),
-			GColorT = Color3.fromRGB(255,255,255),
-			GColorF = Color3.fromRGB(255,255,255),
-			TextFont = ss.TextFont,
-			MainTextColor = Color3.fromRGB(255,255,255)
-		}
-		ss.GColorT = theme.GColorT
-		ss.GColorF = theme.GColorF
-		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
-	elseif Theme == "SkyBlue" then
-		theme = {
-			Color1 = Color3.fromRGB(59,132,235),
-			Color2 = Color3.fromRGB(59,132,235),
-			Color3 = Color3.fromRGB(120,172,245),
-			MColor1 = Color3.fromRGB(0,0,255),
-			MColor2 = Color3.fromRGB(255,255,255),
-			SColor1 = Color3.fromRGB(0,0,255),
-			SColor2 = Color3.fromRGB(255,255,255),
-			GColor1 = Color3.fromRGB(0,0,255),
-			GColorT = Color3.fromRGB(255,255,255),
-			GColorF = Color3.fromRGB(255,255,255),
-			TextFont = ss.TextFont,
-			MainTextColor = Color3.fromRGB(255,255,255)
-		}
-		ss.GColorT = theme.GColorT
-		ss.GColorF = theme.GColorF
-		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
-	elseif Theme == "Emerald" then
-		theme = {
-			Color1 = Color3.fromRGB(29,185,84),
-			Color2 = Color3.fromRGB(29,185,84),
-			Color3 = Color3.fromRGB(92,255,105),
-			MColor1 = Color3.fromRGB(0,225,0),
-			MColor2 = Color3.fromRGB(255,255,255),
-			SColor1 = Color3.fromRGB(0,225,0),
-			SColor2 = Color3.fromRGB(255,255,255),
-			GColor1 = Color3.fromRGB(0,225,0),
-			GColorT = Color3.fromRGB(255,255,255),
-			GColorF = Color3.fromRGB(255,255,255),
-			TextFont = ss.TextFont,
-			MainTextColor = Color3.fromRGB(255,255,255)
-		}
-		ss.GColorT = theme.GColorT
-		ss.GColorF = theme.GColorF
-		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
-	end
+local function setESP(state)
+    if espConn then espConn:Disconnect() espConn = nil end
+    clearESP()
+    if state then
+        espConn = game:GetService("RunService").Heartbeat:Connect(function()
+            updateESP()
+        end)
+    end
 end
-PresetTheme(ss.PresetTheme)
-print("Applied custom theme   [6/6]")
-Title.Text = "MM2 Utilities"
-local goal1 = {} goal1.TextTransparency = 0
-function fadetext(obj, delay) TweenService:Create(obj, TweenInfo.new(delay,Enum.EasingStyle.Linear,Enum.EasingDirection.Out),goal1):Play() end
-function LoadAnimation()
-	local loadtime = tick()
-	Topbar.Size = UDim2.new(0,0,0,0)
-	Topbar.Visible = false
-	Title.TextTransparency = 1
-	Main.Size = UDim2.new(0,0,0,0)
-	Main.Visible = false
-	MurdererText.TextTransparency = 1
-	Murderer.TextTransparency = 1
-	SheriffText.TextTransparency = 1
-	Sheriff.TextTransparency = 1
-	GunDropText.TextTransparency = 1
-	GunDrop.TextTransparency = 1
-	Credit.TextTransparency = 1
-	Topbar.Visible = true
-	Topbar:TweenSize(UDim2.new(0,30,0,30),"Out","Sine","0.3")
-	wait(0.3)
-	Topbar:TweenSize(UDim2.new(0,170,0,30),"Out","Sine","0.5")
-	wait(0.5)
-	fadetext(Title, 0.5)
-	Main.Visible = true
-	Main.Size = UDim2.new(0,170,0,30)
-	Main:TweenSize(UDim2.new(0,170,0,209),"Out","Sine","0.7")
-	wait(0.2)
-	fadetext(MurdererText, 0.2)
-	wait(0.07)
-	fadetext(Murderer, 0.2)
-	wait(0.07)
-	fadetext(SheriffText, 0.2)
-	wait(0.06)
-	fadetext(Sheriff, 0.2)
-	wait(0.06)
-	fadetext(GunDropText, 0.2)
-	wait(0.05)
-	fadetext(GunDrop, 0.2)
-	wait(0.05)
-	fadetext(Credit, 0.2)
-	print("Loaded animation, took "..tick()-loadtime.." seconds")
+TabMM2:CreateToggle({
+    Name = "ESP (MM2)",
+    CurrentValue = false,
+    Callback = setESP
+})
+
+TabMM2:CreateSection("Aimbot")
+local aimConn = nil
+local function getClosestTarget()
+    local lp = game.Players.LocalPlayer
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return nil end
+    local closest, minDist = nil, math.huge
+    for _, plr in ipairs(game.Players:GetPlayers()) do
+        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (myRoot.Position - plr.Character.HumanoidRootPart.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = plr
+            end
+        end
+    end
+    return closest
 end
-LoadAnimation()
-local l = game:GetService("Lighting")
-getgenv().oldl = { Ambient = l.Ambient, Brightness = l.Brightness, GlobalShadows = l.GlobalShadows }
-function StartMM2()
-	if ss.Enabled then
-		pcall(bruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruh)
-		ApplyTheme(ss.Color1, ss.Color2, ss.Color3, ss.MColor1, ss.MColor2, ss.SColor1, ss.SColor2, ss.GColor1, ss.TextFont, ss.MainTextColor)
-		PresetTheme(ss.PresetTheme)
-		player.Character.Humanoid.WalkSpeed = ss.WalkSpeed
-		player.Character.Humanoid.JumpPower = ss.JumpPower
-		camera.FieldOfView = ss.FieldOfView
-		player.DevCameraOcclusionMode = ss.CameraMode
-		player.CameraMaxZoomDistance = ss.MaxZoom
-		if ss.RemoveBlackScreen then
-			player.PlayerGui.SpawnFade.Fade.Visible = false
-			player.PlayerGui.CameraFade.Fade.Visible = false
-		end
-		if ss.Fullbright then
-			l.Ambient = Color3.fromRGB(255,255,255)
-			l.Brightness = 50
-			l.GlobalShadows = false
-		else
-			l.Ambient = getgenv().oldl.Ambient
-			l.Brightness = getgenv().oldl.Brightness
-			l.GlobalShadows = getgenv().oldl.GlobalShadows
-		end
-		if ss.UnlockEmotes and player.PlayerGui.MainGUI then -- did not make this btw
-			local emote = require(game:GetService("ReplicatedStorage").Modules.EmoteModule).GeneratePage
-			local target = player.PlayerGui.MainGUI.Game.Emotes
-			local emotelist = { "headless","zombie","zen","ninja","floss","dab" }
-			if not player.PlayerGui.MainGUI.Game.Emotes.EmotePages:FindFirstChild("MM2 Utilities") then
-				emote(emotelist,target,"MM2 Utilities")
-				notif("Unlocked emotes")
-			end
-		end
-	end
+local function hasGun()
+    local lp = game.Players.LocalPlayer
+    for _, tool in ipairs((lp.Backpack and lp.Backpack:GetChildren()) or {}) do
+        if tool.Name:lower():find("gun") or tool.Name:lower():find("revolver") then return true end
+    end
+    for _, tool in ipairs((lp.Character and lp.Character:GetChildren()) or {}) do
+        if tool:IsA("Tool") and (tool.Name:lower():find("gun") or tool.Name:lower():find("revolver")) then return true end
+    end
+    return false
 end
-pcall(StartMM2)
-if not getgenv().MM2_UTILITIES_LOADED then
-	print("\n███╗░░░███╗███╗░░░███╗██████╗░  ██╗░░░██╗████████╗██╗██╗░░░░░██╗████████╗██╗███████╗░██████╗\n████╗░████║████╗░████║╚════██╗  ██║░░░██║╚══██╔══╝██║██║░░░░░██║╚══██╔══╝██║██╔════╝██╔════╝\n██╔████╔██║██╔████╔██║░░███╔═╝  ██║░░░██║░░░██║░░░██║██║░░░░░██║░░░██║░░░██║█████╗░░╚█████╗░\n██║╚██╔╝██║██║╚██╔╝██║██╔══╝░░  ██║░░░██║░░░██║░░░██║██║░░░░░██║░░░██║░░░██║██╔══╝░░░╚═══██╗\n██║░╚═╝░██║██║░╚═╝░██║███████╗  ╚██████╔╝░░░██║░░░██║███████╗██║░░░██║░░░██║███████╗██████╔╝\n╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝  ░╚═════╝░░░░╚═╝░░░╚═╝╚══════╝╚═╝░░░╚═╝░░░╚═╝╚══════╝╚═════╝░")
-	print('Press "Left Ctrl" to toggle gui visibility')
-	print('Executing multiple times will cause notification spam, disable "Notifications" to prevent this')
-	print("Made By zzerexx#3970")
+local function setAim(state)
+    if aimConn then aimConn:Disconnect() aimConn = nil end
+    if state then
+        aimConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local target = getClosestTarget()
+            if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                local cam = workspace.CurrentCamera
+                cam.CFrame = CFrame.new(cam.CFrame.Position, target.Character.HumanoidRootPart.Position)
+                -- Для отладки:
+                print("Aimbot: навёлся на ", target.Name)
+            else
+                -- Для отладки:
+                print("Aimbot: нет цели")
+            end
+        end)
+    end
 end
-getgenv().MM2_UTILITIES_LOADED = true
-while wait(2) do
-	pcall(StartMM2)
+TabMM2:CreateToggle({
+    Name = "Aimbot (MM2)",
+    CurrentValue = false,
+    Callback = setAim
+})
+
+TabMM2:CreateToggle({
+    Name = "Auto Gun (MM2)",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.autoGunMM2 = true
+            spawn(function()
+                while _G.autoGunMM2 do
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        local name = obj.Name:lower()
+                        if (name:find("gun") or name:find("revolver")) and obj:IsA("BasePart") then
+                            local char = game.Players.LocalPlayer.Character
+                            if char and char:FindFirstChild("HumanoidRootPart") then
+                                char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0,2,0)
+                                wait(0.2)
+                            end
+                        end
+                    end
+                    wait(1)
+                end
+            end)
+        else
+            _G.autoGunMM2 = false
+        end
+    end
+})
+
+-- Вкладка Движение
+local TabMovement = Window:CreateTab("Движение", 0)
+TabMovement:CreateSection("Movement")
+
+local fastSpeed = 100
+local defaultSpeed = 16
+local jumpPower = 100
+local defaultJump = 50
+local speedConn = nil
+local speedEnabled = false
+local jumpConn = nil
+local immortalConn = nil
+local immortalEnabled = false
+
+local lastCoinPos = nil
+local lastTeleportTime = 0
+
+-- Movement
+local noclipConn = nil
+local noclipEnabled = false
+
+local espConn = nil
+local espEnabled = false
+local espObjects = {}
+
+local gunESP = nil
+
+local aimConn = nil
+local aimEnabled = false
+
+local currentAnimTrack = nil
+local currentAnimObj = nil
+
+local function setSpeed(state)
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if state then
+        speedEnabled = true
+        if hum then hum.WalkSpeed = fastSpeed end
+        if speedConn then speedConn:Disconnect() end
+        speedConn = hum and hum.StateChanged:Connect(function()
+            if speedEnabled and hum.WalkSpeed ~= fastSpeed then
+                hum.WalkSpeed = fastSpeed
+            end
+        end)
+    else
+        speedEnabled = false
+        if hum then hum.WalkSpeed = defaultSpeed end
+        if speedConn then speedConn:Disconnect() speedConn = nil end
+    end
 end
+
+TabMovement:CreateToggle({
+   Name = "Скорость x6",
+   CurrentValue = false,
+   Callback = setSpeed
+})
+
+local function setJump(state)
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if state then
+        if hum then hum.JumpPower = jumpPower end
+        if jumpConn then jumpConn:Disconnect() end
+        jumpConn = hum and hum.StateChanged:Connect(function()
+            if hum.JumpPower ~= jumpPower then
+                hum.JumpPower = jumpPower
+            end
+        end)
+    else
+        if hum then hum.JumpPower = defaultJump end
+        if jumpConn then jumpConn:Disconnect() jumpConn = nil end
+    end
+end
+
+TabMovement:CreateToggle({
+   Name = "Прыжок x2",
+   CurrentValue = false,
+   Callback = setJump
+})
+
+TabMovement:CreateButton({
+   Name = "Стандартные значения",
+   Callback = function()
+      local player = game.Players.LocalPlayer
+      local char = player.Character or player.CharacterAdded:Wait()
+      local hum = char:FindFirstChildWhichIsA("Humanoid")
+      if hum then
+         hum.WalkSpeed = defaultSpeed
+         hum.JumpPower = defaultJump
+         hum.Health = 100
+      end
+      if speedConn then speedConn:Disconnect() speedConn = nil end
+      if jumpConn then jumpConn:Disconnect() jumpConn = nil end
+      if immortalConn then immortalConn:Disconnect() immortalConn = nil end
+      speedEnabled = false
+      immortalEnabled = false
+   end
+})
+
+-- GodMode
+local function setImmortal(state)
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hum = char:FindFirstChildWhichIsA("Humanoid")
+    if state then
+        immortalEnabled = true
+        if hum then hum.Health = math.huge end
+        if immortalConn then immortalConn:Disconnect() end
+        immortalConn = hum and hum.HealthChanged:Connect(function()
+            if immortalEnabled and hum.Health < math.huge then
+                hum.Health = math.huge
+            end
+        end)
+    else
+        immortalEnabled = false
+        if hum then hum.Health = 100 end
+        if immortalConn then immortalConn:Disconnect() immortalConn = nil end
+    end
+end
+
+TabMovement:CreateToggle({
+   Name = "Бессмертие",
+   CurrentValue = false,
+   Callback = function(state)
+      setImmortal(state)
+   end
+})
+
+-- Teleport
+local players = {}
+for _, plr in ipairs(game.Players:GetPlayers()) do
+    if plr ~= game.Players.LocalPlayer then
+        table.insert(players, plr.Name)
+    end
+end
+
+local selectedPlayer = players[1] or ""
+local dropdown = TabMovement:CreateDropdown({
+   Name = "Игроки на сервере",
+   Options = players,
+   CurrentOption = selectedPlayer,
+   Callback = function(value)
+      selectedPlayer = value
+   end
+})
+
+TabMovement:CreateButton({
+   Name = "Телепорт к игроку",
+   Callback = function()
+      local target = game.Players:FindFirstChild(selectedPlayer)
+      local localChar = game.Players.LocalPlayer.Character
+      local targetChar = target and target.Character
+      if localChar and targetChar and targetChar:FindFirstChild("HumanoidRootPart") and localChar:FindFirstChild("HumanoidRootPart") then
+         localChar.HumanoidRootPart.CFrame = targetChar.HumanoidRootPart.CFrame + Vector3.new(2,0,0)
+      end
+   end
+})
+
+-- MM2: Автофарм монет
+local coinFarmConn = nil
+local coinFarmEnabled = false
+
+local function findClosestCoin()
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+    
+    local rootPart = char.HumanoidRootPart
+    local playerPos = rootPart.Position
+    
+    local closestCoin = nil
+    local closestDistance = math.huge
+    
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        local name = obj.Name:lower()
+        if (name:find("coin") or name:find("money") or name:find("cash") or 
+            name:find("gold") or name:find("gem") or name:find("dollar")) and
+           obj:IsA("BasePart") and obj.Parent and obj.Parent.Name ~= "Character" then
+            
+            local distance = (obj.Position - playerPos).Magnitude
+            if distance < closestDistance then
+                closestDistance = distance
+                closestCoin = obj
+            end
+        end
+    end
+    
+    return closestCoin
+end
+
+local function startCoinFarm()
+    if coinFarmConn then coinFarmConn:Disconnect() coinFarmConn = nil end
+    coinFarmConn = game:GetService("RunService").Heartbeat:Connect(function()
+        if not coinFarmEnabled then return end
+        
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        
+        local rootPart = char.HumanoidRootPart
+        local closestCoin = findClosestCoin()
+        
+        if tick() - lastTeleportTime < 0.15 then return end
+        
+        if closestCoin and closestCoin.Parent then
+            local coinPos = closestCoin.Position
+            if not lastCoinPos or (coinPos - lastCoinPos).Magnitude > 2 then
+                rootPart.CFrame = CFrame.new(coinPos + Vector3.new(0, 1, 0))
+                lastCoinPos = coinPos
+                lastTeleportTime = tick()
+            end
+        end
+    end)
+end
+
+TabMovement:CreateToggle({
+   Name = "Автофарм монет",
+   CurrentValue = false,
+   Callback = function(state)
+      coinFarmEnabled = state
+      if state then
+         startCoinFarm()
+      else
+         if coinFarmConn then
+            coinFarmConn:Disconnect()
+            coinFarmConn = nil
+         end
+      end
+   end
+})
+
+local function setNoclip(state)
+    noclipEnabled = state
+    if noclipConn then noclipConn:Disconnect() noclipConn = nil end
+    if state then
+        noclipConn = game:GetService("RunService").Stepped:Connect(function()
+            local char = game.Players.LocalPlayer.Character
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+end
+
+TabMovement:CreateToggle({
+   Name = "Noclip",
+   CurrentValue = false,
+   Callback = setNoclip
+})
+
+local function clearESP()
+    for plr, obj in pairs(espObjects) do
+        if obj and obj.Parent then
+            obj:Destroy()
+        end
+    end
+    espObjects = {}
+end
+
+local function getRole(plr)
+    local function hasTool(name)
+        for _, tool in ipairs((plr.Backpack and plr.Backpack:GetChildren()) or {}) do
+            if tool.Name:lower():find(name) then return true end
+        end
+        for _, tool in ipairs((plr.Character and plr.Character:GetChildren()) or {}) do
+            if tool:IsA("Tool") and tool.Name:lower():find(name) then return true end
+        end
+        return false
+    end
+    if hasTool("knife") then return "murder" end
+    if hasTool("gun") or hasTool("revolver") then return "sheriff" end
+    return "innocent"
+end
+
+local function getColorByRole(role)
+    if role == "murder" then return Color3.fromRGB(255,0,0) end
+    if role == "sheriff" then return Color3.fromRGB(0,150,255) end
+    return Color3.fromRGB(0,255,0)
+end
+
+local function createESP(plr, color)
+    if not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
+    local root = plr.Character.HumanoidRootPart
+    local box = Instance.new("BoxHandleAdornment")
+    box.Adornee = root
+    box.AlwaysOnTop = true
+    box.ZIndex = 10
+    box.Size = root.Size + Vector3.new(0.5,0.5,0.5)
+    box.Color3 = color
+    box.Transparency = 0.5
+    box.Parent = root
+    espObjects[plr] = box
+end
+
+local function updateESP()
+    clearESP()
+    for _, plr in ipairs(game.Players:GetPlayers()) do
+        if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local role = getRole(plr)
+            local color = getColorByRole(role)
+            createESP(plr, color)
+        end
+    end
+    if gunESP and gunESP.Parent then gunESP:Destroy() gunESP = nil end
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        local name = obj.Name:lower()
+        if (name:find("gun") or name:find("revolver")) and obj:IsA("BasePart") then
+            local parent = obj.Parent
+            if not isPlayerCharacter(parent) then
+                gunESP = Instance.new("BoxHandleAdornment")
+                gunESP.Adornee = obj
+                gunESP.AlwaysOnTop = true
+                gunESP.ZIndex = 10
+                gunESP.Size = obj.Size + Vector3.new(0.5,0.5,0.5)
+                gunESP.Color3 = Color3.fromRGB(255, 140, 0)
+                gunESP.Transparency = 0.3
+                gunESP.Parent = obj
+                break
+            end
+        end
+    end
+end
+
+local function setESP(state)
+    espEnabled = state
+    if espConn then espConn:Disconnect() espConn = nil end
+    clearESP()
+    if state then
+        espConn = game:GetService("RunService").Heartbeat:Connect(function()
+            updateESP()
+        end)
+    end
+end
+
+TabMovement:CreateToggle({
+   Name = "ESP (MM2)",
+   CurrentValue = false,
+   Callback = setESP
+})
+
+local function getClosestTarget()
+    local lp = game.Players.LocalPlayer
+    local myChar = lp.Character
+    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return nil end
+
+    local closest, minDist = nil, math.huge
+    for _, plr in ipairs(game.Players:GetPlayers()) do
+        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (myRoot.Position - plr.Character.HumanoidRootPart.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = plr
+            end
+        end
+    end
+    return closest
+end
+
+local function hasGun()
+    local lp = game.Players.LocalPlayer
+    for _, tool in ipairs((lp.Backpack and lp.Backpack:GetChildren()) or {}) do
+        if tool.Name:lower():find("gun") or tool.Name:lower():find("revolver") then return true end
+    end
+    for _, tool in ipairs((lp.Character and lp.Character:GetChildren()) or {}) do
+        if tool:IsA("Tool") and (tool.Name:lower():find("gun") or tool.Name:lower():find("revolver")) then return true end
+    end
+    return false
+end
+
+local function setAim(state)
+    aimEnabled = state
+    if aimConn then aimConn:Disconnect() aimConn = nil end
+    if state then
+        aimConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local target = getClosestTarget()
+            if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                local cam = workspace.CurrentCamera
+                cam.CFrame = CFrame.new(cam.CFrame.Position, target.Character.HumanoidRootPart.Position)
+                -- Для отладки:
+                print("Aimbot: навёлся на ", target.Name)
+            else
+                -- Для отладки:
+                print("Aimbot: нет цели")
+            end
+        end)
+    end
+end
+
+TabMovement:CreateToggle({
+   Name = "Aimbot (MM2)",
+   CurrentValue = false,
+   Callback = setAim
+})
+
+TabMovement:CreateToggle({
+   Name = "Auto Gun (MM2)",
+   CurrentValue = false,
+   Callback = function(state)
+      setAutoGun(state)
+   end
+})
+
+-- Fly
+local flyConn = nil
+local flyEnabled = false
+local flySpeed = 100
+
+local function setFly(state)
+    flyEnabled = state
+    if flyConn then flyConn:Disconnect() flyConn = nil end
+    if state then
+        flyConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local char = game.Players.LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local move = Vector3.new()
+                local UIS = game:GetService("UserInputService")
+                if UIS:IsKeyDown(Enum.KeyCode.W) then move = move + workspace.CurrentCamera.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.S) then move = move - workspace.CurrentCamera.CFrame.LookVector end
+                if UIS:IsKeyDown(Enum.KeyCode.A) then move = move - workspace.CurrentCamera.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.D) then move = move + workspace.CurrentCamera.CFrame.RightVector end
+                if UIS:IsKeyDown(Enum.KeyCode.Space) then move = move + workspace.CurrentCamera.CFrame.UpVector end
+                if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then move = move - workspace.CurrentCamera.CFrame.UpVector end
+                if move.Magnitude > 0 then
+                    hrp.Velocity = move.Unit * flySpeed
+                else
+                    hrp.Velocity = Vector3.new(0,0,0)
+                end
+            end
+        end)
+    else
+        local char = game.Players.LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then hrp.Velocity = Vector3.new(0,0,0) end
+    end
+end
+
+TabMovement:CreateToggle({
+   Name = "Fly",
+   CurrentValue = false,
+   Callback = setFly
+})
+
+TabMovement:CreateButton({
+   Name = "Anti-Ragdoll",
+   Callback = function()
+      local char = game.Players.LocalPlayer.Character
+      if char then
+         for _, v in ipairs(char:GetDescendants()) do
+            if v:IsA("BallSocketConstraint") or v:IsA("HingeConstraint") then
+               v:Destroy()
+            end
+         end
+      end
+   end
+})
+
+TabMovement:CreateButton({
+   Name = "Fullbright",
+   Callback = function()
+      if game.Lighting then
+         game.Lighting.Brightness = 5
+         game.Lighting.ClockTime = 12
+         game.Lighting.FogEnd = 1e10
+         game.Lighting.GlobalShadows = false
+         game.Lighting.OutdoorAmbient = Color3.new(1,1,1)
+      end
+   end
+})
+
+TabMovement:CreateButton({
+   Name = "Remove Fog",
+   Callback = function()
+      if game.Lighting then
+         game.Lighting.FogEnd = 1e10
+      end
+   end
+})
+
+-- Blox Fruits: Авто-сбор фруктов (пример)
+TabMovement:CreateButton({
+   Name = "Авто-сбор фруктов",
+   Callback = function()
+      local char = game.Players.LocalPlayer.Character
+      if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+      local closestFruit = nil
+      local minDist = math.huge
+      for _, obj in ipairs(workspace:GetDescendants()) do
+         if obj.Name:lower():find("fruit") and obj:IsA("BasePart") then
+            local dist = (char.HumanoidRootPart.Position - obj.Position).Magnitude
+            if dist < minDist then
+               minDist = dist
+               closestFruit = obj
+            end
+         end
+      end
+      if closestFruit then
+         char.HumanoidRootPart.CFrame = CFrame.new(closestFruit.Position + Vector3.new(0,2,0))
+      end
+   end
+})
+
+-- Jailbreak Tab
+local TabJB = Window:CreateTab("Jailbreak", 0)
+TabJB:CreateSection("Robbery")
+
+TabJB:CreateButton({
+    Name = "Авто-ограбление банка",
+    Callback = function()
+        local bank = workspace:FindFirstChild("Bank")
+        local char = game.Players.LocalPlayer.Character
+        if bank and char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = bank.CFrame + Vector3.new(0,5,0)
+            -- Здесь можно добавить взаимодействие с дверями и т.д.
+        end
+    end
+})
+
+-- Steal a Brainrot Tab
+local TabBrainrot = Window:CreateTab("Steal a Brainrot", 0)
+TabBrainrot:CreateSection("Brainrot")
+
+local stealBrainrotConn = nil
+local function findClosestBrainrot()
+    local char = game.Players.LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+    local root = char.HumanoidRootPart
+    local closest, minDist = nil, math.huge
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj.Name:lower():find("brainrot") and obj:IsA("BasePart") then
+            local dist = (root.Position - obj.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = obj
+            end
+        end
+    end
+    return closest
+end
+local function setStealBrainrot(state)
+    if stealBrainrotConn then stealBrainrotConn:Disconnect() stealBrainrotConn = nil end
+    if state then
+        stealBrainrotConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local char = game.Players.LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            local brainrot = findClosestBrainrot()
+            if brainrot and brainrot.Parent then
+                root.CFrame = CFrame.new(brainrot.Position + Vector3.new(0,2,0))
+            end
+        end)
+    end
+end
+TabBrainrot:CreateToggle({
+    Name = "Автокража Brainrot",
+    CurrentValue = false,
+    Callback = setStealBrainrot
+})
+
+TabBrainrot:CreateSection("Base")
+local bringBaseConn = nil
+local function findBase()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj.Name:lower():find("base") and obj:IsA("BasePart") then
+            return obj
+        end
+    end
+    return nil
+end
+local function hasBrainrotTool()
+    local char = game.Players.LocalPlayer.Character
+    for _, tool in ipairs(char and char:GetChildren() or {}) do
+        if tool:IsA("Tool") and tool.Name:lower():find("brainrot") then
+            return tool
+        end
+    end
+    return nil
+end
+local function setBringBase(state)
+    if bringBaseConn then bringBaseConn:Disconnect() bringBaseConn = nil end
+    if state then
+        bringBaseConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local char = game.Players.LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            local tool = hasBrainrotTool()
+            local base = findBase()
+            if root and tool and base then
+                root.CFrame = CFrame.new(base.Position + Vector3.new(0,2,0))
+            end
+        end)
+    end
+end
+TabBrainrot:CreateToggle({
+    Name = "Автоприношение на базу",
+    CurrentValue = false,
+    Callback = setBringBase
+})
+
+TabBrainrot:CreateButton({
+    Name = "Закрыть базу",
+    Callback = function()
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj.Name:lower():find("door") and obj:IsA("BasePart") then
+                obj.CanCollide = true
+                obj.Transparency = 0
+            end
+        end
+    end
+})
+
+TabBrainrot:CreateSection("Coins")
+local coinBrainrotConn = nil
+local function findClosestCoinBrainrot()
+    local char = game.Players.LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+    local root = char.HumanoidRootPart
+    local closest, minDist = nil, math.huge
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj.Name:lower():find("coin") and obj:IsA("BasePart") then
+            local dist = (root.Position - obj.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = obj
+            end
+        end
+    end
+    return closest
+end
+local function setCoinBrainrot(state)
+    if coinBrainrotConn then coinBrainrotConn:Disconnect() coinBrainrotConn = nil end
+    if state then
+        coinBrainrotConn = game:GetService("RunService").RenderStepped:Connect(function()
+            local char = game.Players.LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            local coin = findClosestCoinBrainrot()
+            if coin and coin.Parent then
+                root.CFrame = CFrame.new(coin.Position + Vector3.new(0,2,0))
+            end
+        end)
+    end
+end
+TabBrainrot:CreateToggle({
+    Name = "Автосбор монет",
+    CurrentValue = false,
+    Callback = setCoinBrainrot
+})
+
+-- Pet Simulator X Tab
+local TabPSX = Window:CreateTab("Pet Simulator X", 0)
+TabPSX:CreateSection("Фарм")
+
+TabPSX:CreateToggle({
+    Name = "Авто-фарм монет",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.psxFarm = true
+            spawn(function()
+                while _G.psxFarm do
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj.Name:lower():find("coin") and obj:IsA("BasePart") then
+                            local char = game.Players.LocalPlayer.Character
+                            if char and char:FindFirstChild("HumanoidRootPart") then
+                                char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0,2,0)
+                                wait(0.2)
+                            end
+                        end
+                    end
+                    wait(1)
+                end
+            end)
+        else
+            _G.psxFarm = false
+        end
+    end
+})
+
+TabPSX:CreateSection("Яйца")
+TabPSX:CreateButton({
+    Name = "Авто-открытие яиц",
+    Callback = function()
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj.Name:lower():find("egg") and obj:IsA("BasePart") then
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0,2,0)
+                    wait(0.2)
+                end
+            end
+        end
+    end
+})
+
+TabPSX:CreateSection("Телепорт")
+TabPSX:CreateButton({
+    Name = "Телепорт в город",
+    Callback = function()
+        local zone = workspace:FindFirstChild("Spawn") or workspace:FindFirstChild("City")
+        local char = game.Players.LocalPlayer.Character
+        if zone and char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = zone.CFrame + Vector3.new(0,5,0)
+        end
+    end
+})
+
+-- Doors Tab
+local TabDoors = Window:CreateTab("Doors", 0)
+TabDoors:CreateSection("ESP")
+TabDoors:CreateToggle({
+    Name = "ESP предметов",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.doorsESP = true
+            spawn(function()
+                while _G.doorsESP do
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj.Name:lower():find("key") or obj.Name:lower():find("lever") then
+                            if not obj:FindFirstChild("SelectionBox") then
+                                local sb = Instance.new("SelectionBox", obj)
+                                sb.Adornee = obj
+                                sb.Color3 = Color3.fromRGB(255,255,0)
+                            end
+                        end
+                    end
+                    wait(1)
+                end
+            end)
+        else
+            _G.doorsESP = false
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:FindFirstChild("SelectionBox") then
+                    obj.SelectionBox:Destroy()
+                end
+            end
+        end
+    end
+})
+
+TabDoors:CreateSection("Телепорт")
+TabDoors:CreateButton({
+    Name = "Телепорт к выходу",
+    Callback = function()
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj.Name:lower():find("exit") and obj:IsA("BasePart") then
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0,2,0)
+                    break
+                end
+            end
+        end
+    end
+})
+
+-- Brookhaven Tab
+local TabBrook = Window:CreateTab("Brookhaven", 0)
+TabBrook:CreateSection("Телепорт")
+TabBrook:CreateButton({
+    Name = "Телепорт к горе",
+    Callback = function()
+        local pos = Vector3.new(1000, 300, 1000)
+        local char = game.Players.LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(pos)
+        end
+    end
+})
+
+TabBrook:CreateSection("Троллинг")
+TabBrook:CreateToggle({
+    Name = "Следовать за игроком",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.brookTroll = true
+            spawn(function()
+                while _G.brookTroll do
+                    local players = game.Players:GetPlayers()
+                    local me = game.Players.LocalPlayer
+                    local victim = players[math.random(1,#players)]
+                    if victim ~= me and victim.Character and victim.Character:FindFirstChild("HumanoidRootPart") then
+                        local char = me.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char.HumanoidRootPart.CFrame = victim.Character.HumanoidRootPart.CFrame + Vector3.new(2,0,0)
+                        end
+                    end
+                    wait(2)
+                end
+            end)
+        else
+            _G.brookTroll = false
+        end
+    end
+})
+
+-- Adopt Me Tab
+local TabAdopt = Window:CreateTab("Adopt Me", 0)
+TabAdopt:CreateSection("Фарм")
+TabAdopt:CreateToggle({
+    Name = "Авто-фарм денег",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.adoptFarm = true
+            spawn(function()
+                while _G.adoptFarm do
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj.Name:lower():find("money") and obj:IsA("BasePart") then
+                            local char = game.Players.LocalPlayer.Character
+                            if char and char:FindFirstChild("HumanoidRootPart") then
+                                char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0,2,0)
+                                wait(0.2)
+                            end
+                        end
+                    end
+                    wait(1)
+                end
+            end)
+        else
+            _G.adoptFarm = false
+        end
+    end
+})
+
+TabAdopt:CreateSection("Подарки")
+TabAdopt:CreateButton({
+    Name = "Собрать подарки",
+    Callback = function()
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj.Name:lower():find("gift") and obj:IsA("BasePart") then
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0,2,0)
+                    wait(0.2)
+                end
+            end
+        end
+    end
+})
+
+-- BedWars Tab
+local TabBW = Window:CreateTab("BedWars", 0)
+TabBW:CreateSection("ESP")
+TabBW:CreateToggle({
+    Name = "ESP врагов",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.bwESP = true
+            spawn(function()
+                while _G.bwESP do
+                    for _, plr in ipairs(game.Players:GetPlayers()) do
+                        if plr ~= game.Players.LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                            if not plr.Character.HumanoidRootPart:FindFirstChild("BWESP") then
+                                local box = Instance.new("BoxHandleAdornment")
+                                box.Name = "BWESP"
+                                box.Adornee = plr.Character.HumanoidRootPart
+                                box.AlwaysOnTop = true
+                                box.ZIndex = 10
+                                box.Size = plr.Character.HumanoidRootPart.Size + Vector3.new(0.5,0.5,0.5)
+                                box.Color3 = Color3.fromRGB(255,0,0)
+                                box.Transparency = 0.5
+                                box.Parent = plr.Character.HumanoidRootPart
+                            end
+                        end
+                    end
+                    wait(1)
+                end
+            end)
+        else
+            _G.bwESP = false
+            for _, plr in ipairs(game.Players:GetPlayers()) do
+                if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                    local box = plr.Character.HumanoidRootPart:FindFirstChild("BWESP")
+                    if box then box:Destroy() end
+                end
+            end
+        end
+    end
+})
+
+TabBW:CreateSection("Быстрые действия")
+TabBW:CreateButton({
+    Name = "Быстрый билд к кровати",
+    Callback = function()
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj.Name:lower():find("bed") and obj:IsA("BasePart") then
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = obj.CFrame + Vector3.new(0,2,0)
+                    break
+                end
+            end
+        end
+    end
+})
+
+-- AUT Tab
+local TabAUT = Window:CreateTab("AUT", 0)
+TabAUT:CreateSection("Фарм")
+TabAUT:CreateToggle({
+    Name = "Авто-фарм стрел",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.autArrowFarm = true
+            spawn(function()
+                while _G.autArrowFarm do
+                    local minDist = math.huge
+                    local closest = nil
+                    local char = game.Players.LocalPlayer.Character
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj.Name:lower():find("arrow") and obj:IsA("BasePart") then
+                            if char and char:FindFirstChild("HumanoidRootPart") then
+                                local dist = (char.HumanoidRootPart.Position - obj.Position).Magnitude
+                                if dist < minDist then
+                                    minDist = dist
+                                    closest = obj
+                                end
+                            end
+                        end
+                    end
+                    if closest and char and char:FindFirstChild("HumanoidRootPart") then
+                        char.HumanoidRootPart.CFrame = closest.CFrame + Vector3.new(0,2,0)
+                    end
+                    wait(1)
+                end
+            end)
+        else
+            _G.autArrowFarm = false
+        end
+    end
+})
+TabAUT:CreateToggle({
+    Name = "Авто-фарм масок",
+    CurrentValue = false,
+    Callback = function(state)
+        if state then
+            _G.autMaskFarm = true
+            spawn(function()
+                while _G.autMaskFarm do
+                    local minDist = math.huge
+                    local closest = nil
+                    local char = game.Players.LocalPlayer.Character
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj.Name:lower():find("mask") and obj:IsA("BasePart") then
+                            if char and char:FindFirstChild("HumanoidRootPart") then
+                                local dist = (char.HumanoidRootPart.Position - obj.Position).Magnitude
+                                if dist < minDist then
+                                    minDist = dist
+                                    closest = obj
+                                end
+                            end
+                        end
+                    end
+                    if closest and char and char:FindFirstChild("HumanoidRootPart") then
+                        char.HumanoidRootPart.CFrame = closest.CFrame + Vector3.new(0,2,0)
+                    end
+                    wait(1)
+                end
+            end)
+        else
+            _G.autMaskFarm = false
+        end
+    end
+})
+
+TabAUT:CreateSection("Другое")
+TabAUT:CreateButton({
+    Name = "Авто-использование предметов",
+    Callback = function()
+        local bp = game.Players.LocalPlayer:FindFirstChild("Backpack")
+        if bp then
+            for _, v in ipairs(bp:GetChildren()) do
+                if v:IsA("Tool") then v.Parent = game.Players.LocalPlayer.Character end
+            end
+        end
+    end
+})
+TabAUT:CreateButton({
+    Name = "Телепорт к рандомному игроку",
+    Callback = function()
+        local players = game.Players:GetPlayers()
+        local me = game.Players.LocalPlayer
+        local others = {}
+        for _, p in ipairs(players) do if p ~= me then table.insert(others, p) end end
+        if #others > 0 then
+            local victim = others[math.random(1,#others)]
+            if victim.Character and victim.Character:FindFirstChild("HumanoidRootPart") then
+                local char = me.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = victim.Character.HumanoidRootPart.CFrame + Vector3.new(2,0,0)
+                end
+            end
+        end
+    end
+})
+TabAUT:CreateButton({
+    Name = "Анти-заморозка (AUT)",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, v in ipairs(char:GetDescendants()) do
+                if v:IsA("BoolValue") and v.Name:lower():find("freeze") then v:Destroy() end
+            end
+        end
+    end
+})
+TabAUT:CreateButton({
+    Name = "Авто-использование стрелы",
+    Callback = function()
+        local bp = game.Players.LocalPlayer:FindFirstChild("Backpack")
+        if bp then
+            for _, v in ipairs(bp:GetChildren()) do
+                if v.Name:lower():find("arrow") and v:IsA("Tool") then v.Parent = game.Players.LocalPlayer.Character end
+            end
+        end
+    end
+})
+
+-- Universal Tab
+local TabHZ = Window:CreateTab("Universal", 0)
+TabHZ:CreateSection("Быстрые действия")
+TabHZ:CreateButton({
+    Name = "Быстрый респаун",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        if player.Character then
+            player.Character:BreakJoints()
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-замедление",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, v in ipairs(char:GetDescendants()) do
+                if v:IsA("BoolValue") and v.Name:lower():find("slow") then v:Destroy() end
+                if v:IsA("NumberValue") and v.Name:lower():find("slow") then v:Destroy() end
+            end
+            local hum = char:FindFirstChildWhichIsA("Humanoid")
+            if hum then hum.WalkSpeed = 16 end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-ловушки",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, v in ipairs(char:GetDescendants()) do
+                if v:IsA("BoolValue") and v.Name:lower():find("trap") then v:Destroy() end
+                if v:IsA("BoolValue") and v.Name:lower():find("stun") then v:Destroy() end
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Удалить эффекты",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, v in ipairs(char:GetDescendants()) do
+                if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+                    v:Destroy()
+                end
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Быстрый выход",
+    Callback = function()
+        game:Shutdown()
+    end
+})
+TabHZ:CreateButton({
+    Name = "Очистить инвентарь",
+    Callback = function()
+        local bp = game.Players.LocalPlayer:FindFirstChild("Backpack")
+        if bp then
+            for _, v in ipairs(bp:GetChildren()) do
+                v:Destroy()
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Восстановить здоровье",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        local hum = char and char:FindFirstChildWhichIsA("Humanoid")
+        if hum then hum.Health = hum.MaxHealth end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Телепорт на рандомную позицию",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(math.random(-500,500), 50, math.random(-500,500))
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-слепота",
+    Callback = function()
+        for _, v in ipairs(game.Lighting:GetChildren()) do
+            if v:IsA("BlurEffect") then v:Destroy() end
+            if v.Name:lower():find("blackout") then v:Destroy() end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-невидимость",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, v in ipairs(char:GetDescendants()) do
+                if v:IsA("BasePart") and v.Transparency > 0 then v.Transparency = 0 end
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Восстановить энергию",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        for _, v in ipairs(char:GetDescendants()) do
+            if v.Name:lower():find("stamina") or v.Name:lower():find("energy") then
+                if v:IsA("NumberValue") then v.Value = 100 end
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Удалить дебаффы",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then
+            for _, v in ipairs(char:GetDescendants()) do
+                if v.Name:lower():find("debuff") or v.Name:lower():find("curse") then v:Destroy() end
+            end
+        end
+    end
+})
+TabHZ:CreateInput({
+    Name = "Телепорт к игроку",
+    PlaceholderText = "Введи ник для телепорта",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(nick)
+        local plr = game.Players:FindFirstChild(nick)
+        local char = game.Players.LocalPlayer.Character
+        if plr and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(2,0,0)
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Очистить чат",
+    Callback = function()
+        for _, v in ipairs(game.CoreGui:GetDescendants()) do
+            if v:IsA("TextLabel") and v.Text and #v.Text > 0 then
+                v.Text = ""
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-камера shake",
+    Callback = function()
+        workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-камера zoom",
+    Callback = function()
+        workspace.CurrentCamera.FieldOfView = 70
+    end
+})
+TabHZ:CreateButton({
+    Name = "Быстрый ребёрн",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        if player:FindFirstChild("leaderstats") then
+            for _, v in ipairs(player.leaderstats:GetChildren()) do
+                if v.Name:lower():find("rebirth") or v.Name:lower():find("ребёрн") then
+                    v.Value = v.Value + 1
+                end
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Восстановить броню",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        for _, v in ipairs(char:GetDescendants()) do
+            if v.Name:lower():find("armor") or v.Name:lower():find("броня") then
+                if v:IsA("NumberValue") then v.Value = 100 end
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Удалить питомцев",
+    Callback = function()
+        local bp = game.Players.LocalPlayer:FindFirstChild("Backpack")
+        if bp then
+            for _, v in ipairs(bp:GetChildren()) do
+                if v.Name:lower():find("pet") or v.Name:lower():find("питомец") then v:Destroy() end
+            end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-отдача",
+    Callback = function()
+        if workspace.CurrentCamera:FindFirstChild("Recoil") then
+            workspace.CurrentCamera.Recoil:Destroy()
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-камера blur",
+    Callback = function()
+        for _, v in ipairs(game.Lighting:GetChildren()) do
+            if v:IsA("BlurEffect") then v:Destroy() end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-камера blackout",
+    Callback = function()
+        for _, v in ipairs(game.Lighting:GetChildren()) do
+            if v.Name:lower():find("blackout") then v:Destroy() end
+        end
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-камера spin",
+    Callback = function()
+        workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position)
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-камера invert",
+    Callback = function()
+        workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position)
+    end
+})
+TabHZ:CreateButton({
+    Name = "Анти-камера upside-down",
+    Callback = function()
+        workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position)
+    end
+})
