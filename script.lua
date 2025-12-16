@@ -1,110 +1,331 @@
--- UI
-local ui = Instance.new("ScreenGui", game.CoreGui)
-local btn = Instance.new("TextButton", ui)
-
-btn.Size = UDim2.new(0, 140, 0, 40)
-btn.Position = UDim2.new(0, 20, 0, 100)
-btn.Text = "FlyFarm: OFF"
-btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
-btn.TextColor3 = Color3.fromRGB(255,255,255)
-btn.TextSize = 18
-btn.Draggable = true
-btn.Active = true
-
--- Toggle
-getgenv().FlyFarm = false
-
-------------------------------------------------
--- Services & Player
-------------------------------------------------
-local Players = game:GetService("Players")
+-- Auto Coin Collector - حركة ثابتة وسلسة
+local Player = game.Players.LocalPlayer
 local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
-------------------------------------------------
--- إعدادات
-------------------------------------------------
-local SPEED = 0.25        -- سرعة الطيران (0.15 – 0.4)
-local FLY_HEIGHT = 6      -- ارتفاع ثابت (ما يطيح)
+-- انتظار تحميل الشخصية
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local RootPart = Character:WaitForChild("HumanoidRootPart")
 
-------------------------------------------------
--- Noclip + Fly ثابت
-------------------------------------------------
-local function enableFly(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    local root = character:WaitForChild("HumanoidRootPart")
+-- إعدادات الحركة الثابتة
+local settings = {
+    Enabled = false,
+    FlySpeed = 35, -- سرعة ثابتة معتدلة
+    FlyHeight = 3, -- ارتفاع ثابت عن الأرض
+    Smoothness = 0.2, -- عامل السلاسة (0.1 - 0.3)
+    CollectionRange = 30,
+    CheckDelay = 0.2,
+    AutoAdjustHeight = true
+}
 
-    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-    humanoid.PlatformStand = true
+-- متغيرات الحركة
+local currentVelocity = Vector3.new(0, 0, 0)
+local targetVelocity = Vector3.new(0, 0, 0)
+local isMoving = false
+local flyEnabled = false
+local lastCoin = nil
 
-    -- اختراق كل شيء
-    for _,v in ipairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.CanCollide = false
-        end
-    end
-
-    return root
+-- واجهة تحكم نظيفة
+local function createUI()
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "CoinCollectorUI"
+    ScreenGui.Parent = Player:WaitForChild("PlayerGui")
+    
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 250, 0, 60)
+    MainFrame.Position = UDim2.new(0.5, -125, 0, 10)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    MainFrame.BackgroundTransparency = 0.2
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.Parent = MainFrame
+    
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0.9, 0, 0.6, 0)
+    ToggleButton.Position = UDim2.new(0.05, 0, 0.2, 0)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+    ToggleButton.TextColor3 = Color3.white
+    ToggleButton.Text = "⏹ إيقاف المجمع"
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 14
+    ToggleButton.Parent = MainFrame
+    
+    local UICorner2 = Instance.new("UICorner")
+    UICorner2.CornerRadius = UDim.new(0, 6)
+    UICorner2.Parent = ToggleButton
+    
+    return ToggleButton
 end
 
-------------------------------------------------
--- أقرب عملة
-------------------------------------------------
-local function getClosestCoin(root)
-    local closest, dist = nil, math.huge
-    for _,v in ipairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and v.Name:lower():find("coin") and v.Parent then
-            local d = (v.Position - root.Position).Magnitude
-            if d < dist then
-                dist = d
-                closest = v
+-- تهيئة الواجهة
+local ToggleButton = createUI()
+
+-- نظام الطيران الثابت
+local function setupFlight()
+    if not RootPart then return end
+    
+    -- تعطيل الجاذبية والاحتكاك
+    RootPart.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+    
+    -- إزالة القوى السابقة
+    for _, v in pairs(RootPart:GetChildren()) do
+        if v:IsA("BodyForce") or v:IsA("BodyVelocity") or v:IsA("BodyGyro") then
+            v:Destroy()
+        end
+    end
+    
+    -- إضافة قوة الطيران
+    local BodyForce = Instance.new("BodyForce")
+    BodyForce.Force = Vector3.new(0, workspace.Gravity * RootPart:GetMass(), 0)
+    BodyForce.Parent = RootPart
+    
+    -- NoClip بسيط
+    for _, part in pairs(Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+    
+    flyEnabled = true
+    return BodyForce
+end
+
+-- إيقاف الطيران
+local function stopFlight()
+    if RootPart then
+        RootPart.CustomPhysicalProperties = nil
+        RootPart.Velocity = Vector3.new(0, 0, 0)
+        
+        for _, v in pairs(RootPart:GetChildren()) do
+            if v:IsA("BodyForce") or v:IsA("BodyVelocity") or v:IsA("BodyGyro") then
+                v:Destroy()
+            end
+        end
+        
+        -- إعادة الكوليجن
+        for _, part in pairs(Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
             end
         end
     end
-    return closest
+    
+    flyEnabled = false
+    isMoving = false
+    currentVelocity = Vector3.new(0, 0, 0)
+    targetVelocity = Vector3.new(0, 0, 0)
 end
 
-------------------------------------------------
--- Fly Farm (سلس + يخترق + ما يوقف)
-------------------------------------------------
-local function startFlyFarm()
-    local char = lp.Character or lp.CharacterAdded:Wait()
-    local root = enableFly(char)
+-- البحث عن أقرب عملة بشكل دقيق
+local function findNearestCoin()
+    local nearestCoin = nil
+    local shortestDistance = settings.CollectionRange
+    
+    -- البحث في الأماكن المحتملة للعملات
+    local potentialFolders = {
+        workspace:FindFirstChild("Coins"),
+        workspace:FindFirstChild("Money"),
+        workspace:FindFirstChild("Collectables"),
+        workspace
+    }
+    
+    for _, folder in pairs(potentialFolders) do
+        if folder then
+            for _, item in pairs(folder:GetChildren()) do
+                -- البحث عن أي شيء يشبه عملة
+                if item:IsA("BasePart") and (item.Name:find("Coin") or 
+                   item.Name:find("Money") or 
+                   item.Name:find("Dollar") or
+                   item.Name:find("Gem") or
+                   item:FindFirstChild("TouchInterest")) then
+                    
+                    local distance = (RootPart.Position - item.Position).Magnitude
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        nearestCoin = item
+                    end
+                end
+            end
+        end
+    end
+    
+    return nearestCoin, shortestDistance
+end
 
-    RunService.RenderStepped:Connect(function()
-        if not getgenv().FlyFarm then return end
+-- حساب المسار السلس
+local function calculateSmoothMovement(targetPosition)
+    if not RootPart then return Vector3.new(0, 0, 0) end
+    
+    local currentPos = RootPart.Position
+    local direction = (targetPosition - currentPos).Unit
+    local distance = (targetPosition - currentPos).Magnitude
+    
+    -- سرعة ثابتة مع تعديل للاقتراب النهائي
+    local speed = settings.FlySpeed
+    if distance < 10 then
+        speed = speed * (distance / 10) * 0.8
+    end
+    
+    -- إضافة ارتفاع ثابت
+    local verticalOffset = 0
+    if settings.AutoAdjustHeight and distance > 5 then
+        verticalOffset = settings.FlyHeight
+    end
+    
+    -- اتجاه الحركة النهائي
+    local moveVector = (direction * speed) + Vector3.new(0, verticalOffset, 0)
+    
+    return moveVector
+end
 
-        local coin = getClosestCoin(root)
-        if coin then
-            local targetPos = Vector3.new(
-                coin.Position.X,
-                coin.Position.Y + FLY_HEIGHT,
-                coin.Position.Z
-            )
+-- الحركة السلسة باستخدام Lerp
+local function smoothMove()
+    if not RootPart or not isMoving then return end
+    
+    -- تطبيق السلاسة
+    currentVelocity = currentVelocity:Lerp(targetVelocity, settings.Smoothness)
+    
+    -- تطبيق الحركة
+    if currentVelocity.Magnitude > 0.1 then
+        RootPart.Velocity = currentVelocity
+    else
+        RootPart.Velocity = Vector3.new(0, 0, 0)
+    end
+end
 
-            root.CFrame = root.CFrame:Lerp(
-                CFrame.new(targetPos),
-                SPEED
-            )
+-- دورة الجمع الرئيسية
+local function collectionLoop()
+    while settings.Enabled do
+        task.wait(settings.CheckDelay)
+        
+        if not Character or not RootPart or not flyEnabled then
+            break
+        end
+        
+        -- البحث عن عملة
+        local coin, distance = findNearestCoin()
+        
+        if coin and distance < settings.CollectionRange then
+            isMoving = true
+            
+            -- تجنب تكرار نفس العملة
+            if lastCoin ~= coin then
+                lastCoin = coin
+                
+                -- حساب السرعة المستهدفة
+                targetVelocity = calculateSmoothMovement(coin.Position)
+                
+                -- جمع العملة عند الاقتراب
+                if distance < 5 then
+                    -- طريقة الجمع (تختلف حسب اللعبة)
+                    firetouchinterest(RootPart, coin, 0)
+                    task.wait(0.05)
+                    firetouchinterest(RootPart, coin, 1)
+                    
+                    -- توقف مؤقت بعد الجمع
+                    targetVelocity = Vector3.new(0, 0, 0)
+                    task.wait(0.1)
+                end
+            end
+        else
+            -- لا توجد عملة في المدى
+            isMoving = false
+            targetVelocity = Vector3.new(0, 0, 0)
+            lastCoin = nil
+        end
+    end
+end
+
+-- تحديث الحركة في كل إطار
+local movementConnection
+local function startMovementUpdate()
+    if movementConnection then
+        movementConnection:Disconnect()
+    end
+    
+    movementConnection = RunService.Heartbeat:Connect(function(deltaTime)
+        if settings.Enabled and flyEnabled then
+            smoothMove()
         end
     end)
 end
 
-------------------------------------------------
--- زر التشغيل
-------------------------------------------------
-btn.MouseButton1Click:Connect(function()
-    getgenv().FlyFarm = not getgenv().FlyFarm
-    btn.Text = getgenv().FlyFarm and "FlyFarm: ON" or "FlyFarm: OFF"
-
-    if getgenv().FlyFarm then
-        startFlyFarm()
+-- التحكم
+ToggleButton.MouseButton1Click:Connect(function()
+    settings.Enabled = not settings.Enabled
+    
+    if settings.Enabled then
+        -- التشغيل
+        ToggleButton.Text = "▶ تشغيل المجمع"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 220, 60)
+        
+        -- تهيئة الطيران
+        setupFlight()
+        
+        -- بدء التحديثات
+        startMovementUpdate()
+        
+        -- بدء دورة الجمع
+        task.spawn(collectionLoop)
+        
+        -- إشعار
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "تفعيل المجمع",
+            Text = "تم تشغيل جمع العملات بنجاح",
+            Duration = 3
+        })
     else
-        if lp.Character and lp.Character:FindFirstChild("Humanoid") then
-            local h = lp.Character.Humanoid
-            h.PlatformStand = false
-            h:ChangeState(Enum.HumanoidStateType.GettingUp)
+        -- الإيقاف
+        ToggleButton.Text = "⏹ إيقاف المجمع"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+        
+        -- إيقاف آمن
+        stopFlight()
+        
+        if movementConnection then
+            movementConnection:Disconnect()
+        end
+        
+        -- إشعار
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "إيقاف المجمع",
+            Text = "تم إيقاف جمع العملات",
+            Duration = 3
+        })
+    end
+end)
+
+-- تنظيف عند الخروج
+game:GetService("UserInputService").WindowFocusReleased:Connect(function()
+    if settings.Enabled then
+        settings.Enabled = false
+        stopFlight()
+        
+        if ToggleButton then
+            ToggleButton.Text = "⏹ إيقاف المجمع"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
         end
     end
 end)
 
+-- إعادة التعيين عند إعادة الظهور
+Character:WaitForChild("Humanoid").Died:Connect(function()
+    if settings.Enabled then
+        settings.Enabled = false
+        stopFlight()
+        
+        if ToggleButton then
+            ToggleButton.Text = "⏹ إيقاف المجمع"
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+        end
+    end
+end)
+
+-- رسالة التحميل
+print("✅ نظام جمع العملات جاهز")
+print("📌 اضغط على الزر في أعلى الشاشة للتحكم")
