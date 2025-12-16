@@ -4,7 +4,7 @@ local btn = Instance.new("TextButton", ui)
 
 btn.Size = UDim2.new(0, 120, 0, 40)
 btn.Position = UDim2.new(0, 20, 0, 100)
-btn.Text = "Farm: OFF"
+btn.Text = "FlyFarm: OFF"
 btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
 btn.TextColor3 = Color3.fromRGB(255,255,255)
 btn.TextSize = 20
@@ -12,17 +12,18 @@ btn.Draggable = true
 btn.Active = true
 
 -- Global toggle
-getgenv().FarmCoins = false
+getgenv().FlyFarm = false
 
 ------------------------------------------------
 -- إعدادات
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local SPEED = 0.4  -- نسبة Lerp، كلما أكبر أسرع جداً
+local FLY_HEIGHT = 10      -- ارتفاع الطيران فوق الأرض
+local SPEED = 0.2          -- سرعة الطيران (0.1 - 1)
 
 ------------------------------------------------
--- إيجاد أقرب عملة
+-- أقرب عملة
 ------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -43,20 +44,20 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- التحرك السلس والفائق السرعة
+-- الطيران نحو العملات
 ------------------------------------------------
-local function farmCoins()
+local function flyFarm()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
 
-    while getgenv().FarmCoins do
+    while getgenv().FlyFarm do
         local coin = getClosestCoin()
         if coin and coin.Parent then
-            -- تحرك مباشرة نحو العملة بدون رفع الشخصية
-            local targetPos = Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z)
+            local targetPos = Vector3.new(coin.Position.X, coin.Position.Y + FLY_HEIGHT, coin.Position.Z)
+            -- حركة سلسة جدًا نحو العملة في الجو
             root.CFrame = root.CFrame:Lerp(CFrame.new(targetPos), SPEED)
         else
-            task.wait(0.01) -- تحديث سريع جداً للبحث عن العملات التالية
+            task.wait(0.01)
         end
         task.wait()
     end
@@ -66,10 +67,10 @@ end
 -- زر التشغيل
 ------------------------------------------------
 btn.MouseButton1Click:Connect(function()
-    getgenv().FarmCoins = not getgenv().FarmCoins
-    btn.Text = getgenv().FarmCoins and "Farm: ON" or "Farm: OFF"
+    getgenv().FlyFarm = not getgenv().FlyFarm
+    btn.Text = getgenv().FlyFarm and "FlyFarm: ON" or "FlyFarm: OFF"
 
-    if getgenv().FarmCoins then
-        task.spawn(farmCoins)
+    if getgenv().FlyFarm then
+        task.spawn(flyFarm)
     end
 end)
