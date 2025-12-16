@@ -20,7 +20,7 @@ getgenv().FarmCoins = false  -- حالة تشغيل/إيقاف الجمع
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 500        -- مدى البحث عن العملات
+local RANGE = 400        -- مدى البحث عن العملات
 local SPEED = 50         -- سرعة الحركة
 
 ------------------------------------------------
@@ -84,11 +84,12 @@ btn.MouseButton1Click:Connect(function()
                 if coin then
                     goToCoinSmooth(coin)
                 else
-                    task.wait(0.10)  -- لا توجد عملة، انتظر قليل قبل البحث مجدداً
+                    task.wait(0.1)  -- لا توجد عملة، انتظر قليل قبل البحث مجدداً
                 end
             end
         end)
     end
 end)
+
 
 
