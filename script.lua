@@ -11,27 +11,21 @@ btn.TextSize = 20
 btn.Draggable = true
 btn.Active = true
 
--- Global toggle
+-- Toggle
 getgenv().FarmCoins = false
-
 btn.MouseButton1Click:Connect(function()
     FarmCoins = not FarmCoins
     btn.Text = FarmCoins and "Farm: ON" or "Farm: OFF"
 end)
 
-------------------------------------------------
 -- إعدادات
-------------------------------------------------
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local lp = Players.LocalPlayer
-local RANGE = 200         -- مدى البحث
-local Y_OFFSET = 3        -- ارتفاع الطيران فوق الأرض
-local TWEEN_SPEED = 0.2   -- سرعة الانتقال (قيمة أصغر = أسرع)
+local RANGE = 200
+local SPEED = 50     -- سرعة الطيران
+local HEIGHT = 3     -- ارتفاع فوق العملة
 
-------------------------------------------------
 -- أقرب عملة
-------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
@@ -50,29 +44,21 @@ local function getClosestCoin()
     return closestCoin
 end
 
-------------------------------------------------
--- انتقال سلس
-------------------------------------------------
-local function flyToCoin(coin)
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = lp.Character.HumanoidRootPart
-    local targetCFrame = CFrame.new(coin.Position + Vector3.new(0, Y_OFFSET, 0))
-    local tween = TweenService:Create(root, TweenInfo.new(TWEEN_SPEED, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
-    tween:Play()
-    tween.Completed:Wait()
-end
-
-------------------------------------------------
--- Farm Loop
-------------------------------------------------
+-- الحركة الطيرانية
 task.spawn(function()
     while true do
-        task.wait(0.05)
-        if FarmCoins then
+        task.wait(0.03)
+        if FarmCoins and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+            local root = lp.Character.HumanoidRootPart
             local coin = getClosestCoin()
             if coin then
-                flyToCoin(coin)
+                local direction = (coin.Position + Vector3.new(0, HEIGHT, 0) - root.Position).Unit
+                root.Velocity = direction * SPEED
+            else
+                root.Velocity = Vector3.new(0,0,0)
             end
+        elseif lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+            lp.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
         end
     end
 end)
