@@ -21,7 +21,6 @@ getgenv().FarmCoins = false  -- حالة تشغيل/إيقاف الجمع
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local RANGE = 200        -- مدى البحث عن العملات
-local SPEED = 50         -- سرعة الحركة
 
 ------------------------------------------------
 -- دالة إيجاد أقرب عملة
@@ -46,26 +45,17 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- دالة الحركة خطوة بخطوة للأمام
+-- دالة الحركة باستخدام Humanoid:MoveTo()
 ------------------------------------------------
-local function goToCoinSmooth(coin)
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = lp.Character.HumanoidRootPart
+local function goToCoin(coin)
+    if not lp.Character or not lp.Character:FindFirstChild("Humanoid") then return end
+    local humanoid = lp.Character.Humanoid
 
-    -- حلقة مستمرة حتى نصل للعملة أو تختفي أو يتوقف الجمع
     while coin and coin.Parent and getgenv().FarmCoins do
-        -- تحديث موقع الهدف لكل خطوة
-        local targetPos = Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z)
-        local direction = (targetPos - root.Position)
-        local distance = direction.Magnitude
+        humanoid:MoveTo(Vector3.new(coin.Position.X, lp.Character.HumanoidRootPart.Position.Y, coin.Position.Z))
+        local reached = humanoid.MoveToFinished:Wait()  -- ينتظر حتى يصل أو يتوقف
 
-        if distance < 1 then break end -- وصلنا تقريباً للعملة
-
-        -- خطوة صغيرة باتجاه العملة
-        local step = direction.Unit * math.min(distance, SPEED * task.wait())
-        root.CFrame = root.CFrame + step
-
-        -- تحقق إذا العملة لا تزال موجودة
+        -- إذا اختفت العملة أثناء الحركة، يخرج
         if not coin or not coin.Parent then break end
     end
 end
@@ -82,7 +72,7 @@ btn.MouseButton1Click:Connect(function()
             while getgenv().FarmCoins do
                 local coin = getClosestCoin()
                 if coin then
-                    goToCoinSmooth(coin)
+                    goToCoin(coin)
                 else
                     task.wait(0.1)  -- لا توجد عملة، انتظر قليل قبل البحث مجدداً
                 end
