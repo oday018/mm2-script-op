@@ -17,45 +17,27 @@ btn.MouseButton1Click:Connect(function()
     btn.Text = FarmCoins and "Farm: ON" or "Farm: OFF"
 end)
 
--- NoClip
-local noclip = true
-game:GetService("RunService").Stepped:Connect(function()
-    if noclip and game.Players.LocalPlayer.Character then
-        for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-            if v:IsA("BasePart") and v.CanCollide then
-                v.CanCollide = false
-            end
-        end
-    end
-end)
-
--- حركة الطيران بسلسلة
+-- دالة الطيران (سلسة)
 local function flyTo(pos)
     local char = game.Players.LocalPlayer.Character
     if not char then return end
     local root = char:FindFirstChild("HumanoidRootPart")
-    local hum = char:FindFirstChild("Humanoid")
-    if not root or not hum then return end
-
-    -- اجعل الشخصية في وضعية الجلوس
-    hum.Sit = true
+    if not root then return end
 
     local bv = Instance.new("BodyVelocity")
     bv.MaxForce = Vector3.new(1e9,1e9,1e9)
     bv.Parent = root
 
-    local dir = (pos - root.Position).Unit
     local speed = 25
 
     while (pos - root.Position).Magnitude > 1 do
         if not getgenv().FarmCoins then break end
-        dir = (pos - root.Position).Unit
+        local dir = (pos - root.Position).Unit
         bv.Velocity = dir * speed
         task.wait(0.03)
     end
 
     bv:Destroy()
-    hum.Sit = false -- ارجع الشخصية لوضعية طبيعية بعد الوصول
 end
 
 -- Loop جمع العملات
