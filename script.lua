@@ -1,1101 +1,697 @@
--- WindUI
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
--- Locals
-local Players = game:GetService("Players")
+print("Loaded all settings    [1/6]")
+if game.PlaceId ~= 142823291 then game:GetService("TeleportService"):Teleport(142823291) end
+if typeof(getgenv().mm2) == "Instance" then getgenv().mm2:Destroy() end
+local ss = getgenv().Settings
+local players = game:GetService("Players")
+local player = players.LocalPlayer
+local camera = workspace.CurrentCamera
+local mouse = player:GetMouse()
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local CurrentCamera = Workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
+print("Loaded all variables   [2/6]")
+local MM2 = Instance.new("ScreenGui")
+local Topbar = Instance.new("Frame")
+local Main = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local Murderer = Instance.new("TextButton")
+local UICorner_2 = Instance.new("UICorner")
+local Sheriff = Instance.new("TextButton")
+local UICorner_3 = Instance.new("UICorner")
+local MurdererText = Instance.new("TextLabel")
+local SheriffText = Instance.new("TextLabel")
+local GunDropText = Instance.new("TextLabel")
+local GunDrop = Instance.new("TextButton")
+local UICorner_4 = Instance.new("UICorner")
+local UICorner_5 = Instance.new("UICorner")
+local Title = Instance.new("TextLabel")
+local Credit = Instance.new("TextLabel")
+local Spectating = Instance.new("TextLabel")
+print("Loaded all instances   [3/6]")
+if game.PlaceId ~= 142823291 then MM2:Destroy() end
 
-local CoreGui = game:GetService("CoreGui")
+MM2.Name = "MM2"
+MM2.Parent = game:GetService("CoreGui")
+getgenv().mm2 = MM2
 
-function gradient(text, startColor, endColor)
-    local result = ""
-    local length = #text
+Topbar.Name = "Topbar"
+Topbar.Parent = MM2
+Topbar.AnchorPoint = Vector2.new(0.5,0.5)
+Topbar.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+Topbar.Position = UDim2.new(0.5, 0, 0.375, 0)
+Topbar.Size = UDim2.new(0, 170, 0, 30)
+Topbar.ZIndex = 11
 
-    for i = 1, length do
-        local t = (i - 1) / math.max(length - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
+Main.Name = "Main"
+Main.Parent = Topbar
+Main.AnchorPoint = Vector2.new(0.5,0)
+Main.ClipsDescendants = true
+Main.BackgroundColor3 = Color3.fromRGB(24, 24, 24)
+Main.Position = UDim2.new(0.5, 0, 0, 0)
+Main.Size = UDim2.new(0, 170, 0, 209)
+Main.ZIndex = 10
 
-        local char = text:sub(i, i)
-        result = result .. "<font color=\"rgb(" .. r ..", " .. g .. ", " .. b .. ")\">" .. char .. "</font>"
-    end
+UICorner.Name = "UICorner"
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = Main
 
-    return result
+Murderer.Name = "Murderer"
+Murderer.Parent = Main
+Murderer.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+Murderer.Position = UDim2.new(0.0602940023, 0, 0.142000005, 25)
+Murderer.Size = UDim2.new(0, 150, 0, 30)
+Murderer.ZIndex = 11
+Murderer.Font = Enum.Font.GothamBold
+Murderer.Text = "None"
+Murderer.TextColor3 = Color3.fromRGB(255, 100, 100)
+Murderer.TextSize = 16.000
+Murderer.AutoButtonColor = false
+
+UICorner_2.Name = "UICorner"
+UICorner_2.CornerRadius = UDim.new(0, 6)
+UICorner_2.Parent = Murderer
+
+Sheriff.Name = "Sheriff"
+Sheriff.Parent = Main
+Sheriff.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+Sheriff.Position = UDim2.new(0.0602940321, 0, 0.400999993, 25)
+Sheriff.Size = UDim2.new(0, 150, 0, 30)
+Sheriff.ZIndex = 11
+Sheriff.Font = Enum.Font.GothamBold
+Sheriff.Text = "None"
+Sheriff.TextColor3 = Color3.fromRGB(100, 100, 255)
+Sheriff.TextSize = 16.000
+Sheriff.AutoButtonColor = false
+
+UICorner_3.Name = "UICorner"
+UICorner_3.CornerRadius = UDim.new(0, 6)
+UICorner_3.Parent = Sheriff
+
+MurdererText.Name = "MurdererText"
+MurdererText.Parent = Main
+MurdererText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+MurdererText.BackgroundTransparency = 1.000
+MurdererText.Position = UDim2.new(0.0544118881, 0, 0.144037277, 0)
+MurdererText.Size = UDim2.new(0, 150, 0, 24)
+MurdererText.ZIndex = 11
+MurdererText.Font = Enum.Font.GothamBold
+MurdererText.Text = "Murderer"
+MurdererText.TextColor3 = Color3.fromRGB(255, 0, 0)
+MurdererText.TextSize = 16.000
+
+SheriffText.Name = "SheriffText"
+SheriffText.Parent = Main
+SheriffText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SheriffText.BackgroundTransparency = 1.000
+SheriffText.Position = UDim2.new(0.0602941513, 0, 0.403182238, 0)
+SheriffText.Size = UDim2.new(0, 150, 0, 24)
+SheriffText.ZIndex = 11
+SheriffText.Font = Enum.Font.GothamBold
+SheriffText.Text = "Sheriff"
+SheriffText.TextColor3 = Color3.fromRGB(0, 0, 255)
+SheriffText.TextSize = 16.000
+
+GunDropText.Name = "GunDropText"
+GunDropText.Parent = Main
+GunDropText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+GunDropText.BackgroundTransparency = 1.000
+GunDropText.Position = UDim2.new(0.0602941513, 0, 0.661555469, 0)
+GunDropText.Size = UDim2.new(0, 150, 0, 24)
+GunDropText.ZIndex = 11
+GunDropText.Font = Enum.Font.GothamBold
+GunDropText.Text = "Gun Dropped"
+GunDropText.TextColor3 = Color3.fromRGB(0, 255, 0)
+GunDropText.TextSize = 16.000
+
+GunDrop.Name = "GunDrop"
+GunDrop.Parent = Main
+GunDrop.BackgroundColor3 = Color3.fromRGB(19, 19, 19)
+GunDrop.Position = UDim2.new(0.0602940321, 0, 0.660000026, 25)
+GunDrop.Size = UDim2.new(0, 150, 0, 30)
+GunDrop.ZIndex = 11
+GunDrop.Font = Enum.Font.GothamBold
+GunDrop.Text = "nil"
+GunDrop.TextColor3 = Color3.fromRGB(255, 255, 255)
+GunDrop.TextSize = 16.000
+GunDrop.AutoButtonColor = false
+
+UICorner_4.Name = "UICorner"
+UICorner_4.CornerRadius = UDim.new(0, 6)
+UICorner_4.Parent = GunDrop
+
+UICorner_5.Name = "UICorner"
+UICorner_5.CornerRadius = UDim.new(0, 6)
+UICorner_5.Parent = Topbar
+
+Title.Name = "Title"
+Title.Parent = Topbar
+Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundTransparency = 1.000
+Title.BorderSizePixel = 0
+Title.Position = UDim2.new(0.247058824, 0, 0, 0)
+Title.Size = UDim2.new(0, 85, 0, 30)
+Title.ZIndex = 12
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Error Occurred" -- dont change
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16.000
+
+Credit.Name = "Credit"
+Credit.Parent = Main
+Credit.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Credit.BackgroundTransparency = 1.000
+Credit.Position = UDim2.new(0.06, 0, 0.923, 0)
+Credit.Size = UDim2.new(0, 150, 0, 15)
+Credit.ZIndex = 11
+Credit.Font = Enum.Font.GothamBold
+Credit.Text = "Made by KayTheNigerianPrince#0001"
+Credit.TextColor3 = Color3.fromRGB(255, 255, 255)
+Credit.TextSize = 12.000
+
+Spectating.Name = "Spectating"
+Spectating.Parent = MM2
+Spectating.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Spectating.BackgroundTransparency = 1.000
+Spectating.Position = UDim2.new(0.5, 0, 0.8, 0)
+Spectating.Size = UDim2.new(0, 150, 0, 15)
+Spectating.ZIndex = 15
+Spectating.Font = Enum.Font.GothamBold
+Spectating.Text = "Spectating: None"
+Spectating.TextColor3 = Color3.fromRGB(255, 255, 255)
+Spectating.TextSize = 32.000
+Spectating.AnchorPoint = Vector2.new(0.5,0.5)
+Spectating.Visible = false
+print("Loaded all properties  [4/6]")
+local folder = Instance.new("Folder")
+folder.Parent = MM2
+folder.Name = "Folder"
+function notif(text)
+	if typeof(text) == "string" and ss.Notifications then
+		game.StarterGui:SetCore("SendNotification", {
+			Title = "MM2 Utilities",
+			Text = text,
+			Duration = 1.5,
+		})
+	end
 end
-
-local Confirmed = false
-
-WindUI:Popup({
-    Title = gradient("SNT HUB", Color3.fromHex("#eb1010"), Color3.fromHex("#1023eb")),
-    Icon = "info",
-    Content = gradient("This script made by", Color3.fromHex("#10eb3c"), Color3.fromHex("#67c97a")) .. gradient(" SnowT", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
-    Buttons = {
-        {
-            Title = gradient("Cancel", Color3.fromHex("#e80909"), Color3.fromHex("#630404")),
-            Callback = function() end,
-            Variant = "Tertiary", -- Primary, Secondary, Tertiary
-        },
-        {
-            Title = gradient("Load", Color3.fromHex("#90f09e"), Color3.fromHex("#13ed34")),
-            Callback = function() Confirmed = true end,
-            Variant = "Secondary", -- Primary, Secondary, Tertiary
-        }
-    }
-})
-
-repeat task.wait() until Confirmed
-
-WindUI:Notify({
-    Title = gradient("SNT HUB", Color3.fromHex("#eb1010"), Color3.fromHex("#1023eb")),
-    Content = "Скрипт успешно загружен!",
-    Icon = "check-circle",
-    Duration = 3,
-})
-
--- Window
-local Window = WindUI:CreateWindow({
-    Title = gradient("SNT&MirrozzScript [Alpha]", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
-    Icon = "infinity",
-    Author = gradient("Murder Mystery 2", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
-    Folder = "WindUI",
-    Size = UDim2.fromOffset(300, 270),
-    Transparent = true,
-    Theme = "Dark",
-    SideBarWidth = 200,
-    UserEnabled = true,
-    HasOutline = true,
-})
-
--- Open Button
-Window:EditOpenButton({
-    Title = "Open UI",
-    Icon = "monitor",
-    CornerRadius = UDim.new(2, 6),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(
-        Color3.fromHex("1E213D"),
-        Color3.fromHex("1F75FE")
-    ),
-    Draggable = true,
-})
-
--- Tabs
-local Tabs = {
-    MainTab = Window:Tab({ Title = gradient("MAIN", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "terminal" }),
-    CharacterTab = Window:Tab({ Title = gradient("CHARACTER", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "file-cog" }),
-    TeleportTab = Window:Tab({ Title = gradient("TELEPORT", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "user" }),
-    EspTab = Window:Tab({ Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "eye" }),
-    AimbotTab = Window:Tab({ Title = gradient("AIMBOT", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "arrow-right" }),
-    CombatTab = Window:Tab({ Title = gradient("COMBAT", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "sword"}),
-    AutoFarm = Window:Tab({ Title = gradient("AUTOFARM", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "coin"}),
-    ServerTab = Window:Tab({ Title = gradient("SERVER", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "atom", Locked = true }),
-    beed = Window:Divider(),
-    SettingsTab = Window:Tab({ Title = gradient("SETTINGS", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "code" }),
-    ChangelogsTab = Window:Tab({ Title = gradient("CHANGELOGS", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "info"}),
-    SocialsTab = Window:Tab({ Title = gradient("SOCIALS", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "star"}),
-    b = Window:Divider(),
-    WindowTab = Window:Tab({ Title = gradient("CONFIGURATION", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "settings", Desc = "Manage window settings and file configurations." }),
-    CreateThemeTab = Window:Tab({ Title = gradient("THEMES", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "palette", Desc = "Design and apply custom themes." }),
-}
-
--- Character
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
-local CharacterSettings = {
-    WalkSpeed = {Value = 16, Default = 16, Locked = false},
-    JumpPower = {Value = 50, Default = 50, Locked = false}
-}
-
-local function updateCharacter()
-    local character = LocalPlayer.Character
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        if not CharacterSettings.WalkSpeed.Locked then
-            humanoid.WalkSpeed = CharacterSettings.WalkSpeed.Value
-        end
-        if not CharacterSettings.JumpPower.Locked then
-            humanoid.JumpPower = CharacterSettings.JumpPower.Value
-        end
-    end
-end
-
-Tabs.CharacterTab:Slider({
-    Title = "Walkspeed",
-    Value = {Min = 0, Max = 200, Default = 16},
-    Callback = function(value)
-        CharacterSettings.WalkSpeed.Value = value
-        updateCharacter()
-    end
-})
-
-Tabs.CharacterTab:Button({
-    Title = "Reset walkspeed",
-    Callback = function()
-        CharacterSettings.WalkSpeed.Value = CharacterSettings.WalkSpeed.Default
-        updateCharacter()
-    end
-})
-
-Tabs.CharacterTab:Toggle({
-    Title = "Block walkspeed",
-    Default = false,
-    Callback = function(state)
-        CharacterSettings.WalkSpeed.Locked = state
-        updateCharacter()
-    end
-})
-
-Tabs.CharacterTab:Slider({
-    Title = "Jumppower",
-    Value = {Min = 0, Max = 200, Default = 50},
-    Callback = function(value)
-        CharacterSettings.JumpPower.Value = value
-        updateCharacter()
-    end
-})
-
-
-Tabs.CharacterTab:Button({
-    Title = "Reset jumppower",
-    Callback = function()
-        CharacterSettings.JumpPower.Value = CharacterSettings.JumpPower.Default
-        updateCharacter()
-    end
-})
-
-Tabs.CharacterTab:Toggle({
-    Title = "Block jumppower",
-    Default = false,
-    Callback = function(state)
-        CharacterSettings.JumpPower.Locked = state
-        updateCharacter()
-    end
-})
-
--- ESP
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LP = Players.LocalPlayer
-
-local ESPConfig = {
-    HighlightMurderer = false,
-    HighlightInnocent = false,
-    HighlightSheriff = false
-}
-
-local Murder, Sheriff, Hero
-local roles = {}
-
-function CreateHighlight(player)
-    if player ~= LP and player.Character and not player.Character:FindFirstChild("Highlight") then
-        local highlight = Instance.new("Highlight")
-        highlight.Parent = player.Character
-        highlight.Adornee = player.Character
-        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        return highlight
-    end
-    return player.Character and player.Character:FindFirstChild("Highlight")
-end
-
-function RemoveAllHighlights()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Character and player.Character:FindFirstChild("Highlight") then
-            player.Character.Highlight:Destroy()
-        end
-    end
-end
-
-function UpdateHighlights()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LP and player.Character then
-            local highlight = player.Character:FindFirstChild("Highlight")
-            if not (ESPConfig.HighlightMurderer or ESPConfig.HighlightInnocent or ESPConfig.HighlightSheriff) then
-                if highlight then
-                    highlight:Destroy()
-                end
-                return
-            end
-            
-            local shouldHighlight = false
-            local color = Color3.new(0, 1, 0)
-            if player.Name == Murder and IsAlive(player) and ESPConfig.HighlightMurderer then
-                color = Color3.fromRGB(255, 0, 0)
-                shouldHighlight = true
-            elseif player.Name == Sheriff and IsAlive(player) and ESPConfig.HighlightSheriff then
-                color = Color3.fromRGB(0, 0, 255)
-                shouldHighlight = true
-            elseif ESPConfig.HighlightInnocent and IsAlive(player) and 
-                   player.Name ~= Murder and player.Name ~= Sheriff and player.Name ~= Hero then
-                color = Color3.fromRGB(0, 255, 0)
-                shouldHighlight = true
-            elseif player.Name == Hero and IsAlive(player) and not IsAlive(game.Players[Sheriff]) and ESPConfig.HighlightSheriff then
-                color = Color3.fromRGB(255, 250, 0)
-                shouldHighlight = true
-            end
-            
-            if shouldHighlight then
-                highlight = CreateHighlight(player)
-                if highlight then
-                    highlight.FillColor = color
-                    highlight.OutlineColor = color
-                    highlight.Enabled = true
-                end
-            elseif highlight then
-                highlight.Enabled = false
-            end
-        end
-    end
-end
-
-function IsAlive(player)
-    for name, data in pairs(roles) do
-        if player.Name == name then
-            return not data.Killed and not data.Dead
-        end
-    end
-    return false
-end
-
-local function UpdateRoles()
-    roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for name, data in pairs(roles) do
-        if data.Role == "Murderer" then
-            Murder = name
-        elseif data.Role == 'Sheriff' then
-            Sheriff = name
-        elseif data.Role == 'Hero' then
-            Hero = name
-        end
-    end
-end
-
-Tabs.EspTab:Section({Title = gradient("Special ESP", Color3.fromHex("#b914fa"), Color3.fromHex("#7023c2"))})
-
-Tabs.EspTab:Toggle({
-    Title = gradient("Higlight Murder", Color3.fromHex("#e80909"), Color3.fromHex("#630404")),
-    Default = false,
-    Callback = function(state) 
-        ESPConfig.HighlightMurderer = state
-        if not state then UpdateHighlights() end
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = gradient("Highlight Innocent", Color3.fromHex("#0ff707"), Color3.fromHex("#1e690c")),
-    Default = false,
-    Callback = function(state) 
-        ESPConfig.HighlightInnocent = state
-        if not state then UpdateHighlights() end
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = gradient("Highlight Sheriff", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
-    Default = false,
-    Callback = function(state) 
-        ESPConfig.HighlightSheriff = state
-        if not state then UpdateHighlights() end
-    end
-})
-
-RunService.RenderStepped:Connect(function()
-    UpdateRoles()
-    if ESPConfig.HighlightMurderer or ESPConfig.HighlightInnocent or ESPConfig.HighlightSheriff then
-        UpdateHighlights()
-    end
+local aimbottoggled = false
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.Y then
+		aimbottoggled = not aimbottoggled
+		notif("Aimbot toggled: "..tostring(aimbottoggled))
+	end
 end)
-
-Players.PlayerRemoving:Connect(function(player)
-    if player == LP then
-        RemoveAllHighlights()
-    end
+function bruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruh()
+	for i,v in pairs(folder:GetChildren()) do
+		v:Destroy()
+	end
+	for i,v in pairs(workspace:GetDescendants()) do
+		if v.Name == "Raggy" and ss.RemoveRagdolls then
+			v:Destroy()
+		elseif v.Name == "GlitchProof" and v.ClassName == "Model" and ss.RemoveBarriers then
+			v:Destroy()
+		end
+	end
+	for i,v in pairs(players:GetChildren()) do
+		if v.Name ~= player.Name and not folder:FindFirstChild(v.Name) then
+			if ss.NameEsp then
+				local Billboard = Instance.new("BillboardGui", folder)
+				local Name = Instance.new("TextLabel", Billboard)
+				Billboard.Name = v.Name
+				Billboard.Adornee = v.Character.Head
+				Billboard.Size = UDim2.new(10, 0, 4, 0)
+				Billboard.ExtentsOffset = Vector3.new(0, 3, 0)
+				Billboard.AlwaysOnTop = true
+				Billboard.MaxDistance = math.huge
+				Name.Name = "Name"
+				Name.BackgroundTransparency = 1
+				Name.TextTransparency = ss.NameTextTransparency
+				Name.BorderSizePixel = 0
+				Name.Font = ss.NameFont
+				Name.Size = UDim2.new(1, 0, 1, 0)
+				Name.Text = v.Name
+				Name.TextColor3 = ss.InnocentColor
+				Name.TextScaled = false
+				Name.TextSize = 18
+				if v.Backpack:FindFirstChild("Knife") or v.Character:FindFirstChild("Knife") then
+					Murderer.Text = v.Name
+					Name.TextColor3 = ss.MurdererColor
+					if not Murderer.TextFits then
+						Murderer.TextScaled = true
+					else
+						Murderer.TextScaled = false
+					end
+				elseif v.Backpack:FindFirstChild("Gun") or v.Character:FindFirstChild("Gun") then
+					Sheriff.Text = v.Name
+					Name.TextColor3 = ss.SheriffColor
+					if not Sheriff.TextFits then
+						Sheriff.TextScaled = true
+					else
+						Sheriff.TextScaled = false
+					end
+				elseif ss.AvoidInnocents and not v.Backpack:FindFirstChild("Knife") or v.Character:FindFirstChild("Knife") or v.Backpack:FindFirstChild("Gun") or v.Character:FindFirstChild("Gun") then
+					Billboard:Destroy()
+				end
+			end -- ss.NameEsp
+		end -- Name Check
+	end -- for i,v
+	if workspace:FindFirstChild("GunDrop",true) then
+		if ss.GunEsp then
+			local GunEsp = Instance.new("BoxHandleAdornment", folder)
+			GunEsp.Name = "Gun"
+			GunEsp.Adornee = game.Workspace.GunDrop
+			GunEsp.AlwaysOnTop = true
+			GunEsp.Color3 = ss.GunEspColor
+			GunEsp.Size = game.Workspace.GunDrop.Size
+			GunEsp.Transparency = 0.6
+			GunEsp.ZIndex = 0
+			if ss.GunNameEsp then
+				local Billboard = Instance.new("BillboardGui", folder)
+				local Name = Instance.new("TextLabel", Billboard)
+				Billboard.Name = "Gun"
+				Billboard.Adornee = game.Workspace.GunDrop
+				Billboard.Size = UDim2.new(10, 0, 4, 0)
+				Billboard.ExtentsOffset = Vector3.new(0, 3, 0)
+				Billboard.AlwaysOnTop = true
+				Billboard.MaxDistance = math.huge
+				Name.Name = "Name"
+				Name.BackgroundTransparency = 1
+				Name.TextTransparency = ss.GunNameTransparency
+				Name.BorderSizePixel = 0
+				Name.Font = ss.NameFont
+				Name.Size = UDim2.new(1, 0, 1, 0)
+				Name.Text = "Gun"
+				Name.TextColor3 = ss.GunNameColor
+				Name.TextScaled = false
+				Name.TextSize = 18
+			end
+		end
+		if ss.AutoPickupGun then
+			local hrp = player.Character.HumanoidRootPart
+			local OldCF = hrp.CFrame
+			hrp.CFrame = game.Workspace.GunDrop.CFrame
+			wait(0.2)
+			hrp.CFrame = OldCF
+		end
+		GunDrop.Text = "True"
+		GunDrop.TextColor3 = ss.GColorT
+	else
+		GunDrop.Text = "False"
+		GunDrop.TextColor3 = ss.GColorF
+	end
+	if ss.Aimbot then
+		local keypressed = false
+		local team
+		local target
+		mouse.Button2Down:Connect(function()
+			keypressed = true
+		end)
+		mouse.Button2Up:Connect(function()
+			keypressed = false
+		end)
+		if player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife") then
+			team = "Murderer"
+			target = players[Sheriff.Text].Character.HumanoidRootPart
+			if ss.AimbotAsMurderer then
+				aimbottoggled = true
+				notif("Aimbot toggled: true (Murderer)")
+				repeat
+					if keypressed and aimbottoggled then
+						camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
+					end
+					RunService.RenderStepped:Wait()
+				until players[Sheriff.Text].Character.Humanoid.Health < 1 or team == nil or ss.Aimbot == false or ss.AimbotAsMurderer == false
+			end
+		elseif player.Backpack:FindFirstChild("Gun") or player.Character:FindFirstChild("Gun") then
+			team = "Sheriff"
+			target = players[Murderer.Text].Character.HumanoidRootPart
+			if ss.AimbotAsSheriff then
+				aimbottoggled = true
+				notif("Aimbot toggled: true (Sheriff)")
+				repeat
+					if keypressed and aimbottoggled then
+						camera.CFrame = CFrame.new(camera.CFrame.Position, target.Position)
+					end
+					RunService.RenderStepped:Wait()
+				until players[Murderer.Text].Character.Humanoid.Health < 1 or team == nil or ss.Aimbot == false or ss.AimbotAsSheriff == false
+			end
+		else
+			team = nil
+			target = nil
+			aimbottoggled = false
+		end
+	end
+end
+local object = workspace
+function XrayOn(object)
+	for i,v in pairs(object:GetChildren()) do
+		if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
+			v.LocalTransparencyModifier = 0.9
+		end
+		XrayOn(v)
+	end
+end
+function XrayOff(object)
+	for i,v in pairs(object:GetChildren()) do
+		if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
+			v.LocalTransparencyModifier = 0
+		end
+		XrayOff(v)
+	end
+end
+local noclip = false
+local xray = false
+local toggle1 = false
+local emotes = false
+function stuff(input, gameProcessed)
+	if not gameProcessed then
+		if input.KeyCode == Enum.KeyCode.R and ss.Noclip then
+			noclip = not noclip
+			notif("Noclip toggled: "..tostring(noclip))
+			player.Character.Humanoid:ChangeState(11)
+			repeat
+				player.Character.Humanoid:ChangeState(11)
+				RunService.Stepped:Wait()
+			until noclip == false
+		end
+		if input.KeyCode == Enum.KeyCode.T and ss.Xray then
+			xray = not xray
+			notif("Xray toggled: "..tostring(xray))
+			if xray then
+				XrayOn(object)
+			else
+				XrayOff(object)
+			end
+		end
+		if input.KeyCode == Enum.KeyCode.RightControl then
+			toggle1 = not toggle1
+			if toggle1 then
+				Topbar.Visible = false
+				notif("Gui is now invisible")
+			else
+				Topbar.Visible = true
+				notif("Gui is now visible")
+			end
+		end
+	end
+end
+UIS.InputBegan:Connect(stuff)
+local ctrlpressed = false
+mouse.Button1Down:Connect(function()
+	if ctrlpressed and ss.CtrlClickTP then
+		player.Character:MoveTo(mouse.Hit.p)
+	end
 end)
-
--- Teleport
-local teleportTarget = nil
-
-local function updateTeleportPlayers()
-    local playersList = {}
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(playersList, player.Name)
-        end
-    end
-    return playersList
-end
-
-local teleportDropdown = Tabs.TeleportTab:Dropdown({
-    Title = "Players",
-    Values = updateTeleportPlayers(),
-    Value = "Select Player",
-    Callback = function(selected)
-        teleportTarget = Players:FindFirstChild(selected)
-    end
-})
-
-local function teleportToPlayer()
-    if teleportTarget and teleportTarget.Character then
-        local targetRoot = teleportTarget.Character:FindFirstChild("HumanoidRootPart")
-        local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        
-        if targetRoot and localRoot then
-            localRoot.CFrame = targetRoot.CFrame
-            WindUI:Notify({
-                Title = "Телепортация",
-                Content = "Успешно телепортирован к "..teleportTarget.Name,
-                Icon = "check-circle",
-                Duration = 3
-            })
-        end
-    else
-        WindUI:Notify({
-            Title = "Ошибка",
-            Content = "Цель не найдена или недоступна",
-            Icon = "x-circle",
-            Duration = 3
-        })
-    end
-end
-
-Tabs.TeleportTab:Button({
-    Title = "Teleport to player",
-    Callback = teleportToPlayer
-})
-
-Tabs.TeleportTab:Button({
-    Title = "Update players list",
-    Callback = function()
-        teleportDropdown:Refresh({updateTeleportPlayers()})
-    end
-})
-
-Tabs.TeleportTab:Button({
-    Title = "Teleport to Sheriff",
-    Callback = function()
-        UpdateRoles()
-        if Sheriff then
-            local sheriffPlayer = Players:FindFirstChild(Sheriff)
-            if sheriffPlayer and sheriffPlayer.Character then
-                local targetRoot = sheriffPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                
-                if targetRoot and localRoot then
-                    localRoot.CFrame = targetRoot.CFrame
-                    WindUI:Notify({
-                        Title = "Телепортация",
-                        Content = "Успешно телепортирован к шерифу "..Sheriff,
-                        Icon = "check-circle",
-                        Duration = 3
-                    })
-                end
-            else
-                WindUI:Notify({
-                    Title = "Ошибка",
-                    Content = "Шериф не найден или недоступен",
-                    Icon = "x-circle",
-                    Duration = 3
-                })
-            end
-        else
-            WindUI:Notify({
-                Title = "Ошибка",
-                Content = "Шериф не определен в текущем матче",
-                Icon = "x-circle",
-                Duration = 3
-            })
-        end
-    end
-})
-
-Tabs.TeleportTab:Button({
-    Title = "Teleport to Murderer",
-    Callback = function()
-        UpdateRoles()
-        if Murder then
-            local murderPlayer = Players:FindFirstChild(Murder)
-            if murderPlayer and murderPlayer.Character then
-                local targetRoot = murderPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                
-                if targetRoot and localRoot then
-                    localRoot.CFrame = targetRoot.CFrame
-                    WindUI:Notify({
-                        Title = "Телепортация",
-                        Content = "Успешно телепортирован к убийце "..Murder,
-                        Icon = "check-circle",
-                        Duration = 3
-                    })
-                end
-            else
-                WindUI:Notify({
-                    Title = "Ошибка",
-                    Content = "Убийца не найден или недоступен",
-                    Icon = "x-circle",
-                    Duration = 3
-                })
-            end
-        else
-            WindUI:Notify({
-                Title = "Ошибка",
-                Content = "Убийца не определен в текущем матче",
-                Icon = "x-circle",
-                Duration = 3
-            })
-        end
-    end
-})
-
-Players.PlayerAdded:Connect(function()
-    teleportDropdown:Refresh({updateTeleportPlayers()})
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.LeftControl and not gameProcessed then
+		ctrlpressed = true
+	end
 end)
-
-Players.PlayerRemoving:Connect(function()
-    teleportDropdown:Refresh({updateTeleportPlayers()})
+UIS.InputEnded:Connect(function(input, gameProcessed)
+	if input.KeyCode == Enum.KeyCode.LeftControl and not gameProcessed then
+		ctrlpressed = false
+	end
 end)
-
--- Aimbot
-local roles = {}
-local Murder, Sheriff
-local isCameraLocked = false
-local isSpectating = false
-local lockedRole = nil
-local cameraConnection = nil
-local originalCameraType = Enum.CameraType.Custom
-local originalCameraSubject = nil
-
-function IsAlive(player)
-    for name, data in pairs(roles) do
-        if player.Name == name then
-            return not data.Killed and not data.Dead
-        end
-    end
-    return false
-end
-
-local function UpdateRoles()
-    local success, result = pcall(function()
-        return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    end)
-    if success then
-        roles = result or {}
-        Murder, Sheriff = nil, nil
-        for name, data in pairs(roles) do
-            if data.Role == "Murderer" then Murder = name
-            elseif data.Role == 'Sheriff' then Sheriff = name end
-        end
-    end
-end
-
-RoleDropdown = Tabs.AimbotTab:Dropdown({
-    Title = "Target Role",
-    Values = {"None", "Sheriff", "Murderer"},
-    Value = "None",
-    Callback = function(selected)
-        lockedRole = (selected ~= "None") and selected or nil
-    end
-})
-
-Tabs.AimbotTab:Toggle({
-    Title = "Spectate Mode",
-    Default = false,
-    Callback = function(state)
-        isSpectating = state
-        if state then
-            originalCameraType = CurrentCamera.CameraType
-            originalCameraSubject = CurrentCamera.CameraSubject
-            CurrentCamera.CameraType = Enum.CameraType.Scriptable
-        else
-            CurrentCamera.CameraType = originalCameraType
-            CurrentCamera.CameraSubject = originalCameraSubject
-        end
-    end
-})
-
-Tabs.AimbotTab:Toggle({
-    Title = "Lock Camera",
-    Default = false,
-    Callback = function(state)
-        isCameraLocked = state
-        if not state and not isSpectating then
-            CurrentCamera.CameraType = originalCameraType
-            CurrentCamera.CameraSubject = originalCameraSubject
-        end
-    end
-})
-
-local function GetTargetPosition()
-    if not lockedRole then return nil end
-    local targetName = lockedRole == "Sheriff" and Sheriff or Murder
-    if not targetName then return nil end
-    local player = Players:FindFirstChild(targetName)
-    if not player or not IsAlive(player) then return nil end
-    local character = player.Character
-    if not character then return nil end
-    local head = character:FindFirstChild("Head")
-    return head and head.Position or nil
-end
-
-local function UpdateSpectate()
-    if not isSpectating or not lockedRole then return end
-    local targetPos = GetTargetPosition()
-    if not targetPos then return end
-    local offset = CFrame.new(0, 2, 8)
-    local targetChar = Players:FindFirstChild(lockedRole == "Sheriff" and Sheriff or Murder).Character
-    if targetChar then
-        local root = targetChar:FindFirstChild("HumanoidRootPart")
-        if root then
-            CurrentCamera.CFrame = root.CFrame * offset
-        end
-    end
-end
-
-local function UpdateLockCamera()
-    if not isCameraLocked or not lockedRole then return end
-    local targetPos = GetTargetPosition()
-    if not targetPos then return end
-    local currentPos = CurrentCamera.CFrame.Position
-    CurrentCamera.CFrame = CFrame.new(currentPos, targetPos)
-end
-
-local function Update()
-    if isSpectating then
-        UpdateSpectate()
-    elseif isCameraLocked then
-        UpdateLockCamera()
-    end
-end
-
-local function AutoUpdate()
-    while true do
-        UpdateRoles()
-        task.wait(3)
-    end
-end
-
-coroutine.wrap(AutoUpdate)()
-cameraConnection = RunService.RenderStepped:Connect(Update)
-
-LocalPlayer.AncestryChanged:Connect(function()
-    if not LocalPlayer.Parent and cameraConnection then
-        cameraConnection:Disconnect()
-        CurrentCamera.CameraType = originalCameraType
-        CurrentCamera.CameraSubject = originalCameraSubject
-    end
+local mbtn = false -- murderer button
+local sbtn = false -- sheriff button
+Murderer.MouseButton1Click:Connect(function()
+	if Murderer.Text ~= "None" then
+		if mbtn == false then
+			camera.CameraSubject = players[Murderer.Text].Character.Humanoid
+			Spectating.Visible = true
+			Spectating.Text = "Spectating: "..Murderer.Text
+			Spectating.TextColor3 = Color3.fromRGB(255, 0, 0)
+			mbtn = true
+			sbtn = false
+		elseif mbtn == true then
+			camera.CameraSubject = player.Character.Humanoid
+			Spectating.Visible = false
+			Spectating.Text = "Spectating: None"
+			Spectating.TextColor3 = Color3.fromRGB(255, 255, 255)
+			mbtn = false
+		end
+	end
 end)
-
-UpdateRoles()
-
--- Combat
-Tabs.CombatTab:Section({Title = "Innocent"})
-
-Tabs.CombatTab:Button({
-    Title = "Grab Gun",
-    Callback = function()
-    end
-})
-
-Tabs.CombatTab:Section({Title = "Murder"})
-
-Tabs.CombatTab:Button({
-    Title = "Kill All",
-    Callback = function()
-        WindUI:Notify({
-    Title = "Ошибка!",
-    Content = "Функция на стадии разработки",
-    Icon = "check-circle",
-    Duration = 3,
-})
-    end
-})
-
-Tabs.CombatTab:Section({Title = "Sheriff"})
-
-Tabs.CombatTab:Button({
-    Title = "Shoot Murder",
-    Callback = function()
-    end
-})
-
--- Settings
-local Settings = {
-    Hitbox = {
-        Enabled = false,
-        Size = 5,
-        Color = Color3.new(1,0,0),
-        Adornments = {},
-        Connections = {}
-    },
-    Noclip = {
-        Enabled = false,
-        Connection = nil
-    },
-    AntiAFK = {
-        Enabled = false,
-        Connection = nil
-    }
-}
-
-local function ToggleNoclip(state)
-        if state then
-            Settings.Noclip.Connection = RunService.Stepped:Connect(function()
-                local chr = LocalPlayer.Character
-                if chr then
-                    for _, part in pairs(chr:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-                end)
-        else
-            if Settings.Noclip.Connection then
-                Settings.Noclip.Connection:Disconnect()
-            end
-        end
+Sheriff.MouseButton1Click:Connect(function()
+	if Sheriff.Text ~= "None" then
+		if sbtn == false then
+			camera.CameraSubject = players[Sheriff.Text].Character.Humanoid
+			Spectating.Visible = true
+			Spectating.Text = "Spectating: "..Sheriff.Text
+			Spectating.TextColor3 = Color3.fromRGB(0, 0, 255)
+			sbtn = true
+			mbtn = false
+		elseif sbtn == true then
+			camera.CameraSubject = player.Character.Humanoid
+			Spectating.Visible = false
+			Spectating.Text = "Spectating: None"
+			Spectating.TextColor3 = Color3.fromRGB(255, 255, 255)
+			sbtn = false
+		end
+	end
+end)
+GunDrop.MouseButton1Click:Connect(function()
+	pcall(function()
+		if workspace:FindFirstChild("GunDrop",true) and GunDrop.Text == "True" then
+			local hrp = player.Character.HumanoidRootPart
+			local OldCF = hrp.CFrame
+			hrp.CFrame = workspace.GunDrop.CFrame
+			wait(0.2)
+			hrp.CFrame = OldCF
+		end
+	end)
+end)
+if ss.UnlockEmotes and player.PlayerGui.MainGUI then -- did not make this btw
+	for i,v in pairs(player.PlayerGui.MainGUI.Game.Emotes.EmotePages:GetChildren()) do
+		if v.Name == "MM2 Utilities" then v:Destroy() end
+	end
+	local emote = require(game:GetService("ReplicatedStorage").Modules.EmoteModule).GeneratePage
+	local target = player.PlayerGui.MainGUI.Game.Emotes
+	local emotelist = { "headless","zombie","zen","ninja","floss","dab" }
+	emote(emotelist,target,"MM2 Utilities")
 end
-
-local function UpdateHitboxes()
-        for _, plr in pairs(Players:GetPlayers()) do
-            if plr ~= LocalPlayer then
-                local chr = plr.Character
-                local box = Settings.Hitbox.Adornments[plr]
-                
-                if chr and Settings.Hitbox.Enabled then
-                    local root = chr:FindFirstChild("HumanoidRootPart")
-                    if root then
-                        if not box then
-                            box = Instance.new("BoxHandleAdornment")
-                            box.Adornee = root
-                            box.Size = Vector3.new(Settings.Hitbox.Size, Settings.Hitbox.Size, Settings.Hitbox.Size)
-                            box.Color3 = Settings.Hitbox.Color
-                            box.Transparency = 0.4
-                            box.ZIndex = 10
-                            box.Parent = root
-                            Settings.Hitbox.Adornments[plr] = box
-                        else
-                            box.Size = Vector3.new(Settings.Hitbox.Size, Settings.Hitbox.Size, Settings.Hitbox.Size)
-                            box.Color3 = Settings.Hitbox.Color
-                        end
-                    end
-                elseif box then
-                    box:Destroy()
-                    Settings.Hitbox.Adornments[plr] = nil
-                end
-            end
-        end
+function dragify(Frame)
+	dragToggle = nil
+	local dragSpeed = 0.5
+	dragInput = nil
+	dragStart = nil
+	local dragPos = nil
+	function updateInput(input)
+		local Delta = input.Position - dragStart
+		local Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + Delta.X, startPos.Y.Scale, startPos.Y.Offset + Delta.Y)
+		TweenService:Create(Frame, TweenInfo.new(0.25), {Position = Position}):Play()
+	end
+	Frame.InputBegan:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and UIS:GetFocusedTextBox() == nil then
+			dragToggle = true
+			dragStart = input.Position
+			startPos = Frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragToggle = false
+				end
+			end)
+		end
+	end)
+	Frame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+	game:GetService("UserInputService").InputChanged:Connect(function(input)
+		if input == dragInput and dragToggle then
+			updateInput(input)
+		end
+	end)
 end
-
-local function ToggleAntiAFK(state)
-        if state then
-            Settings.AntiAFK.Connection = RunService.Heartbeat:Connect(function()
-                pcall(function()
-                    local vu = game:GetService("VirtualUser")
-                    vu:CaptureController()
-                    vu:ClickButton2(Vector2.new())
-                end)
-            end)
-        else
-            if Settings.AntiAFK.Connection then
-                Settings.AntiAFK.Connection:Disconnect()
-            end
-        end
+dragify(Topbar) -- credit to this guy: https://www.roblox.com/library/5021849770/Smooth-Drag
+print("Loaded all scripts     [5/6]")
+function ApplyTheme(Color1, Color2, Color3, MColor1, MColor2, SColor1, SColor2, GColor1, TextFont, TextColor)
+	Topbar.BackgroundColor3 = Color1
+	Murderer.BackgroundColor3 = Color2
+	Sheriff.BackgroundColor3 = Color2
+	GunDrop.BackgroundColor3 = Color2
+	Main.BackgroundColor3 = Color3
+	MurdererText.TextColor3 = MColor1
+	Murderer.TextColor3 = MColor2
+	SheriffText.TextColor3 = SColor1
+	Sheriff.TextColor3 = SColor2
+	GunDropText.TextColor3 = GColor1
+	Title.Font = TextFont
+	Murderer.Font = TextFont
+	MurdererText.Font = TextFont
+	Sheriff.Font = TextFont
+	SheriffText.Font = TextFont
+	GunDrop.Font = TextFont
+	GunDropText.Font = TextFont
+	Credit.Font = TextFont
+	Title.TextColor3 = TextColor
+	Credit.TextColor3 = TextColor
 end
-
-Tabs.SettingsTab:Toggle({
-    Title = "NoClip",
-    Callback = function(state)
-        Settings.Noclip.Enabled = state
-        ToggleNoclip(state)
-    end
-})
-
-Tabs.SettingsTab:Toggle({
-    Title = "Hixboxes",
-    Callback = function(state)
-        Settings.Hitbox.Enabled = state
-        if state then
-            RunService.Heartbeat:Connect(UpdateHitboxes)
-        else
-            for _, box in pairs(Settings.Hitbox.Adornments) do
-                box:Destroy()
-            end
-            Settings.Hitbox.Adornments = {}
-        end
-    end
-})
-
-Tabs.SettingsTab:Slider({
-    Title = "Hitbox size",
-    Value = {Min=1, Max=10, Default=5},
-    Callback = function(val)
-        Settings.Hitbox.Size = val
-        UpdateHitboxes()
-    end
-})
-
-Tabs.SettingsTab:Colorpicker({
-    Title = "Hitbox color",
-    Default = Color3.new(1,0,0),
-    Callback = function(col)
-        Settings.Hitbox.Color = col
-        UpdateHitboxes()
-    end
-})
-
-Tabs.SettingsTab:Toggle({
-    Title = "Anti-AFK",
-    Callback = function(state)
-        Settings.AntiAFK.Enabled = state
-        ToggleAntiAFK(state)
-    end
-})
-
--- Socials
-Tabs.SocialsTab:Paragraph({
-    Title = "SnowT",
-    Desc = "Join to my socials for know more information!",
-    Image = "snowflake",
-    Color = "Blue"
-})
-
-Tabs.SocialsTab:Button({
-    Title = "SnowT Channel",
-    Callback = function()
-        SetClipboard("t.me/supreme_scripts")
-    end
-})
-
-Tabs.SocialsTab:Paragraph({
-    Title = "Mirrozz",
-    Desc = "Join to socials my friend for get more scripts!",
-    Image = "eye",
-    Color = "Green"
-})
-
-Tabs.SocialsTab:Button({
-    Title = "Mirrozz Channel",
-    Callback = function()
-        SetClipboard("t.me/mirrozzscript")
-    end
-})
-
--- Changelogs
-Tabs.ChangelogsTab:Code({
-    Title = "Changelogs:",
-    Code = [[
-    Early release [Alpha]:
-    • Script has been released
-    • Shoot murder function
-    • Grab gun function
-    • Esp all: murderer, sheriff, innocent
-   More functions will be added in future!
-]]
-})
-
-Tabs.ChangelogsTab:Code({
-    Title = "Next update:",
-    Code = [[ The next update is Alpha [0.1.1]
-    In future we will be add:
-    • New autofarm function
-    • New Kill all function
-    • Fix bugs
-   The date of update: 17.05.2025!
-]]
-})
-
--- Server
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-
-Tabs.ServerTab:Button({
-    Title = "Rejoin",
-    Callback = function()
-        local success, error = pcall(function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
-        end)
-        if not success then
-            warn("Rejoin error:", error)
-        end
-    end
-})
-
-Tabs.ServerTab:Button({
-    Title = "Server Hop",
-    Callback = function()
-        local placeId = game.PlaceId
-        local currentJobId = game.JobId
-        
-        local function serverHop()
-            local servers = {}
-            local success, result = pcall(function()
-                return HttpService:JSONDecode(HttpService:GetAsync("https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"))
-            end)
-            
-            if success and result and result.data then
-                for _, server in ipairs(result.data) do
-                    if server.id ~= currentJobId then
-                        table.insert(servers, server)
-                    end
-                end
-                
-                if #servers > 0 then
-                    TeleportService:TeleportToPlaceInstance(placeId, servers[math.random(#servers)].id)
-                else
-                    TeleportService:Teleport(placeId)
-                end
-            else
-                TeleportService:Teleport(placeId)
-            end
-        end
-        
-        pcall(serverHop)
-    end
-})
-
-Tabs.ServerTab:Button({
-    Title = "Join to Lower Server",
-    Callback = function()
-        local placeId = game.PlaceId
-        local currentJobId = game.JobId
-        
-        local function joinLowerServer()
-            local servers = {}
-            local success, result = pcall(function()
-                return HttpService:JSONDecode(HttpService:GetAsync("https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"))
-            end)
-            
-            if success and result and result.data then
-                for _, server in ipairs(result.data) do
-                    if server.id ~= currentJobId and server.playing < (server.maxPlayers or 30) then
-                        table.insert(servers, server)
-                    end
-                end
-                
-                table.sort(servers, function(a, b)
-                    return a.playing < b.playing
-                end)
-                
-                if #servers > 0 then
-                    TeleportService:TeleportToPlaceInstance(placeId, servers[1].id)
-                else
-                    TeleportService:Teleport(placeId)
-                end
-            else
-                TeleportService:Teleport(placeId)
-            end
-        end
-        
-        pcall(joinLowerServer)
-    end
-})
-
--- Configuration
-local HttpService = game:GetService("HttpService")
-
-local folderPath = "WindUI"
-makefolder(folderPath)
-
-local function SaveFile(fileName, data)
-    local filePath = folderPath .. "/" .. fileName .. ".json"
-    local jsonData = HttpService:JSONEncode(data)
-    writefile(filePath, jsonData)
+ApplyTheme(ss.Color1, ss.Color2, ss.Color3, ss.MColor1, ss.MColor2, ss.SColor1, ss.SColor2, ss.GColor1, ss.TextFont, ss.MainTextColor)
+function PresetTheme(Theme)
+	local theme
+	if Theme == "Carbon" then
+		theme = {
+			Color1 = Color3.fromRGB(19,19,19),
+			Color2 = Color3.fromRGB(19,19,19),
+			Color3 = Color3.fromRGB(24,24,24),
+			MColor1 = Color3.fromRGB(255,0,0),
+			MColor2 = Color3.fromRGB(255,255,255),
+			SColor1 = Color3.fromRGB(0,0,255),
+			SColor2 = Color3.fromRGB(255,255,255),
+			GColor1 = Color3.fromRGB(0,255,0),
+			GColorT = Color3.fromRGB(100,255,100),
+			GColorF = Color3.fromRGB(255,100,100),
+			TextFont = ss.TextFont,
+			MainTextColor = Color3.fromRGB(255,255,255)
+		}
+		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
+	elseif Theme == "Strawberry" then
+		theme = {
+			Color1 = Color3.fromRGB(244,143,177),
+			Color2 = Color3.fromRGB(244,143,177),
+			Color3 = Color3.fromRGB(248,187,208),
+			MColor1 = Color3.fromRGB(255,0,170),
+			MColor2 = Color3.fromRGB(255,255,255),
+			SColor1 = Color3.fromRGB(255,0,170),
+			SColor2 = Color3.fromRGB(255,255,255),
+			GColor1 = Color3.fromRGB(255,0,170),
+			GColorT = Color3.fromRGB(255,255,255),
+			GColorF = Color3.fromRGB(255,255,255),
+			TextFont = ss.TextFont,
+			MainTextColor = Color3.fromRGB(255,255,255)
+		}
+		ss.GColorT = theme.GColorT
+		ss.GColorF = theme.GColorF
+		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
+	elseif Theme == "SkyBlue" then
+		theme = {
+			Color1 = Color3.fromRGB(59,132,235),
+			Color2 = Color3.fromRGB(59,132,235),
+			Color3 = Color3.fromRGB(120,172,245),
+			MColor1 = Color3.fromRGB(0,0,255),
+			MColor2 = Color3.fromRGB(255,255,255),
+			SColor1 = Color3.fromRGB(0,0,255),
+			SColor2 = Color3.fromRGB(255,255,255),
+			GColor1 = Color3.fromRGB(0,0,255),
+			GColorT = Color3.fromRGB(255,255,255),
+			GColorF = Color3.fromRGB(255,255,255),
+			TextFont = ss.TextFont,
+			MainTextColor = Color3.fromRGB(255,255,255)
+		}
+		ss.GColorT = theme.GColorT
+		ss.GColorF = theme.GColorF
+		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
+	elseif Theme == "Emerald" then
+		theme = {
+			Color1 = Color3.fromRGB(29,185,84),
+			Color2 = Color3.fromRGB(29,185,84),
+			Color3 = Color3.fromRGB(92,255,105),
+			MColor1 = Color3.fromRGB(0,225,0),
+			MColor2 = Color3.fromRGB(255,255,255),
+			SColor1 = Color3.fromRGB(0,225,0),
+			SColor2 = Color3.fromRGB(255,255,255),
+			GColor1 = Color3.fromRGB(0,225,0),
+			GColorT = Color3.fromRGB(255,255,255),
+			GColorF = Color3.fromRGB(255,255,255),
+			TextFont = ss.TextFont,
+			MainTextColor = Color3.fromRGB(255,255,255)
+		}
+		ss.GColorT = theme.GColorT
+		ss.GColorF = theme.GColorF
+		ApplyTheme(theme.Color1, theme.Color2, theme.Color3, theme.MColor1, theme.MColor2, theme.SColor1, theme.SColor2, theme.GColor1, theme.TextFont, theme.MainTextColor)
+	end
 end
-
-local function LoadFile(fileName)
-    local filePath = folderPath .. "/" .. fileName .. ".json"
-    if isfile(filePath) then
-        local jsonData = readfile(filePath)
-        return HttpService:JSONDecode(jsonData)
-    end
+PresetTheme(ss.PresetTheme)
+print("Applied custom theme   [6/6]")
+Title.Text = "MM2 Utilities"
+local goal1 = {} goal1.TextTransparency = 0
+function fadetext(obj, delay) TweenService:Create(obj, TweenInfo.new(delay,Enum.EasingStyle.Linear,Enum.EasingDirection.Out),goal1):Play() end
+function LoadAnimation()
+	local loadtime = tick()
+	Topbar.Size = UDim2.new(0,0,0,0)
+	Topbar.Visible = false
+	Title.TextTransparency = 1
+	Main.Size = UDim2.new(0,0,0,0)
+	Main.Visible = false
+	MurdererText.TextTransparency = 1
+	Murderer.TextTransparency = 1
+	SheriffText.TextTransparency = 1
+	Sheriff.TextTransparency = 1
+	GunDropText.TextTransparency = 1
+	GunDrop.TextTransparency = 1
+	Credit.TextTransparency = 1
+	Topbar.Visible = true
+	Topbar:TweenSize(UDim2.new(0,30,0,30),"Out","Sine","0.3")
+	wait(0.3)
+	Topbar:TweenSize(UDim2.new(0,170,0,30),"Out","Sine","0.5")
+	wait(0.5)
+	fadetext(Title, 0.5)
+	Main.Visible = true
+	Main.Size = UDim2.new(0,170,0,30)
+	Main:TweenSize(UDim2.new(0,170,0,209),"Out","Sine","0.7")
+	wait(0.2)
+	fadetext(MurdererText, 0.2)
+	wait(0.07)
+	fadetext(Murderer, 0.2)
+	wait(0.07)
+	fadetext(SheriffText, 0.2)
+	wait(0.06)
+	fadetext(Sheriff, 0.2)
+	wait(0.06)
+	fadetext(GunDropText, 0.2)
+	wait(0.05)
+	fadetext(GunDrop, 0.2)
+	wait(0.05)
+	fadetext(Credit, 0.2)
+	print("Loaded animation, took "..tick()-loadtime.." seconds")
 end
-
-local function ListFiles()
-    local files = {}
-    for _, file in ipairs(listfiles(folderPath)) do
-        local fileName = file:match("([^/]+)%.json$")
-        if fileName then
-            table.insert(files, fileName)
-        end
-    end
-    return files
+LoadAnimation()
+local l = game:GetService("Lighting")
+getgenv().oldl = { Ambient = l.Ambient, Brightness = l.Brightness, GlobalShadows = l.GlobalShadows }
+function StartMM2()
+	if ss.Enabled then
+		pcall(bruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruhbruh)
+		ApplyTheme(ss.Color1, ss.Color2, ss.Color3, ss.MColor1, ss.MColor2, ss.SColor1, ss.SColor2, ss.GColor1, ss.TextFont, ss.MainTextColor)
+		PresetTheme(ss.PresetTheme)
+		player.Character.Humanoid.WalkSpeed = ss.WalkSpeed
+		player.Character.Humanoid.JumpPower = ss.JumpPower
+		camera.FieldOfView = ss.FieldOfView
+		player.DevCameraOcclusionMode = ss.CameraMode
+		player.CameraMaxZoomDistance = ss.MaxZoom
+		if ss.RemoveBlackScreen then
+			player.PlayerGui.SpawnFade.Fade.Visible = false
+			player.PlayerGui.CameraFade.Fade.Visible = false
+		end
+		if ss.Fullbright then
+			l.Ambient = Color3.fromRGB(255,255,255)
+			l.Brightness = 50
+			l.GlobalShadows = false
+		else
+			l.Ambient = getgenv().oldl.Ambient
+			l.Brightness = getgenv().oldl.Brightness
+			l.GlobalShadows = getgenv().oldl.GlobalShadows
+		end
+		if ss.UnlockEmotes and player.PlayerGui.MainGUI then -- did not make this btw
+			local emote = require(game:GetService("ReplicatedStorage").Modules.EmoteModule).GeneratePage
+			local target = player.PlayerGui.MainGUI.Game.Emotes
+			local emotelist = { "headless","zombie","zen","ninja","floss","dab" }
+			if not player.PlayerGui.MainGUI.Game.Emotes.EmotePages:FindFirstChild("MM2 Utilities") then
+				emote(emotelist,target,"MM2 Utilities")
+				notif("Unlocked emotes")
+			end
+		end
+	end
 end
-
-Tabs.WindowTab:Section({ Title = "Window" })
-local themeValues = {}
-for name, _ in pairs(WindUI:GetThemes()) do
-    table.insert(themeValues, name)
+pcall(StartMM2)
+if not getgenv().MM2_UTILITIES_LOADED then
+	print("\n███╗░░░███╗███╗░░░███╗██████╗░  ██╗░░░██╗████████╗██╗██╗░░░░░██╗████████╗██╗███████╗░██████╗\n████╗░████║████╗░████║╚════██╗  ██║░░░██║╚══██╔══╝██║██║░░░░░██║╚══██╔══╝██║██╔════╝██╔════╝\n██╔████╔██║██╔████╔██║░░███╔═╝  ██║░░░██║░░░██║░░░██║██║░░░░░██║░░░██║░░░██║█████╗░░╚█████╗░\n██║╚██╔╝██║██║╚██╔╝██║██╔══╝░░  ██║░░░██║░░░██║░░░██║██║░░░░░██║░░░██║░░░██║██╔══╝░░░╚═══██╗\n██║░╚═╝░██║██║░╚═╝░██║███████╗  ╚██████╔╝░░░██║░░░██║███████╗██║░░░██║░░░██║███████╗██████╔╝\n╚═╝░░░░░╚═╝╚═╝░░░░░╚═╝╚══════╝  ░╚═════╝░░░░╚═╝░░░╚═╝╚══════╝╚═╝░░░╚═╝░░░╚═╝╚══════╝╚═════╝░")
+	print('Press "Left Ctrl" to toggle gui visibility')
+	print('Executing multiple times will cause notification spam, disable "Notifications" to prevent this')
+	print("Made By zzerexx#3970")
 end
-
-local themeDropdown = Tabs.WindowTab:Dropdown({
-    Title = "Select Theme",
-    Multi = false,
-    AllowNone = false,
-    Value = nil,
-    Values = themeValues,
-    Callback = function(theme)
-        WindUI:SetTheme(theme)
-    end
-})
-
-themeDropdown:Select(WindUI:GetCurrentTheme())
-
-local ToggleTransparency = Tabs.WindowTab:Toggle({
-    Title = "Toggle Window Transparency",
-    Callback = function(e)
-        Window:ToggleTransparency(e)
-    end,
-    Value = WindUI:GetTransparency()
-})
-
-Tabs.WindowTab:Section({ Title = "Save" })
-
-local fileNameInput = ""
-Tabs.WindowTab:Input({
-    Title = "Write File Name",
-    PlaceholderText = "Enter file name",
-    Callback = function(text)
-        fileNameInput = text
-    end
-})
-
-Tabs.WindowTab:Button({
-    Title = "Save File",
-    Callback = function()
-        if fileNameInput ~= "" then
-            SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
-        end
-    end
-})
-
-Tabs.WindowTab:Section({ Title = "Load" })
-
-local filesDropdown
-local files = ListFiles()
-
-filesDropdown = Tabs.WindowTab:Dropdown({
-    Title = "Select File",
-    Multi = false,
-    AllowNone = true,
-    Values = files,
-    Callback = function(selectedFile)
-        fileNameInput = selectedFile
-    end
-})
-
-Tabs.WindowTab:Button({
-    Title = "Load File",
-    Callback = function()
-        if fileNameInput ~= "" then
-            local data = LoadFile(fileNameInput)
-            if data then
-                WindUI:Notify({
-                    Title = "File Loaded",
-                    Content = "Loaded data: " .. HttpService:JSONEncode(data),
-                Duration = 5,
-                })
-                if data.Transparent then 
-                    Window:ToggleTransparency(data.Transparent)
-                    ToggleTransparency:SetValue(data.Transparent)
-                end
-                if data.Theme then WindUI:SetTheme(data.Theme) end
-            end
-        end
-    end
-})
-
-Tabs.WindowTab:Button({
-    Title = "Overwrite File",
-    Callback = function()
-        if fileNameInput ~= "" then
-            SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
-        end
-    end
-})
-
-Tabs.WindowTab:Button({
-    Title = "Refresh List",
-    Callback = function()
-        filesDropdown:Refresh(ListFiles())
-    end
-})
-
--- Themes
-local currentThemeName = WindUI:GetCurrentTheme()
-local themes = WindUI:GetThemes()
-
-local ThemeAccent = themes[currentThemeName].Accent
-local ThemeOutline = themes[currentThemeName].Outline
-local ThemeText = themes[currentThemeName].Text
-local ThemePlaceholderText = themes[currentThemeName].PlaceholderText
-
-function updateTheme()
-    WindUI:AddTheme({
-        Name = currentThemeName,
-        Accent = ThemeAccent,
-        Outline = ThemeOutline,
-        Text = ThemeText,
-        PlaceholderText = ThemePlaceholderText
-    })
-    WindUI:SetTheme(currentThemeName)
+getgenv().MM2_UTILITIES_LOADED = true
+while wait(2) do
+	pcall(StartMM2)
 end
-
-Tabs.CreateThemeTab:Colorpicker({
-    Title = "Background Color",
-    Default = Color3.fromHex(ThemeAccent),
-    Callback = function(color)
-        ThemeAccent = color
-    end
-})
-
-Tabs.CreateThemeTab:Colorpicker({
-    Title = "Outline Color",
-    Default = Color3.fromHex(ThemeOutline),
-    Callback = function(color)
-        ThemeOutline = color
-    end
-})
-
-Tabs.CreateThemeTab:Colorpicker({
-    Title = "Text Color",
-    Default = Color3.fromHex(ThemeText),
-    Callback = function(color)
-        ThemeText = color
-    end
-})
-
-Tabs.CreateThemeTab:Colorpicker({
-    Title = "Placeholder Text Color",
-    Default = Color3.fromHex(ThemePlaceholderText),
-    Callback = function(color)
-        ThemePlaceholderText = color
-    end
-})
-
-Tabs.CreateThemeTab:Button({
-    Title = "Update Theme",
-    Callback = function()
-        WindUI:AddTheme({
-            Name = currentThemeName,
-            Accent = ThemeAccent,
-            Outline = ThemeOutline,
-            Text = ThemeText,
-            PlaceholderText = ThemePlaceholderText
-        })
-        WindUI:SetTheme(currentThemeName)
-        WindUI:Notify({
-            Title = "Тема обновлена",
-            Content = "Новая тема '"..currentThemeName.."' применена!",
-            Duration = 3,
-            Icon = "check-circle"
-        })
-    end
-})
