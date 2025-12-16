@@ -19,8 +19,8 @@ getgenv().FarmCoins = false
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 100
-local SPEED = 200
+local RANGE = 1000   -- مدى البحث كبير لتقريب العملات بسرعة
+local SPEED = 1      -- سرعة Lerp (1 = مباشر تقريبًا)
 
 ------------------------------------------------
 -- أقرب عملة
@@ -34,7 +34,7 @@ local function getClosestCoin()
     for _,v in ipairs(workspace:GetDescendants()) do
         if v:IsA("BasePart") and v.Name:lower():find("coin") and v.Parent then
             local dist = (v.Position - root.Position).Magnitude
-            if dist <= shortest then
+            if dist < shortest then
                 shortest = dist
                 closestCoin = v
             end
@@ -44,15 +44,21 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- التحرك نحو العملة
+-- التحرك بسلاسة شديدة
 ------------------------------------------------
 local function goToCoinSmooth(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
 
-    while coin and coin.Parent and getgenv().FarmCoins do
-        local direction = (Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z) - root.Position).Unit
-        root.CFrame = root.CFrame + direction * math.min(SPEED * task.wait(), (coin.Position - root.Position).Magnitude)
+    while getgenv().FarmCoins do
+        local coin = getClosestCoin()
+        if coin and coin.Parent then
+            -- تحرك بسلاسة لكن سريع جدًا نحو العملة
+            local targetPos = Vector3.new(coin.Position.X, coin.Position.Y, coin.Position.Z)
+            root.CFrame = root.CFrame:Lerp(CFrame.new(targetPos), SPEED)
+        else
+            task.wait(0.01) -- قليل جدًا للتحديث
+        end
         task.wait()
     end
 end
@@ -66,14 +72,7 @@ btn.MouseButton1Click:Connect(function()
 
     if getgenv().FarmCoins then
         task.spawn(function()
-            while getgenv().FarmCoins do
-                local coin = getClosestCoin()
-                if coin then
-                    goToCoinSmooth(coin)
-                else
-                    task.wait(0.2)
-                end
-            end
+            goToCoinSmooth()
         end)
     end
 end)
