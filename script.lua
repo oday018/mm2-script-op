@@ -20,8 +20,8 @@ getgenv().FarmCoins = false
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local RANGE = 200        -- مدى البحث
-local Y_OFFSET = 3      -- ارتفاع الشخصية فوق العملة
-local SPEED = 50        -- سرعة الحركة (كلما أكبر أسرع)
+local Y_OFFSET = 5       -- ارتفاع الشخصية فوق الأرض
+local SPEED = 50         -- سرعة الحركة
 
 ------------------------------------------------
 -- أقرب عملة
@@ -45,20 +45,35 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- حركة سلسة
+-- الحصول على ارتفاع الأرض
+------------------------------------------------
+local function getGroundY(position)
+    local ray = Ray.new(position + Vector3.new(0, 50, 0), Vector3.new(0, -500, 0))
+    local hit, hitPos = workspace:FindPartOnRay(ray, lp.Character)
+    if hit then
+        return hitPos.Y
+    else
+        return position.Y -- إذا لم نجد أرض نترك نفس الارتفاع
+    end
+end
+
+------------------------------------------------
+-- حركة سلسة مع المحافظة على الأرض
 ------------------------------------------------
 local function goToCoinSmooth(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
     local startPos = root.Position
-    local endPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
+    local endPos = coin.Position
     local distance = (endPos - startPos).Magnitude
     local duration = distance / SPEED
     local t = 0
 
     while t < 1 and FarmCoins do
         t = t + task.wait() / duration
-        root.CFrame = CFrame.new(startPos:Lerp(endPos, t))
+        local lerpPos = startPos:Lerp(endPos, t)
+        local groundY = getGroundY(lerpPos)
+        root.CFrame = CFrame.new(Vector3.new(lerpPos.X, groundY + Y_OFFSET, lerpPos.Z))
     end
 end
 
