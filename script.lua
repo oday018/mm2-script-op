@@ -11,26 +11,21 @@ btn.TextSize = 20
 btn.Draggable = true
 btn.Active = true
 
--- Global toggle
+-- Toggle
 getgenv().FarmCoins = false
-
 btn.MouseButton1Click:Connect(function()
     FarmCoins = not FarmCoins
     btn.Text = FarmCoins and "Farm: ON" or "Farm: OFF"
 end)
 
-------------------------------------------------
 -- إعدادات
-------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 200        -- مدى البحث
-local TELEPORT_DELAY = 0.12
-local Y_OFFSET = -3     -- الزخم المطلوب
+local RANGE = 200
+local SPEED = 0.15   -- سرعة الليرب
+local HEIGHT = 3     -- ارتفاع ثابت فوق العملة
 
-------------------------------------------------
 -- أقرب عملة
-------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
@@ -49,25 +44,17 @@ local function getClosestCoin()
     return closestCoin
 end
 
-------------------------------------------------
--- انتقال مباشر
-------------------------------------------------
-local function goToCoin(coin)
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = lp.Character.HumanoidRootPart
-    root.CFrame = coin.CFrame * CFrame.new(0, Y_OFFSET, 0)
-end
-
-------------------------------------------------
--- Farm Loop (خفيف جدًا)
-------------------------------------------------
+-- الحركة السلسة
 task.spawn(function()
     while true do
-        task.wait(0.1)
-        if FarmCoins then
+        task.wait(0.03)
+        if FarmCoins and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+            local root = lp.Character.HumanoidRootPart
             local coin = getClosestCoin()
             if coin then
-                goToCoin(coin)
+                local targetPos = coin.Position + Vector3.new(0, HEIGHT, 0)
+                -- lerp يتحرك بسلاسة
+                root.CFrame = root.CFrame:Lerp(CFrame.new(targetPos, targetPos), SPEED)
             end
         end
     end
