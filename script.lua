@@ -21,7 +21,6 @@ local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local RANGE = 200        -- مدى البحث
 local Y_OFFSET = 5       -- ارتفاع الشخصية فوق الأرض
-local SPEED = 50         -- سرعة الحركة
 
 ------------------------------------------------
 -- أقرب عملة
@@ -58,23 +57,14 @@ local function getGroundY(position)
 end
 
 ------------------------------------------------
--- حركة سلسة مع المحافظة على الأرض
+-- الانتقال الفوري للعملة
 ------------------------------------------------
-local function goToCoinSmooth(coin)
+local function teleportToCoin(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
-    local startPos = root.Position
-    local endPos = coin.Position
-    local distance = (endPos - startPos).Magnitude
-    local duration = distance / SPEED
-    local t = 0
-
-    while t < 1 and FarmCoins do
-        t = t + task.wait() / duration
-        local lerpPos = startPos:Lerp(endPos, t)
-        local groundY = getGroundY(lerpPos)
-        root.CFrame = CFrame.new(Vector3.new(lerpPos.X, groundY + Y_OFFSET, lerpPos.Z))
-    end
+    local pos = coin.Position
+    local groundY = getGroundY(pos)
+    root.CFrame = CFrame.new(Vector3.new(pos.X, groundY + Y_OFFSET, pos.Z))
 end
 
 ------------------------------------------------
@@ -89,9 +79,10 @@ btn.MouseButton1Click:Connect(function()
             while FarmCoins do
                 local coin = getClosestCoin()
                 if coin then
-                    goToCoinSmooth(coin)
+                    teleportToCoin(coin)
+                    task.wait(0.1) -- وقت قصير قبل البحث عن العملة التالية
                 else
-                    task.wait(0.1)
+                    task.wait(0.2)
                 end
             end
         end)
