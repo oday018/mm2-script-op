@@ -20,7 +20,7 @@ getgenv().FarmCoins = false  -- حالة تشغيل/إيقاف الجمع
 ------------------------------------------------
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
-local RANGE = 400        -- مدى البحث عن العملات
+local RANGE = 200        -- مدى البحث عن العملات
 local SPEED = 50         -- سرعة الحركة
 
 ------------------------------------------------
@@ -90,6 +90,3 @@ btn.MouseButton1Click:Connect(function()
         end)
     end
 end)
-
-
-
