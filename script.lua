@@ -25,8 +25,8 @@ end)
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local RANGE = 200        -- مدى البحث
-local SPEED = 25         -- سرعة الطيران
-local Y_OFFSET = -3      -- الزخم المطلوب
+local SPEED = 0.3        -- سرعة الحركة (0.1-1 سلسة جداً)
+local Y_OFFSET = -3      -- ارتفاع ثابت
 
 ------------------------------------------------
 -- أقرب عملة
@@ -50,35 +50,18 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- BodyVelocity جاهز مسبقًا
+-- Farm Loop (سلس جدًا)
 ------------------------------------------------
-local bv
 task.spawn(function()
     while true do
         task.wait(0.03)
-        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then continue end
-        local root = lp.Character.HumanoidRootPart
-
-        if getgenv().FarmCoins then
+        if FarmCoins and lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+            local root = lp.Character.HumanoidRootPart
             local coin = getClosestCoin()
             if coin then
-                if not bv then
-                    bv = Instance.new("BodyVelocity")
-                    bv.MaxForce = Vector3.new(1e9,1e9,1e9)
-                    bv.Parent = root
-                end
-                local dir = (coin.Position + Vector3.new(0,Y_OFFSET,0) - root.Position).Unit
-                bv.Velocity = dir * SPEED
-            else
-                if bv then
-                    bv:Destroy()
-                    bv = nil
-                end
-            end
-        else
-            if bv then
-                bv:Destroy()
-                bv = nil
+                -- استخدام Lerp للحركة السلسة
+                local targetPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
+                root.CFrame = root.CFrame:Lerp(CFrame.new(targetPos), SPEED)
             end
         end
     end
