@@ -84,10 +84,11 @@ btn.MouseButton1Click:Connect(function()
                 if coin then
                     goToCoinSmooth(coin)
                 else
-                    task.wait(0.01)  -- لا توجد عملة، انتظر قليل قبل البحث مجدداً
+                    task.wait(0.10)  -- لا توجد عملة، انتظر قليل قبل البحث مجدداً
                 end
             end
         end)
     end
 end)
+
 
