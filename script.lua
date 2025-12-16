@@ -20,7 +20,8 @@ getgenv().FarmCoins = false
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local RANGE = 200        -- مدى البحث
-local Y_OFFSET = 5       -- ارتفاع الشخصية فوق الأرض
+local Y_OFFSET = 3      -- ارتفاع الشخصية فوق العملة
+local SPEED = 50        -- سرعة الحركة (كلما أكبر أسرع)
 
 ------------------------------------------------
 -- أقرب عملة
@@ -44,27 +45,21 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- الحصول على ارتفاع الأرض
+-- حركة سلسة
 ------------------------------------------------
-local function getGroundY(position)
-    local ray = Ray.new(position + Vector3.new(0, 50, 0), Vector3.new(0, -500, 0))
-    local hit, hitPos = workspace:FindPartOnRay(ray, lp.Character)
-    if hit then
-        return hitPos.Y
-    else
-        return position.Y -- إذا لم نجد أرض نترك نفس الارتفاع
-    end
-end
-
-------------------------------------------------
--- الانتقال الفوري للعملة
-------------------------------------------------
-local function teleportToCoin(coin)
+local function goToCoinSmooth(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
-    local pos = coin.Position
-    local groundY = getGroundY(pos)
-    root.CFrame = CFrame.new(Vector3.new(pos.X, groundY + Y_OFFSET, pos.Z))
+    local startPos = root.Position
+    local endPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
+    local distance = (endPos - startPos).Magnitude
+    local duration = distance / SPEED
+    local t = 0
+
+    while t < 1 and FarmCoins do
+        t = t + task.wait() / duration
+        root.CFrame = CFrame.new(startPos:Lerp(endPos, t))
+    end
 end
 
 ------------------------------------------------
@@ -79,10 +74,9 @@ btn.MouseButton1Click:Connect(function()
             while FarmCoins do
                 local coin = getClosestCoin()
                 if coin then
-                    teleportToCoin(coin)
-                    task.wait(0.1) -- وقت قصير قبل البحث عن العملة التالية
+                    goToCoinSmooth(coin)
                 else
-                    task.wait(0.2)
+                    task.wait(0.1)
                 end
             end
         end)
