@@ -2,65 +2,92 @@
 local ui = Instance.new("ScreenGui", game.CoreGui)
 local btn = Instance.new("TextButton", ui)
 
-btn.Size = UDim2.new(0, 120, 0, 40)
+btn.Size = UDim2.new(0, 140, 0, 40)
 btn.Position = UDim2.new(0, 20, 0, 100)
 btn.Text = "FlyFarm: OFF"
 btn.BackgroundColor3 = Color3.fromRGB(30,30,30)
 btn.TextColor3 = Color3.fromRGB(255,255,255)
-btn.TextSize = 20
+btn.TextSize = 18
 btn.Draggable = true
 btn.Active = true
 
--- Global toggle
+-- Toggle
 getgenv().FlyFarm = false
+
+------------------------------------------------
+-- Services & Player
+------------------------------------------------
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local lp = Players.LocalPlayer
 
 ------------------------------------------------
 -- إعدادات
 ------------------------------------------------
-local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
-local FLY_HEIGHT = 10      -- ارتفاع الطيران فوق الأرض
-local SPEED = 0.2          -- سرعة الطيران (0.1 - 1)
+local SPEED = 0.25        -- سرعة الطيران (0.15 – 0.4)
+local FLY_HEIGHT = 6      -- ارتفاع ثابت (ما يطيح)
+
+------------------------------------------------
+-- Noclip + Fly ثابت
+------------------------------------------------
+local function enableFly(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local root = character:WaitForChild("HumanoidRootPart")
+
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    humanoid.PlatformStand = true
+
+    -- اختراق كل شيء
+    for _,v in ipairs(character:GetDescendants()) do
+        if v:IsA("BasePart") then
+            v.CanCollide = false
+        end
+    end
+
+    return root
+end
 
 ------------------------------------------------
 -- أقرب عملة
 ------------------------------------------------
-local function getClosestCoin()
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = lp.Character.HumanoidRootPart
-    local closestCoin
-    local shortest = math.huge
-
+local function getClosestCoin(root)
+    local closest, dist = nil, math.huge
     for _,v in ipairs(workspace:GetDescendants()) do
         if v:IsA("BasePart") and v.Name:lower():find("coin") and v.Parent then
-            local dist = (v.Position - root.Position).Magnitude
-            if dist < shortest then
-                shortest = dist
-                closestCoin = v
+            local d = (v.Position - root.Position).Magnitude
+            if d < dist then
+                dist = d
+                closest = v
             end
         end
     end
-    return closestCoin
+    return closest
 end
 
 ------------------------------------------------
--- الطيران نحو العملات
+-- Fly Farm (سلس + يخترق + ما يوقف)
 ------------------------------------------------
-local function flyFarm()
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = lp.Character.HumanoidRootPart
+local function startFlyFarm()
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local root = enableFly(char)
 
-    while getgenv().FlyFarm do
-        local coin = getClosestCoin()
-        if coin and coin.Parent then
-            local targetPos = Vector3.new(coin.Position.X, coin.Position.Y + FLY_HEIGHT, coin.Position.Z)
-            -- حركة سلسة جدًا نحو العملة في الجو
-            root.CFrame = root.CFrame:Lerp(CFrame.new(targetPos), SPEED)
-        else
-            task.wait(0.01)
+    RunService.RenderStepped:Connect(function()
+        if not getgenv().FlyFarm then return end
+
+        local coin = getClosestCoin(root)
+        if coin then
+            local targetPos = Vector3.new(
+                coin.Position.X,
+                coin.Position.Y + FLY_HEIGHT,
+                coin.Position.Z
+            )
+
+            root.CFrame = root.CFrame:Lerp(
+                CFrame.new(targetPos),
+                SPEED
+            )
         end
-        task.wait()
-    end
+    end)
 end
 
 ------------------------------------------------
@@ -71,6 +98,12 @@ btn.MouseButton1Click:Connect(function()
     btn.Text = getgenv().FlyFarm and "FlyFarm: ON" or "FlyFarm: OFF"
 
     if getgenv().FlyFarm then
-        task.spawn(flyFarm)
+        startFlyFarm()
+    else
+        if lp.Character and lp.Character:FindFirstChild("Humanoid") then
+            local h = lp.Character.Humanoid
+            h.PlatformStand = false
+            h:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
     end
 end)
