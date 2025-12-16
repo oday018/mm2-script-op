@@ -44,20 +44,21 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- حركة سلسة بدون رفع الشخصية
+-- حركة سلسة بدون رفع الشخصية + التحقق من وجود العملة
 ------------------------------------------------
 local function goToCoinSmooth(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
     local startPos = root.Position
-    local endPos = Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z) -- ثابت على نفس الارتفاع
-    local distance = (endPos - startPos).Magnitude
-    local duration = distance / SPEED
+    local distance = (coin.Position - startPos).Magnitude
+    local duration = (distance / SPEED) * 0.5  -- تقصير الوقت للنصف
     local t = 0
 
     while t < 1 and getgenv().FarmCoins do
+        if not coin or not coin.Parent then break end  -- تأكد أن العملة موجودة
         t = t + task.wait() / duration
-        root.CFrame = CFrame.new(startPos:Lerp(endPos, t))
+        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then break end
+        root.CFrame = CFrame.new(startPos:Lerp(Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z), t))
     end
 end
 
