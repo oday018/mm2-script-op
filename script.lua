@@ -23,10 +23,11 @@ end)
 -- إعدادات
 ------------------------------------------------
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local lp = Players.LocalPlayer
-local RANGE = 200        -- مدى البحث
-local TELEPORT_DELAY = 0.12
-local Y_OFFSET = -3     -- الزخم المطلوب
+local RANGE = 200         -- مدى البحث
+local Y_OFFSET = 3        -- ارتفاع الطيران فوق الأرض
+local TWEEN_SPEED = 0.2   -- سرعة الانتقال (قيمة أصغر = أسرع)
 
 ------------------------------------------------
 -- أقرب عملة
@@ -50,24 +51,27 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- انتقال مباشر
+-- انتقال سلس
 ------------------------------------------------
-local function goToCoin(coin)
+local function flyToCoin(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
     local root = lp.Character.HumanoidRootPart
-    root.CFrame = coin.CFrame * CFrame.new(0, Y_OFFSET, 0)
+    local targetCFrame = CFrame.new(coin.Position + Vector3.new(0, Y_OFFSET, 0))
+    local tween = TweenService:Create(root, TweenInfo.new(TWEEN_SPEED, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
+    tween:Play()
+    tween.Completed:Wait()
 end
 
 ------------------------------------------------
--- Farm Loop (خفيف جدًا)
+-- Farm Loop
 ------------------------------------------------
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.05)
         if FarmCoins then
             local coin = getClosestCoin()
             if coin then
-                goToCoin(coin)
+                flyToCoin(coin)
             end
         end
     end
