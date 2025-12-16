@@ -18,12 +18,13 @@ getgenv().FarmCoins = false
 -- إعدادات
 ------------------------------------------------
 local Players = game:GetService("Players")
+local PathfindingService = game:GetService("PathfindingService")
 local lp = Players.LocalPlayer
-local RANGE = 300        -- مدى البحث
-local SPEED = 200         -- سرعة الحركة (كلما أكبر أسرع)
+local RANGE = 100        -- قلل النطاق لتجنب العملات البعيدة
+local SPEED = 200
 
 ------------------------------------------------
--- أقرب عملة
+-- أقرب عملة قابلة للوصول
 ------------------------------------------------
 local function getClosestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
@@ -32,11 +33,16 @@ local function getClosestCoin()
     local shortest = RANGE
 
     for _,v in ipairs(workspace:GetDescendants()) do
-        if v:IsA("BasePart") and v.Name:lower():find("coin") then
+        if v:IsA("BasePart") and v.Name:lower():find("coin") and v.Parent then
             local dist = (v.Position - root.Position).Magnitude
             if dist <= shortest then
-                shortest = dist
-                closestCoin = v
+                -- تحقق من إمكانية الوصول عبر خط مباشر (تجنب الجدران)
+                local ray = Ray.new(root.Position, (v.Position - root.Position).Unit * dist)
+                local hit = workspace:FindPartOnRay(ray, lp.Character)
+                if not hit or hit == v then
+                    shortest = dist
+                    closestCoin = v
+                end
             end
         end
     end
@@ -44,21 +50,22 @@ local function getClosestCoin()
 end
 
 ------------------------------------------------
--- حركة سلسة بدون رفع الشخصية + التحقق من وجود العملة
+-- التحرك نحو العملة باستخدام Pathfinding
 ------------------------------------------------
-local function goToCoinSmooth(coin)
+local function goToCoin(coin)
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-    local root = lp.Character.HumanoidRootPart
-    local startPos = root.Position
-    local distance = (coin.Position - startPos).Magnitude
-    local duration = (distance / SPEED) * 0.5  -- تقصير الوقت للنصف
-    local t = 0
+    local humanoid = lp.Character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
 
-    while t < 1 and getgenv().FarmCoins do
-        if not coin or not coin.Parent then break end  -- تأكد أن العملة موجودة
-        t = t + task.wait() / duration
-        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then break end
-        root.CFrame = CFrame.new(startPos:Lerp(Vector3.new(coin.Position.X, root.Position.Y, coin.Position.Z), t))
+    local path = PathfindingService:CreatePath()
+    path:ComputeAsync(lp.Character.HumanoidRootPart.Position, coin.Position)
+    local waypoints = path:GetWaypoints()
+
+    for _, waypoint in ipairs(waypoints) do
+        if not getgenv().FarmCoins then break end
+        humanoid:MoveTo(waypoint.Position)
+        local reached = humanoid.MoveToFinished:Wait()
+        if not coin or not coin.Parent then break end
     end
 end
 
@@ -74,12 +81,11 @@ btn.MouseButton1Click:Connect(function()
             while getgenv().FarmCoins do
                 local coin = getClosestCoin()
                 if coin then
-                    goToCoinSmooth(coin)
+                    goToCoin(coin)
                 else
-                    task.wait(0.1)
+                    task.wait(0.2)
                 end
             end
         end)
     end
 end)
-
