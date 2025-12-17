@@ -56,7 +56,7 @@ local lp = Players.LocalPlayer
 -- السرعة والمسافة
 local TELEPORT_SPEED = 0.1 -- ثواني بين كل حركة (كلما قل الرقم زادت السرعة)
 local SEARCH_RANGE = 1000 -- مدى البحث
-local Y_OFFSET = 3 -- ارتفاع فوق العملة
+local Y_OFFSET = 0 -- ارتفاع فوق العملة
 
 -- الحالة
 local FarmEnabled = false
@@ -121,7 +121,7 @@ local function UnfreezeCharacter()
     local humanoid = lp.Character:FindFirstChild("Humanoid")
     if humanoid then
         humanoid.PlatformStand = false
-        humanoid.WalkSpeed = 16
+        humanoid.WalkSpeed = 20
         humanoid.JumpPower = 50
     end
     
@@ -298,3 +298,4 @@ print("❄️ Character will be frozen")
 print("🧱 Can pass through walls")
 print("💰 Only collects parts named 'coin'")
 print("=======================================")
+
