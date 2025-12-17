@@ -1,5 +1,5 @@
--- مكتبة بسيطة وجميلة
-local function CreateWindow()
+-- مكتبة الواجهة
+local function CreateFarmUI()
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "FlyFarmUI"
     ScreenGui.Parent = game.CoreGui
@@ -7,44 +7,67 @@ local function CreateWindow()
     
     -- الإطار الرئيسي
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 200, 0, 120)
-    MainFrame.Position = UDim2.new(0.5, -100, 0.3, 0)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    MainFrame.Size = UDim2.new(0, 250, 0, 140)
+    MainFrame.Position = UDim2.new(0.5, -125, 0.3, 0)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
     
-    -- زوايا دائرية
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.CornerRadius = UDim.new(0, 10)
     UICorner.Parent = MainFrame
     
-    -- ظل
     local UIStroke = Instance.new("UIStroke")
-    UIStroke.Color = Color3.fromRGB(60, 60, 80)
+    UIStroke.Color = Color3.fromRGB(70, 70, 100)
     UIStroke.Thickness = 2
     UIStroke.Parent = MainFrame
     
     -- شريط العنوان
     local TitleBar = Instance.new("Frame")
-    TitleBar.Size = UDim2.new(1, 0, 0, 30)
-    TitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    TitleBar.BorderSizePixel = 0
+    TitleBar.Size = UDim2.new(1, 0, 0, 35)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
     TitleBar.Parent = MainFrame
     
     local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 8)
+    TitleCorner.CornerRadius = UDim.new(0, 10)
     TitleCorner.Parent = TitleBar
     
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(1, -10, 1, 0)
     Title.Position = UDim2.new(0, 10, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = "💰 Coin Fly Farm"
+    Title.Text = "💰 Fly Coin Farm"
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextSize = 16
-    Title.Font = Enum.Font.GothamSemibold
+    Title.TextSize = 18
+    Title.Font = Enum.Font.GothamBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TitleBar
+    
+    -- زر التفعيل
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0.85, 0, 0, 45)
+    ToggleButton.Position = UDim2.new(0.075, 0, 0.35, 0)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+    ToggleButton.Text = "⏸️ START FARMING"
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.TextSize = 16
+    ToggleButton.Font = Enum.Font.GothamSemibold
+    ToggleButton.Parent = MainFrame
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 8)
+    ButtonCorner.Parent = ToggleButton
+    
+    -- مؤشر الحالة
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Size = UDim2.new(0.85, 0, 0, 25)
+    StatusLabel.Position = UDim2.new(0.075, 0, 0.8, 0)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Text = "Status: OFF"
+    StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    StatusLabel.TextSize = 14
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.Parent = MainFrame
     
     -- جعل النافذة قابلة للسحب
     local dragging = false
@@ -82,65 +105,42 @@ local function CreateWindow()
         end
     end)
     
-    -- زر التفعيل
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Size = UDim2.new(0.8, 0, 0, 40)
-    ToggleButton.Position = UDim2.new(0.1, 0, 0.4, 0)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    ToggleButton.Text = "⏸️ Start Farming"
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleButton.TextSize = 14
-    ToggleButton.Font = Enum.Font.Gotham
-    ToggleButton.Parent = MainFrame
-    
-    local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 6)
-    ButtonCorner.Parent = ToggleButton
-    
-    -- مؤشر الحالة
-    local StatusLabel = Instance.new("TextLabel")
-    StatusLabel.Size = UDim2.new(0.8, 0, 0, 20)
-    StatusLabel.Position = UDim2.new(0.1, 0, 0.8, 0)
-    StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Text = "Status: OFF"
-    StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    StatusLabel.TextSize = 12
-    StatusLabel.Font = Enum.Font.Gotham
-    StatusLabel.Parent = MainFrame
-    
     -- تأثيرات الزر
     ToggleButton.MouseEnter:Connect(function()
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(55, 55, 75)
     end)
     
     ToggleButton.MouseLeave:Connect(function()
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        if ToggleButton.Text == "▶️ STOP FARMING" then
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+        else
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
+        end
     end)
     
     return ToggleButton, StatusLabel
 end
 
 -- ============================================
--- كود المزرعة
+-- كود المزرعة الحقيقي
 -- ============================================
 
 -- إنشاء الواجهة
-local ToggleButton, StatusLabel = CreateWindow()
+local ToggleButton, StatusLabel = CreateFarmUI()
 
--- إعدادات المزرعة
+-- إعدادات اللاعب
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 
 -- إعدادات الطيران
-local FLIGHT_SPEED = 20 -- السرعة المطلوبة
-local SEARCH_RANGE = 300
-local Y_OFFSET = -3
-local COLLECT_DISTANCE = 5
+local FLIGHT_SPEED = 25 -- سرعة الطيران (تعدل كما تريد)
+local SEARCH_RANGE = 300 -- مدى البحث
+local Y_OFFSET = 2 -- ارتفاع فوق العملة
+local COLLECT_DISTANCE = 6 -- مسافة التجميع
 
 -- حالة المزرعة
 local FarmEnabled = false
-local currentTarget = nil
 local flightConnection
 
 -- تنظيف الطيران
@@ -148,13 +148,13 @@ local function CleanupFlight()
     if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
         local root = lp.Character.HumanoidRootPart
         
-        -- إزالة BodyVelocity القديم
-        local oldBV = root:FindFirstChild("FlyBV")
-        if oldBV then
-            oldBV:Destroy()
+        -- إزالة BodyVelocity
+        local bv = root:FindFirstChild("FlyVelocity")
+        if bv then
+            bv:Destroy()
         end
         
-        -- إعادة تحكم اللاعب
+        -- إعادة التحكم للاعب
         local humanoid = lp.Character:FindFirstChild("Humanoid")
         if humanoid then
             humanoid.PlatformStand = false
@@ -162,7 +162,7 @@ local function CleanupFlight()
     end
 end
 
--- البحث عن أقرب عملة
+-- البحث عن العملات بطرق متعددة
 local function FindNearestCoin()
     if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then
         return nil
@@ -172,32 +172,48 @@ local function FindNearestCoin()
     local closestCoin = nil
     local closestDistance = SEARCH_RANGE
     
-    -- البحث في workspace
-    for _, obj in ipairs(workspace:GetChildren()) do
-        if obj:IsA("BasePart") then
-            if obj.Name:lower():find("coin") or 
-               obj.Name:lower():find("part") or
-               obj.Name:lower():find("money") then
+    -- طريقة 1: البحث عن أي جزء باسم coin
+    for _, item in ipairs(workspace:GetDescendants()) do
+        if item:IsA("BasePart") or item:IsA("MeshPart") then
+            local nameLower = item.Name:lower()
+            
+            -- كلمات مفتاحية للبحث
+            if nameLower:find("coin") or 
+               nameLower:find("cash") or 
+               nameLower:find("money") or
+               nameLower:find("reward") or
+               nameLower:find("dollar") or
+               nameLower:find("gem") or
+               (item.BrickColor == BrickColor.new("Bright yellow") and item.Name == "Part") then
                 
-                local distance = (obj.Position - root.Position).Magnitude
+                local distance = (item.Position - root.Position).Magnitude
                 if distance < closestDistance then
                     closestDistance = distance
-                    closestCoin = obj
+                    closestCoin = item
                 end
             end
         end
+    end
+    
+    -- طريقة 2: إذا لم نجد، نبحث في الفولدرات الخاصة
+    if not closestCoin then
+        local coinFolders = {
+            workspace:FindFirstChild("Coins"),
+            workspace:FindFirstChild("Money"),
+            workspace:FindFirstChild("Cash"),
+            workspace:FindFirstChild("Rewards"),
+            workspace:FindFirstChild("Collectables")
+        }
         
-        -- البحث في الموديلات
-        for _, part in ipairs(obj:GetDescendants()) do
-            if part:IsA("BasePart") then
-                if part.Name:lower():find("coin") or 
-                   part.Name:lower():find("part") or
-                   part.Name:lower():find("money") then
-                    
-                    local distance = (part.Position - root.Position).Magnitude
-                    if distance < closestDistance then
-                        closestDistance = distance
-                        closestCoin = part
+        for _, folder in ipairs(coinFolders) do
+            if folder and folder:IsA("Folder") then
+                for _, coin in ipairs(folder:GetChildren()) do
+                    if coin:IsA("BasePart") then
+                        local distance = (coin.Position - root.Position).Magnitude
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestCoin = coin
+                        end
                     end
                 end
             end
@@ -208,7 +224,7 @@ local function FindNearestCoin()
 end
 
 -- نظام الطيران السلس
-local function FlyToTarget(coin)
+local function FlyToCoin(coin)
     if not coin or not coin.Parent then
         return false
     end
@@ -225,61 +241,60 @@ local function FlyToTarget(coin)
         humanoid.PlatformStand = true
     end
     
-    -- حساب الاتجاه
-    local targetPosition = coin.Position + Vector3.new(0, Y_OFFSET, 0)
-    local direction = (targetPosition - root.Position)
+    -- حساب الهدف مع ارتفاع إضافي
+    local targetPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
+    local direction = (targetPos - root.Position)
     local distance = direction.Magnitude
     
     -- إذا وصلنا للعملة
     if distance < COLLECT_DISTANCE then
-        return true -- تم الوصول
+        return true
     end
     
     -- تطبيع الاتجاه
     if distance > 0 then
         direction = direction / distance
-    else
-        direction = Vector3.new(0, 0, 0)
     end
     
-    -- تطبيق سرعة الطيران
+    -- سرعة الطيران
     local velocity = direction * FLIGHT_SPEED
     
-    -- إزالة BodyVelocity القديم
-    local oldBV = root:FindFirstChild("FlyBV")
-    if oldBV then
-        oldBV:Destroy()
-    end
+    -- BodyVelocity للحركة السلسة
+    local bv = root:FindFirstChild("FlyVelocity") or Instance.new("BodyVelocity")
+    bv.Name = "FlyVelocity"
+    bv.Velocity = velocity
+    bv.MaxForce = Vector3.new(10000, 10000, 10000)
+    bv.P = 1250
+    bv.Parent = root
     
-    -- إنشاء BodyVelocity جديد
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.Name = "FlyBV"
-    bodyVelocity.Velocity = velocity
-    bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)
-    bodyVelocity.P = 1000
-    bodyVelocity.Parent = root
+    -- إزالة القوة القديمة بعد وقت قصير
+    task.spawn(function()
+        task.wait(0.1)
+        if bv and bv.Parent then
+            bv.Velocity = Vector3.new(0, 0, 0)
+        end
+    end)
     
-    -- إزالة BodyVelocity بعد ثانية (للسلاسة)
-    game:GetService("Debris"):AddItem(bodyVelocity, 0.1)
-    
-    return false -- لم نصل بعد
+    return false
 end
 
--- بدء/إيقاف المزرعة
+-- زر التفعيل
 ToggleButton.MouseButton1Click:Connect(function()
     FarmEnabled = not FarmEnabled
     
     if FarmEnabled then
-        ToggleButton.Text = "▶️ Stop Farming"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 180, 80)
-        StatusLabel.Text = "Status: ON - Flying to coins"
+        -- تشغيل المزرعة
+        ToggleButton.Text = "▶️ STOP FARMING"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+        StatusLabel.Text = "Status: FLYING..."
         StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
         
-        -- بدء نظام الطيران
+        -- إيقاف الاتصال السابق
         if flightConnection then
             flightConnection:Disconnect()
         end
         
+        -- بدء نظام الطيران
         flightConnection = RunService.Heartbeat:Connect(function()
             if not FarmEnabled then
                 CleanupFlight()
@@ -287,6 +302,7 @@ ToggleButton.MouseButton1Click:Connect(function()
             end
             
             if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then
+                StatusLabel.Text = "Status: NO CHARACTER"
                 return
             end
             
@@ -294,52 +310,45 @@ ToggleButton.MouseButton1Click:Connect(function()
             local coin = FindNearestCoin()
             
             if coin then
+                -- تحديث الحالة
+                local distance = (coin.Position - lp.Character.HumanoidRootPart.Position).Magnitude
+                StatusLabel.Text = string.format("Status: FLYING (%d studs)", math.floor(distance))
+                
                 -- الطيران نحو العملة
-                local reached = FlyToTarget(coin)
+                local reached = FlyToCoin(coin)
                 
                 if reached then
-                    -- العملة تم جمعها، ابحث عن التالية
-                    currentTarget = nil
-                else
-                    currentTarget = coin
+                    StatusLabel.Text = "Status: COIN COLLECTED!"
+                    task.wait(0.1) -- انتظر قليلاً قبل البحث عن التالية
                 end
             else
+                StatusLabel.Text = "Status: NO COINS FOUND"
                 CleanupFlight()
-                StatusLabel.Text = "Status: ON - No coins found"
             end
         end)
         
-        print("✅ Coin Fly Farm Started | Speed:", FLIGHT_SPEED)
+        print("🚀 Fly Farm Started | Speed:", FLIGHT_SPEED)
         
     else
-        ToggleButton.Text = "⏸️ Start Farming"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        -- إيقاف المزرعة
+        ToggleButton.Text = "⏸️ START FARMING"
+        ToggleButton.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
         StatusLabel.Text = "Status: OFF"
         StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
         
-        -- إيقاف النظام
         if flightConnection then
             flightConnection:Disconnect()
             flightConnection = nil
         end
         
         CleanupFlight()
-        currentTarget = nil
-        
-        print("❌ Coin Fly Farm Stopped")
+        print("⏹️ Fly Farm Stopped")
     end
 end)
 
--- تنظيف عند مغادرة اللعبة
-game.Players.PlayerRemoving:Connect(function(player)
-    if player == lp then
-        if flightConnection then
-            flightConnection:Disconnect()
-        end
-        CleanupFlight()
-    end
-end)
-
-print("🎮 Coin Fly Farm Loaded!")
-print("📊 Flight Speed:", FLIGHT_SPEED)
-print("📍 Click the button to start!")
+-- تنبيه عند التحميل
+print("=======================================")
+print("💰 FLY COIN FARM LOADED SUCCESSFULLY!")
+print("🎮 Click the button to start flying!")
+print("✈️ Flight Speed:", FLIGHT_SPEED)
+print("=======================================")
