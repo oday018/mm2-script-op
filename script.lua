@@ -1,713 +1,505 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/ionlyusegithubformcmods/1-Line-Scripts/main/Mobile%20Friendly%20Orion')))()
 
-local Window = OrionLib:MakeWindow({Name = "SNOWT HUB [REWRITEN]", HidePremium = false, SaveConfig = false, ConfigFolder = "OrionTest"})
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
 
-OrionLib:MakeNotification({
-	Name = "By Snowt Team",
-	Content = "My First script",
-	Image = "rbxassetid://4483345998",
-	Time = 5
-})
 
-local Tab = Window:MakeTab({
-	Name = "Main",
-	Icon = "rbxassetid://7733960981",
-	PremiumOnly = false
-})
+local LocalPlayer = Players.LocalPlayer
 
-local Textlabel = script.Parent
-local players = game.Players:GetPlayers()
-local count = #players
-Textlabel.Text = "Total players: "..count
 
-Tab:AddLabel(#game.Players:GetPlayers())
 
-Tab:AddButton({
-	Name = "Reset",
-	Callback = function()
-		game.Players.LocalPlayer.Character.Humanoid.Health = 0
-  	end    
-})
 
-Tab:AddButton({
-	Name = "Destory UI",
-	Callback = function()
-		OrionLib:Destroy()
-  	end    
-})  
+local Executor = getexecutorname():sub(1)
 
+local stuff = {
+    EspDisabled = false,
+}
+
+local ESP = {
+    Enabled = false,
+    Boxes = true,
+    FaceCamera = false,
+    Names = true,
+    TeamColor = true,
+    Thickness = 1,
+    AttachShift = 1,
+    TeamMates = true,
+    Players = true,
     
+}
 
-local Tab = Window:MakeTab({
-    Name = "Teleport",
-    Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
 
-local Section = Tab:AddSection({
-    Name = "Teleport function:"
-})
+function ESP:Toggle(value)
 
-Tab:AddParagraph("Важно!", "Данная функция позволяет вам телепортироваться к любому игроку, чтобы обновить список игроков, вам нужно переинжектить скрипт.")
-
-local plrs = game.Players
-
-local playerNames = {}
-local players = plrs:GetPlayers()
-
-for _, player in ipairs(players) do
-table.insert(playerNames, player.Name)
 end
 
-Tab:AddDropdown({
-    Name = "Tp to players",
-    Default = playerNames[1] or "No players",
-    Options = playerNames,
-    Callback = function(selectedplrName)
-    local targetPlayer = plrs:FindFirstChild(selectedplrName)
+if Executor ~= "Celery" then
+ESP = loadstring(game:HttpGet("https://pastebin.com/raw/nums7qGL"))()
+else
+    stuff.EspDisabled = true
+end
 
-    if targetPlayer and targetPlayer.Character and targetPlayer.Character: FindFirstChild("HumanoidRootPart") then
-    local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
-    local localPlayerRoot = plrs.LocalPlayer.Character: FindFirstChild("HumanoidRootPart")
+ESP:Toggle(false)
 
-    if localPlayerRoot then
-    localPlayerRoot.CFrame = CFrame.new(targetPosition)
-    end
-    end
-    print(selectedplrName)
-    end
-})
-
-local Tab = Window:MakeTab({
-    Name = "Player",
-    Icon = "rbxassetid://7743875962",
-    PremiumOnly = false
-})
-
-local Section = Tab:AddSection({
-    Name = "WalkSpeed:"
-})
-
-Tab:AddSlider({
-	Name = "Walkspeed",
-	Min = 16,
-	Max = 500,
-	Default = 16,
-	Color = Color3.fromRGB(1, 217, 255),
-	Increment = 1,
-	ValueName = "Walkspeed",
-	Callback = function(Value)
-		game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-	end    
-})
-
-Tab:AddToggle({
-    Name = "Keep Walkspeed",
-	Default = false,
-	Callback = function(Value)
-KeepWalkspeed = Value
-            while KeepWalkspeed do
-                if game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") ~= nil and game.Players.LocalPlayer.Character.Humanoid.WalkSpeed ~= Walkspeed then
-                    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Walkspeed
-                end
-task.wait()
-            end
-	end    
-})
-
-
-Tab:AddLabel("Эта функция делает скорость базовой для всех режимов.")
-
-Tab:AddButton({
-    Name = "Default WalkSpeed",
-    Callback = function(defs)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
-    end
-})
-
-local Section = Tab:AddSection({
-    Name = "JumpPower:"
-})
-
-Tab:AddSlider({
-	Name = "Jumppower",
-	Min = 50,
-	Max = 500,
-	Default = 50,
-	Color = Color3.fromRGB(1, 217, 255),
-	Increment = 1,
-	ValueName = "Jumppower",
-	Callback = function(Value)
-		game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
-	end    
-})
-
-Tab:AddToggle({
-    Name = "Keep JumpPower",
-	Default = false,
-	Callback = function(Value)
-KeepJumppower = Value
-            while KeepJumppower do
-                if game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") ~= nil and game.Players.LocalPlayer.Character.Humanoid.WalkSpeed ~= Jumppower then
-                    game.Players.LocalPlayer.Character.Humanoid.JumpPower = Jumppower
-                end
-task.wait()
-            end
-	end    
-})
-
-Tab:AddLabel("Меняет силу прыжка до базового значения.")
-
-
-Tab:AddButton({
-    Name = "Default JumpPower",
-    Callback = function(defj)
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
-    end
-})
-
-Tab:AddLabel("Делает ваши прыжки бесконечными")
-
-local function EnableInfJ()
-local infjmp = true
-game:GetService("UserInputService").jumpRequest:Connect(function()
-    if infjmp then
-        game:GetService"Players".LocalPlayer.Character:FindFirstChildOfClass"Humanoid":ChangeState("Jumping")
-    end
+--Aimbot V2
+spawn(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/BaconStorage/Scripts/main/Aimbot.lua"))()
 end)
+
+
+local Coins
+local GunDrop
+
+for i,v in next,game:GetService("Workspace"):GetDescendants() do
+if v.Name == "CoinContainer" then
+Coins = v 
+end
 end
 
-
-local function DisableIInfJ()
-local infjmp = false
-end
-
-Tab:AddToggle({
-    Name = "Infinity Jumps",
-    Default = false,
-    Callback = function(infj)
-        InfinJ = not InfinJ
-        if not InfinJ then
-            EnableInfJ()
-            else
-                DisableIInfJ()
-        end
+for i,v in next,game:GetService("Workspace"):GetDescendants() do
+    if v.Name == "GunDrop" then
+        GunDrop = v 
     end
-})
-
-local Tab = Window:MakeTab({
-    Name = "Settings",
-    Icon = "rbxassetid://7733674820",
-    PremiumOnly = false
-})
-
-local Section = Tab:AddSection({
-    Name = "Fly:"
-})
-
-Tab:AddLabel("Загружает GUI с полетом.")
-
-Tab:AddButton({
-    Name = "Activate Fly",
-    Callback = function(fly)loadstring(game:HttpGet(("https://pastebin.com/raw/SLTqw4r4"), true))()
     end
-})
 
-local Section = Tab:AddSection({
-    Name = "God Mode:"
-})
 
-Tab:AddParagraph("Важно!", "При нажатии на кнопку, вы станете бессмертым, но не сможете прыгать. Чтобы отключить функцию, просто ресетнитесь.")
-
-Tab:AddButton({
-    Name = "God Mode",
-    Callback = function(gdm)loadstring(game:HttpGet(("https://pastebin.com/raw/yraTMGwu"), true))()
-end
-})
-
-local Section = Tab:AddSection({
-    Name = "NoClip:"
-})
-
-Tab:AddParagraph("Важно!", "NoClip перестает работать, если вы прыгните или упадете, поэтому не стоит говорить, что NoClip сломанный. К сожалению на этот момент пока что будет все так.")
-
-local Noclip = nil
-local Clip = nil
-
-local function NoClipEnabled()
-function noclip()
-	Clip = false
-		if Clip == false and game.Players.LocalPlayer.Character ~= nil then
-			for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-				if v:IsA('BasePart') and v.CanCollide and v.Name ~= floatName then
-					v.CanCollide = false
-				end
-			end
-		end
-		wait(0.21)
+game:GetService("Workspace").DescendantAdded:Connect(function(a)
+	if a.Name == "CoinContainer" then
+		Coins = a
 	end
-	Noclip = game:GetService('RunService').Stepped:Connect(Nocl)
-
-function clip()
-	if Noclip then Noclip:Disconnect() end
-	Clip = true
-end
-
-noclip() 
-end
-
-local function NoClipDisabled()
-    function noclip()
-	Clip = true
-		if Clip == true and game.Players.LocalPlayer.Character ~= nil then
-			for _,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
-				if v:IsA('BasePart') and v.CanCollide and v.Name ~= floatName then
-					v.CanCollide = true
-				end
-			end
-		end
-		wait(0.21)
-	end
-	Noclip = game:GetService('RunService').Stepped:Connect(Nocl)
-	
-	function clip()
-	if Noclip then Noclip:Disconnect() end
-	Clip = true
-end
-
-noclip() 
-end
-
-Tab:AddToggle({
-    Name = "NoClip",
-    Default = false,
-    Callback = function(nclpnf)
-            NoclipOn = not NoclipOn
-        if not NoclipOn then
-            NoClipEnabled()
-        else
-            NoClipDisabled()
-        end
-end
-})
-
-local Section = Tab:AddSection({
-    Name = "Invisibility:"
-})
-
-Tab:AddLabel("Делает вас невидимым!")
-
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
-local function PTransparencyOn(transparency)
-    for _, part in ipairs(character:GetDescendants()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-            part.Transparency = transparency
-        end
-    end
-end
-
-
-PTransparencyOn(1)
-
-local function PTransparencyOff(transparency)
-    for _, part in ipairs(character:GetDescendants()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-            part.Transparency = transparency
-        end
-    end
-end
-
-
-PTransparencyOff(0)
-
-Tab:AddToggle({
-    Name = "Invisible",
-    Default = false,
-    Callback = function(invis)
-            InvisOn = not InvisOn
-        if not InvisOn then
-            PTransparencyOn(1)
-        else
-            PTransparencyOff(0)
-        end
-end
-})
-
-local Tab = Window:MakeTab({
-    Name = "Visual",
-    Icon = "rbxassetid://7733774602",
-	PremiumOnly = false
-})
-
-local Section = Tab:AddSection({
-    Name = "Esp:"
-})
-
-local espLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/wEquals/Solaris-Hub/main/testing.lua'),true))()
-espLib:Load()
-
-Tab:AddToggle({
-	Name = "Box ESP",
-	Default = false,
-	PremiumOnly = false,
-	Callback = function(Value)
-		if Value then
-			espLib.options.boxes = true
-		else
-			espLib.options.boxes = false
-		end
-	end    
-})
-
-Tab:AddToggle({
-	Name = "Name ESP",
-	Default = false,
-	PremiumOnly = false,
-	Callback = function(Value)
-		if Value then
-			espLib.options.names = true
-		else
-			espLib.options.names = false
-		end
-	end    
-})
-
-Tab:AddToggle({
-	Name = "Distance",
-	Default = false,
-	PremiumOnly = true,
-	Callback = function(Value)
-		if Value then
-			espLib.options.distance = true
-		else
-			espLib.options.distance = false
-		end
-	end    
-})
-
-Tab:AddToggle({
-	Name = "Chams",
-	Default = false,
-	PremiumOnly = true,
-	Callback = function(Value)
-		if Value then
-			espLib.options.chams = true
-		else
-			espLib.options.chams = false
-		end
-	end    
-})
-
-Tab:AddToggle({
-	Name = "Tracers",
-	Default = false,
-	PremiumOnly = true,
-	Callback = function(Value)
-		if Value then
-			espLib.options.tracers = true
-		else
-			espLib.options.tracers = false
-		end
-	end    
-})
-
-Tab:AddToggle({
-	Name = "Healthbars",
-	Default = false,
-	PremiumOnly = true,
-	Callback = function(Value)
-		if Value then
-			espLib.options.healthBars = true
-		else
-			espLib.options.healthBars = false
-		end
-	end    
-})
-
-Tab:AddToggle({
-	Name = "Healthtext",
-	Default = false,
-	PremiumOnly = true,
-	Callback = function(Value)
-		if Value then
-			espLib.options.healthText  = true
-		else
-			espLib.options.healthText = false
-		end
-	end    
-})
-
-local Section = Tab:AddSection({
-    Name = "Aimbot:"
-   })
-
-local aimbot = loadstring(game:HttpGet'https://github.com/RunDTM/Zeerox-Aimbot/raw/main/library.lua')()
-
-aimbot.Key = Enum.UserInputType.MouseButton2
-aimbot.Players = true
-aimbot.AliveCheck = true
-
-Tab:AddToggle({
-	Name = "Aimbot",
-	Default = false,
-	Callback = function(Value)
-		if Value then
-			aimbot.Enabled = true
-		else
-			aimbot.Enabled = false
-		end
-	end    
-})
-
-local Tab = Window:MakeTab({
-    Name = "Scripts for Dev",
-    Icon = "rbxassetid://8997386648",
-	PremiumOnly = false
-})
-
-Tab:AddParagraph("Важно!", "Данные функции активируют выбранный вами explorer.")
-
-local Section = Tab:AddSection({
-    Name = "Dark Dex:",
-})
-
-:AddButton({
-	Name = "Dark Dex V1",
-	Callback = function(v1)loadstring(game:HttpGet("https://raw.githubusercontent.com/MrTrustLumber/Roblox-Scripts/master/Dark%20Dex%20V1", true))()
-end    
-})
-
-Tab:AddButton({
-	Name = "Dark Dex V2",
-	Callback = function(v2)loadstring(game:HttpGet("https://cdn.wearedevs.net/scripts/Dex%20Explorer%20V2.txt", true))()
-end    
-})
-
-Tab:AddButton({
-	Name = "Dark Dex V3 Bypassed",
-	Callback = function(v3)loadstring(game:HttpGet("https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDexV3.lua", true))()
-end    
-})
-
-Tab:AddButton({
-	Name = "Dark Dex V4",
-	Callback = function(v4)loadstring(game:HttpGet("https://gist.githubusercontent.com/joe22-cool/eb02c03c22ffc3c1301d30da07b0a7d0/raw/ee5324771f017073fc30e640323ac2a9b3bfc550/dark%2520dex%2520v4", true))()
-end    
-})
-
-local Section = Tab:AddSection({
-    Name = "Infinity Yield:"
-})
-
-Tab:AddButton({
-    Name = "Infinity Yield",
-    Callback = function()loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-    end
-})
-
-local Tab = Window:MakeTab({
-    Name = "Misc",
-    Icon = "http://www.roblox.com/asset/?id=4370318685",
-	PremiumOnly = false
-})
-
-local Section = Tab:AddSection({
-    Name = "Server Hop/Rejoin/Hop to low server:"
-})
-
-Tab:AddLabel("Перекидывает на другой сервер")
-
-Tab:AddButton({
-    Name = "Server Hop",
-    Callback = function()loadstring(game:HttpGet(("https://pastebin.com/raw/MVTZZGpb"), true))()
-    end
-})
-
-Tab:AddLabel("Перезаходит на тот же сервер.")
-
-Tab:AddButton({
-    Name = "Rejoin",
-    Callback = function()
-    local ts = game:GetService("TeleportService")
-
-    local p = game:GetService("Players").LocalPlayer
-
-
-
-    ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
-    end
-})
-
-Tab:AddLabel("Перекидывает на маленький сервер")
-
-Tab:AddButton({
-    Name = "Hop to low server",
-    Callback = function()loadstring(game:HttpGet(("https://pastebin.com/raw/iup2nQ5X"), true))()
-    end
-})
-
-local Section = Tab:AddSection({
-    Name = "Auto Click:"
-})
-
-Tab:AddLabel("Включает/выключает автокликер")
-
-local Section = Tab:AddSection({
-    Name = "Anti AFK:"
-})
-
-Tab:AddLabel("Вас не кикнет за АФК")
-
-Tab:AddButton({
-    Name = "Anti kick for AFK",
-    Callback = function(afk)
-        repeat wait() until game:IsLoaded()
-    game:GetService("Players").LocalPlayer.Idled:connect(function()
-    game:GetService("VirtualUser"):ClickButton2(Vector2.new())
 end)
+
+game:GetService("Workspace").DescendantAdded:Connect(function(a)
+	if a.Name == "GunDrop" then
+		GunDrop = a
+	end
+end)
+
+
+if not getgenv().AutoFarmBase then
+	local FarmBase = Instance.new("Part")
+	FarmBase.Anchored = true
+
+	FarmBase.CFrame = CFrame.new(0,1000,0)
+    FarmBase.Size = Vector3.new(200,2,200)
+    FarmBase.Parent = game:GetService("Workspace")
+	getgenv().AutoFarmBase = FarmBase
 end
-})
 
-local Tab = Window:MakeTab({
-    Name = "Optimization",
-    Icon = "rbxassetid://7733765045",
-    PremiumOnly = true
-})
+local Main = {
+    CharacterMods = {
+        WalkSpeed = 16,
+        JumpPower = 50,
+        Noclip = true,
+        InfiniteJump = false,
+    },
+    AutoFarm = {
+        AutoFarmEnabled = false,
+    },
+    Misc = {
+        ClickTP = false,
+        ClickDestroy = false,
+    },
+}
 
-local Section = Tab:AddSection({
-    Name = "FPS boost:"
-})
+local functions = {}
+local loops = {}
+local gui = {}
 
-Tab:AddButton({
-    Name = "Fps boost",
-    Callback = function(fpsb)
-       local a = tick()
-if not game:IsLoaded() then
-    game.Loaded:Wait()
+getgenv().DefaultColor = Color3.fromRGB(0, 91, 177)
+
+getgenv().UIlib = ""
+
+function loops:init()
+
+    spawn(function()
+        game:GetService("RunService").Heartbeat:Connect(function()
+    if LocalPlayer.Character ~= nil  and LocalPlayer.Character:FindFirstChild("Humanoid") ~= nil then
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Main.CharacterMods.WalkSpeed
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = Main.CharacterMods.JumpPower
+
 end
-wait(.1)
-sethiddenproperty(game.Lighting, "Technology", 2)
-sethiddenproperty(workspace:FindFirstChildOfClass("Terrain"), "Decoration", false)
-settings().Rendering.QualityLevel = 1
-setsimulationradius(0,0)
-game.Lighting.GlobalShadows = false
-game.Lighting.FogEnd = 9e9
-workspace:FindFirstChildOfClass("Terrain").Elasticity = 0
-for b, c in pairs(game:GetDescendants()) do
-    task.spawn(
-        function()
-            wait()
-            if c:IsA("DataModelMesh") then
-                sethiddenproperty(c, "LODX", Enum.LevelOfDetailSetting.Low)
-                sethiddenproperty(c, "LODY", Enum.LevelOfDetailSetting.Low)
-                c.CollisionFidelity = "Hull"
-            elseif c:IsA("UnionOperation") then
-                c.CollisionFidelity = "Hull"
-            elseif c:IsA("Model") then
-                sethiddenproperty(c, "LevelOfDetail", 1)
-            elseif c:IsA("BasePart") then
-                c.Reflectance = 0
-                c.CastShadow = false
+end)
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if LocalPlayer.Character ~= nil then
+        for i,v in next,game:GetService("Players").LocalPlayer.Character:GetDescendants() do
+            if Main.CharacterMods.Noclip then
+            if v:IsA("BasePart") or v:IsA("Part") and v.Parent == game:GetService("Players").LocalPlayer.Character then
+            v.CanCollide = false
             end
+            end
+            end
+    end
+
+end)
+
+end)
+
+
+spawn(function()
+    while true do
+        wait()
+        if Main.AutoFarm.AutoFarmEnabled then
+        if Coins ~= nil and Coins:GetChildren()[1]  then
+        for i,v in next,Coins:GetChildren() do
+            if v:FindFirstChild("CoinVisual") and v:FindFirstChild("CoinVisual").Transparency ~= 0 then
+        Teleport(v.CFrame + Vector3.new(0,-1.02,0))
+    end 
         end
-    )
-end
-for d, e in pairs(game.Lighting:GetChildren()) do
-    if e:IsA("PostEffect") then
-        e.Enabled = false
-    end
-end
-warn("Low graphics loaded! (" .. math.floor(tick() - a) .. "s)")
-end
-})
-
-local Section = Tab:AddSection({
-    Name = "FPS unlock:"
-})
-
-Tab:AddButton({
-    Name = "Fps unlock",
-    Callback = function(fpsu)
-       setfpscap(999)
-end
-})
-
-local Section = Tab:AddSection ({
-    Name = "RTX mode:"
-})
-Tab:AddButton ({
-    Name = "Rtx mode",
-    Callback = function(rtxm)
-local Blur = Instance.new("BlurEffect", game.Lighting)
-Blur.Size = 4.1
-game.Lighting.GlobalShadows = true
-settings().Rendering.QualityLevel = "Level21"
-
-for _,v in pairs(game:GetDescendants()) do
-    if v:IsA("BasePart") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
-        v.Reflectance = v.Reflectance + 1
-    elseif v:IsA("MeshPart") then
-        v.Reflectance = v.Reflectance + 1
-    end
-end
-end
-})
-
-local Section = Tab:AddSection ({
-    Name = "Lighting:"
-})
-
-Tab:AddButton({
-    Name = "Lighting",
-    Callback = function(lght)
-        setscriptable(Lighting, "Technology", true)
-Lighting.Technology = Enum.Technology.Future
-
-for _, v in next, workspace:GetDescendants() do
-    if v:IsA("PointLight") or v:IsA("SpotLighting") or v:IsA("SurfaceLight") then
-        local Light = v
-        if not Light.Shadows then
-            Light.Shadows = true
+        wait(0.395)
+        if Main.AutoFarm.AutoFarmEnabled then
+        Teleport(getgenv().AutoFarmBase.CFrame + Vector3.new(0,3,0))
         end
+    
+        end
+
+    end
+    wait(4.2)
+end
+    end)
+
+
+end
+
+function functions:init()
+
+    function RejoinServer()
+    TeleportService:Teleport(game.PlaceId)
+    end
+
+    function FirstPersonEnabled(value)
+    if value == true then
+        game.Players.LocalPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
+    else
+        game.Players.LocalPlayer.CameraMode = Enum.CameraMode.Classic
     end
 end
+function Teleport(CFrame)
+    if LocalPlayer.Character ~= nil and game:GetService("Players").LocalPlayer.Character:FindFirstChild("HumanoidRootPart") ~= nil then
+    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame
+    end
 end
-})
+    local Mouse = game.Players.LocalPlayer:GetMouse()
+local UserInputService = game:GetService("UserInputService")
 
-local Section = Tab:AddSection({
-    Name = "Fulbright:"
-})
-
-local function FullBright()
-	while wait() do
-		local Lighting = game:GetService("Lighting")
-		Lighting.Brightness = 2
-		Lighting.ClockTime = 14
-		Lighting.FogEnd = 100000
-		Lighting.GlobalShadows = false
-		Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+UserInputService.InputBegan:Connect(function(input)
+   if input.UserInputType == Enum.UserInputType.MouseButton1 and Main.Misc.ClickTP then
+		if Mouse.Target then
+game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(Mouse.Hit.x, Mouse.Hit.y + 5, Mouse.Hit.z)
+        end
 	end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and Main.Misc.ClickDestroy then
+		if Mouse.Target then
+            Mouse.Target:Destroy()
+        end
+	end
+
+end)
+
+UserInputService.InputBegan:Connect(function(input)
+	if input.KeyCode == Enum.KeyCode.Space and Main.CharacterMods.InfiniteJump then
+		if Mouse.Target then
+			game.Players.LocalPlayer.Character.Humanoid:ChangeState(3)
+		end
+	end
+
+
+end)
+
+
 end
 
-Tab:AddButton({
-	Name = "Fullbright",
-	Callback = function()
-		FullBright()
-	end
-})
 
-local Tab = Window:MakeTab({
-    Name = "Credits",
-    Icon = "rbxassetid://7733955511",
-	PremiumOnly = false
-})
 
-Tab:AddLabel("Developers of Script")
-Tab:AddParagraph("SNOWT", "The designer, developer, tester, and owner of this script, as well as the owner of the telegram channel t.me/roblox_snowt_scripts")
-Tab:AddParagraph ("And no one else", "SNOWT is the sole developer and participant of the SNOWT HUB project")
-Tab:AddParagraph("Script version:", "Version script in last time: [v1.4]")
 
-OrionLib:Init()
+
+
+
+
+
+
+
+
+
+
+
+
+
+function gui:init()
+    local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+    local Window = OrionLib:MakeWindow({Name = "Bacon Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "BaconHub"})
+    local Tab = Window:MakeTab({
+        Name = "Visual Cheats",
+        Icon = "",
+        PremiumOnly = false
+    })
+
+    local AimbotTab = Window:MakeTab({
+        Name = "Aimbot",
+        Icon = "",
+        PremiumOnly = false
+    })
+    
+    --[[local CombatTab = Window:MakeTab({
+        Name = "Combat",
+        Icon = "",
+        PremiumOnly = false
+    })]]
+
+    local AutoFarmTab = Window:MakeTab({
+        Name = "Auto Farm",
+        Icon = "",
+        PremiumOnly = false
+    })
+    local CharTab = Window:MakeTab({
+        Name = "Character",
+        Icon = "",
+        PremiumOnly = false
+    })
+    local MiscTab = Window:MakeTab({
+        Name = "Misc",
+        Icon = "",
+        PremiumOnly = false
+    })
+    local SettingsTab = Window:MakeTab({
+        Name = "Settings",
+        Icon = "",
+        PremiumOnly = false
+    })
+    --[[CombatTab:AddButton({
+        Name = "Pickup Gun",
+        Callback = function()
+                
+          end    
+    })]]
+    Tab:AddToggle({
+        Name = "Esp Enabled",
+        Default = false,
+        Callback = function(Value)
+            ESP:Toggle(Value)
+        end    
+    })
+    local Section = Tab:AddSection({
+        Name = "Esp Settings"
+    })
+    Tab:AddToggle({
+        Name = "Name Esp",
+        Default = false,
+        Callback = function(Value)
+            ESP.Names = Value
+        end    
+    })
+    Tab:AddToggle({
+        Name = "Box Esp",
+        Default = false,
+        Callback = function(Value)
+            ESP.Boxes = Value
+        end    
+    })
+    Tab:AddToggle({
+        Name = "Tracers",
+        Default = false,
+        Callback = function(Value)
+            ESP.Tracers = Value
+        end    
+    })
+
+    Tab:AddToggle({
+        Name = "Team Color",
+        Default = false,
+        Callback = function(Value)
+            ESP.TeamColor = Value
+        end    
+    })
+    local Section = Tab:AddSection({
+        Name = "Other"
+    })
+
+    Tab:AddToggle({
+        Name = "First Person",
+        Default = false,
+        Callback = function(Value)
+            spawn(function()
+            FirstPersonEnabled(Value)
+            end)
+        end    
+    })
+
+    Tab:AddSlider({
+        Name = "FOV",
+        Min = 1,
+        Max = 120,
+        Default = 70,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "FOv",
+        Callback = function(Value)
+            game:GetService("Workspace").CurrentCamera.FieldOfView = Value
+        end    
+    })
+
+    AimbotTab:AddToggle({
+        Name = "Aimbot Enabled",
+        Default = false,
+        Callback = function(Value)
+            getgenv().aimbot = Value
+        end
+    })
+    local Section = AimbotTab:AddSection({
+        Name = "Aimbot Settings"
+    })
+
+    AimbotTab:AddToggle({
+        Name = "Team Check",
+        Default = false,
+        Callback = function(Value)
+            getgenv().teamcheck = Value
+        end
+    })
+    AimbotTab:AddToggle({
+        Name = "Show FOV",
+        Default = false,
+        Callback = function(Value)
+            getgenv().showfov = Value
+        end
+    })
+
+    AimbotTab:AddSlider({
+        Name = "FOV Size",
+        Min = 40,
+        Max = 800,
+        Default = 120,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "FOV Size",
+        Callback = function(Value)
+            getgenv().fov = Value
+        end    
+    })
+    AimbotTab:AddSlider({
+        Name = "FOV Thickness",
+        Min = 1,
+        Max = 5,
+        Default = 1,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "FOv Size",
+        Callback = function(Value)
+            getgenv().fovThickness = Value
+        end    
+    })
+
+
+    AutoFarmTab:AddToggle({
+        Name = "Auto Farm Enabled",
+        Default = false,
+        Callback = function(Value)
+            Main.AutoFarm.AutoFarmEnabled = Value
+        end    
+    })
+
+    CharTab:AddSlider({
+        Name = "WalkSpeed",
+        Min = 16,
+        Max = 300,
+        Default = 16,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "WalkSpeed",
+        Callback = function(Value)
+            Main.CharacterMods.WalkSpeed = Value
+        end    
+    })
+
+    CharTab:AddSlider({
+        Name = "JumpPower",
+        Min = 50,
+        Max = 500,
+        Default = 16,
+        Color = Color3.fromRGB(255,255,255),
+        Increment = 1,
+        ValueName = "JumpPower",
+        Callback = function(Value)
+            Main.CharacterMods.JumpPower = Value
+        end    
+    })
+    CharTab:AddToggle({
+        Name = "Noclip",
+        Default = false,
+        Callback = function(Value)
+            Main.CharacterMods.Noclip = Value
+        end    
+    })
+
+    CharTab:AddToggle({
+        Name = "Infinite Jump",
+        Default = false,
+        Callback = function(Value)
+            Main.CharacterMods.InfiniteJump = Value
+        end    
+    })
+
+    MiscTab:AddToggle({
+        Name = "Click TP",
+        Default = false,
+        Callback = function(Value)
+            Main.Misc.ClickTP = Value
+        end    
+    })
+    MiscTab:AddToggle({
+        Name = "Click Destroy",
+        Default = false,
+        Callback = function(Value)
+            Main.Misc.ClickDestroy = Value
+        end    
+    })
+
+    MiscTab:AddButton({
+        Name = "Rejoin Server",
+        Callback = function()
+            RejoinServer()
+          end    
+    })
+
+    SettingsTab:AddButton({
+        Name = "Copy Server JobId",
+        Callback = function()
+                setclipboard(game.JobId)
+          end    
+    })
+
+    SettingsTab:AddButton({
+        Name = "Copy Join Script",
+        Callback = function()
+            local Code = 'game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceId,JOBID)'
+
+            local Source = Code:gsub("PlaceId", '"' .. tostring(game.PlaceId) .. '"')
+            local Sourcev2 = Source:gsub("JOBID", '"' .. tostring(game.JobId) .. '"')
+
+            setclipboard(Sourcev2)
+          end    
+    })
+
+    SettingsTab:AddButton({
+        Name = "Copy Discord Invite",
+        Callback = function()
+            local InviteCode = game:HttpGet("https://pastebin.com/raw/f9BXUCRH")
+            local InviteUrl = "discord.gg/" .. InviteCode
+            setclipboard(InviteUrl)
+          end    
+    })
+    if stuff.EspDisabled then
+        OrionLib:MakeNotification({
+            Name = "Bacon Hub",
+            Content = "Esp is disabled on Celery",
+            Time = 5
+        })
+    end
+end
+
+
+functions:init()
+loops:init()
+gui:init()
