@@ -1,301 +1,1101 @@
--- ============================================
--- واجهة المستخدم البسيطة
--- ============================================
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "CoinFarmUI"
-ScreenGui.Parent = game.CoreGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+-- WindUI
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 180, 0, 100)
-MainFrame.Position = UDim2.new(0, 20, 0, 100)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 6)
-UICorner.Parent = MainFrame
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(60, 60, 70)
-UIStroke.Thickness = 1
-UIStroke.Parent = MainFrame
-
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0.9, 0, 0.5, 0)
-ToggleButton.Position = UDim2.new(0.05, 0, 0.2, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.TextSize = 14
-ToggleButton.Text = "⏸️ START FARM"
-ToggleButton.Font = Enum.Font.Gotham
-ToggleButton.Parent = MainFrame
-
-local ButtonCorner = Instance.new("UICorner")
-ButtonCorner.CornerRadius = UDim.new(0, 4)
-ButtonCorner.Parent = ToggleButton
-
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(0.9, 0, 0.3, 0)
-StatusLabel.Position = UDim2.new(0.05, 0, 0.7, 0)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Text = "Status: OFF"
-StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-StatusLabel.TextSize = 12
-StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.Parent = MainFrame
-
--- ============================================
--- إعدادات النظام
--- ============================================
+-- Locals
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local CurrentCamera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
--- السرعة والمسافة
-local TELEPORT_SPEED = 0.1 -- ثواني بين كل حركة (كلما قل الرقم زادت السرعة)
-local SEARCH_RANGE = 1000 -- مدى البحث
-local Y_OFFSET = 0 -- ارتفاع فوق العملة
+local CoreGui = game:GetService("CoreGui")
 
--- الحالة
-local FarmEnabled = false
-local teleportConnection
-local freezeConnection
+function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
 
--- ============================================
--- تجميد الشخصية بالكامل
--- ============================================
-local function FreezeCharacter()
-    if not lp.Character then return end
-    
-    -- تجميد الحركة
-    local humanoid = lp.Character:FindFirstChild("Humanoid")
-    if humanoid then
-        humanoid.PlatformStand = true
-        humanoid.WalkSpeed = 0
-        humanoid.JumpPower = 0
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
+        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
+        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
+
+        local char = text:sub(i, i)
+        result = result .. "<font color=\"rgb(" .. r ..", " .. g .. ", " .. b .. ")\">" .. char .. "</font>"
     end
-    
-    -- إزالة جميع قوى الفيزياء
-    local root = lp.Character:FindFirstChild("HumanoidRootPart")
-    if root then
-        -- إزالة أي قوى حركة موجودة
-        for _, force in ipairs(root:GetChildren()) do
-            if force:IsA("BodyVelocity") or force:IsA("BodyForce") or 
-               force:IsA("BodyAngularVelocity") or force:IsA("BodyThrust") then
-                force:Destroy()
-            end
+
+    return result
+end
+
+local Confirmed = false
+
+WindUI:Popup({
+    Title = gradient("SNT HUB", Color3.fromHex("#eb1010"), Color3.fromHex("#1023eb")),
+    Icon = "info",
+    Content = gradient("This script made by", Color3.fromHex("#10eb3c"), Color3.fromHex("#67c97a")) .. gradient(" SnowT", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
+    Buttons = {
+        {
+            Title = gradient("Cancel", Color3.fromHex("#e80909"), Color3.fromHex("#630404")),
+            Callback = function() end,
+            Variant = "Tertiary", -- Primary, Secondary, Tertiary
+        },
+        {
+            Title = gradient("Load", Color3.fromHex("#90f09e"), Color3.fromHex("#13ed34")),
+            Callback = function() Confirmed = true end,
+            Variant = "Secondary", -- Primary, Secondary, Tertiary
+        }
+    }
+})
+
+repeat task.wait() until Confirmed
+
+WindUI:Notify({
+    Title = gradient("SNT HUB", Color3.fromHex("#eb1010"), Color3.fromHex("#1023eb")),
+    Content = "Скрипт успешно загружен!",
+    Icon = "check-circle",
+    Duration = 3,
+})
+
+-- Window
+local Window = WindUI:CreateWindow({
+    Title = gradient("SNT&MirrozzScript [Alpha]", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
+    Icon = "infinity",
+    Author = gradient("Murder Mystery 2", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
+    Folder = "WindUI",
+    Size = UDim2.fromOffset(300, 270),
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 200,
+    UserEnabled = true,
+    HasOutline = true,
+})
+
+-- Open Button
+Window:EditOpenButton({
+    Title = "Open UI",
+    Icon = "monitor",
+    CornerRadius = UDim.new(2, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("1E213D"),
+        Color3.fromHex("1F75FE")
+    ),
+    Draggable = true,
+})
+
+-- Tabs
+local Tabs = {
+    MainTab = Window:Tab({ Title = gradient("MAIN", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "terminal" }),
+    CharacterTab = Window:Tab({ Title = gradient("CHARACTER", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "file-cog" }),
+    TeleportTab = Window:Tab({ Title = gradient("TELEPORT", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "user" }),
+    EspTab = Window:Tab({ Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "eye" }),
+    AimbotTab = Window:Tab({ Title = gradient("AIMBOT", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "arrow-right" }),
+    CombatTab = Window:Tab({ Title = gradient("COMBAT", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "sword"}),
+    AutoFarm = Window:Tab({ Title = gradient("AUTOFARM", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "coin"}),
+    ServerTab = Window:Tab({ Title = gradient("SERVER", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "atom", Locked = true }),
+    beed = Window:Divider(),
+    SettingsTab = Window:Tab({ Title = gradient("SETTINGS", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "code" }),
+    ChangelogsTab = Window:Tab({ Title = gradient("CHANGELOGS", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "info"}),
+    SocialsTab = Window:Tab({ Title = gradient("SOCIALS", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "star"}),
+    b = Window:Divider(),
+    WindowTab = Window:Tab({ Title = gradient("CONFIGURATION", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "settings", Desc = "Manage window settings and file configurations." }),
+    CreateThemeTab = Window:Tab({ Title = gradient("THEMES", Color3.fromHex("#ffffff"), Color3.fromHex("#636363")), Icon = "palette", Desc = "Design and apply custom themes." }),
+}
+
+-- Character
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local CharacterSettings = {
+    WalkSpeed = {Value = 16, Default = 16, Locked = false},
+    JumpPower = {Value = 50, Default = 50, Locked = false}
+}
+
+local function updateCharacter()
+    local character = LocalPlayer.Character
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        if not CharacterSettings.WalkSpeed.Locked then
+            humanoid.WalkSpeed = CharacterSettings.WalkSpeed.Value
         end
-        
-        -- جعل الشخصية ثابتة في مكانها
-        local anchor = Instance.new("BodyPosition")
-        anchor.Name = "FreezeAnchor"
-        anchor.Position = root.Position
-        anchor.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        anchor.P = 10000
-        anchor.Parent = root
-        
-        -- منع الدوران
-        local gyro = Instance.new("BodyGyro")
-        gyro.Name = "FreezeGyro"
-        gyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-        gyro.P = 10000
-        gyro.CFrame = root.CFrame
-        gyro.Parent = root
-    end
-    
-    -- إخفاء الرسوم المتحركة
-    local animator = lp.Character:FindFirstChildOfClass("Animator")
-    if animator then
-        animator:Destroy()
+        if not CharacterSettings.JumpPower.Locked then
+            humanoid.JumpPower = CharacterSettings.JumpPower.Value
+        end
     end
 end
 
--- ============================================
--- إلغاء التجميد
--- ============================================
-local function UnfreezeCharacter()
-    if not lp.Character then return end
-    
-    local humanoid = lp.Character:FindFirstChild("Humanoid")
-    if humanoid then
-        humanoid.PlatformStand = false
-        humanoid.WalkSpeed = 20
-        humanoid.JumpPower = 50
+Tabs.CharacterTab:Slider({
+    Title = "Walkspeed",
+    Value = {Min = 0, Max = 200, Default = 16},
+    Callback = function(value)
+        CharacterSettings.WalkSpeed.Value = value
+        updateCharacter()
     end
-    
-    local root = lp.Character:FindFirstChild("HumanoidRootPart")
-    if root then
-        local anchor = root:FindFirstChild("FreezeAnchor")
-        if anchor then anchor:Destroy() end
-        
-        local gyro = root:FindFirstChild("FreezeGyro")
-        if gyro then gyro:Destroy() end
+})
+
+Tabs.CharacterTab:Button({
+    Title = "Reset walkspeed",
+    Callback = function()
+        CharacterSettings.WalkSpeed.Value = CharacterSettings.WalkSpeed.Default
+        updateCharacter()
+    end
+})
+
+Tabs.CharacterTab:Toggle({
+    Title = "Block walkspeed",
+    Default = false,
+    Callback = function(state)
+        CharacterSettings.WalkSpeed.Locked = state
+        updateCharacter()
+    end
+})
+
+Tabs.CharacterTab:Slider({
+    Title = "Jumppower",
+    Value = {Min = 0, Max = 200, Default = 50},
+    Callback = function(value)
+        CharacterSettings.JumpPower.Value = value
+        updateCharacter()
+    end
+})
+
+
+Tabs.CharacterTab:Button({
+    Title = "Reset jumppower",
+    Callback = function()
+        CharacterSettings.JumpPower.Value = CharacterSettings.JumpPower.Default
+        updateCharacter()
+    end
+})
+
+Tabs.CharacterTab:Toggle({
+    Title = "Block jumppower",
+    Default = false,
+    Callback = function(state)
+        CharacterSettings.JumpPower.Locked = state
+        updateCharacter()
+    end
+})
+
+-- ESP
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LP = Players.LocalPlayer
+
+local ESPConfig = {
+    HighlightMurderer = false,
+    HighlightInnocent = false,
+    HighlightSheriff = false
+}
+
+local Murder, Sheriff, Hero
+local roles = {}
+
+function CreateHighlight(player)
+    if player ~= LP and player.Character and not player.Character:FindFirstChild("Highlight") then
+        local highlight = Instance.new("Highlight")
+        highlight.Parent = player.Character
+        highlight.Adornee = player.Character
+        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        return highlight
+    end
+    return player.Character and player.Character:FindFirstChild("Highlight")
+end
+
+function RemoveAllHighlights()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("Highlight") then
+            player.Character.Highlight:Destroy()
+        end
     end
 end
 
--- ============================================
--- البحث عن أقرب عملة
--- ============================================
-local function FindNearestCoin()
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then
-        return nil
-    end
-    
-    local root = lp.Character.HumanoidRootPart
-    local closestCoin = nil
-    local closestDistance = SEARCH_RANGE
-    
-    -- البحث فقط عن الأجزاء المسماة "coin" (بالحروف الصغيرة أو الكبيرة)
-    for _, item in ipairs(workspace:GetDescendants()) do
-        if (item:IsA("BasePart") or item:IsA("MeshPart") or item:IsA("Part")) then
-            if string.lower(item.Name) == "coin" then
-                if item.Parent and item.Parent.Name ~= lp.Character.Name then
-                    local distance = (item.Position - root.Position).Magnitude
-                    if distance < closestDistance then
-                        closestDistance = distance
-                        closestCoin = item
-                    end
+function UpdateHighlights()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LP and player.Character then
+            local highlight = player.Character:FindFirstChild("Highlight")
+            if not (ESPConfig.HighlightMurderer or ESPConfig.HighlightInnocent or ESPConfig.HighlightSheriff) then
+                if highlight then
+                    highlight:Destroy()
                 end
+                return
+            end
+            
+            local shouldHighlight = false
+            local color = Color3.new(0, 1, 0)
+            if player.Name == Murder and IsAlive(player) and ESPConfig.HighlightMurderer then
+                color = Color3.fromRGB(255, 0, 0)
+                shouldHighlight = true
+            elseif player.Name == Sheriff and IsAlive(player) and ESPConfig.HighlightSheriff then
+                color = Color3.fromRGB(0, 0, 255)
+                shouldHighlight = true
+            elseif ESPConfig.HighlightInnocent and IsAlive(player) and 
+                   player.Name ~= Murder and player.Name ~= Sheriff and player.Name ~= Hero then
+                color = Color3.fromRGB(0, 255, 0)
+                shouldHighlight = true
+            elseif player.Name == Hero and IsAlive(player) and not IsAlive(game.Players[Sheriff]) and ESPConfig.HighlightSheriff then
+                color = Color3.fromRGB(255, 250, 0)
+                shouldHighlight = true
+            end
+            
+            if shouldHighlight then
+                highlight = CreateHighlight(player)
+                if highlight then
+                    highlight.FillColor = color
+                    highlight.OutlineColor = color
+                    highlight.Enabled = true
+                end
+            elseif highlight then
+                highlight.Enabled = false
             end
         end
     end
-    
-    return closestCoin, closestDistance
 end
 
--- ============================================
--- الانتقال السلس مع تجاوز الجدران
--- ============================================
-local function TeleportToCoin(coin)
-    if not coin or not coin.Parent then return false end
-    if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return false end
-    
-    local root = lp.Character.HumanoidRootPart
-    local targetPos = coin.Position + Vector3.new(0, Y_OFFSET, 0)
-    local distance = (targetPos - root.Position).Magnitude
-    
-    -- إذا كانت العملة قريبة جداً
-    if distance < 5 then
-        return true
-    end
-    
-    -- الانتقال المباشر مع تجاوز الجدران
-    local newCFrame = CFrame.new(targetPos)
-    
-    -- إزالة أي قوى قبل الانتقال
-    for _, force in ipairs(root:GetChildren()) do
-        if force:IsA("BodyVelocity") or force:IsA("BodyPosition") then
-            force:Destroy()
+function IsAlive(player)
+    for name, data in pairs(roles) do
+        if player.Name == name then
+            return not data.Killed and not data.Dead
         end
     end
-    
-    -- الانتقال
-    root.CFrame = newCFrame
-    
-    -- تجميد الشخصية في المكان الجديد
-    FreezeCharacter()
-    
     return false
 end
 
--- ============================================
--- نظام الفارم
--- ============================================
-local function StartFarming()
-    if teleportConnection then
-        teleportConnection:Disconnect()
-    end
-    
-    -- تجميد الشخصية أولاً
-    FreezeCharacter()
-    
-    teleportConnection = RunService.Heartbeat:Connect(function()
-        if not FarmEnabled then return end
-        if not lp.Character or not lp.Character:FindFirstChild("HumanoidRootPart") then return end
-        
-        local coin, distance = FindNearestCoin()
-        
-        if coin then
-            -- تحديث حالة الواجهة
-            StatusLabel.Text = string.format("FARMING: %d studs", math.floor(distance))
-            
-            -- الانتقال للعملة
-            local reached = TeleportToCoin(coin)
-            
-            if reached then
-                StatusLabel.Text = "COIN COLLECTED"
-                task.wait(0.2) -- انتظار بسيط قبل البحث عن التالية
-            end
-            
-            -- انتظار للتحكم في السرعة
-            task.wait(TELEPORT_SPEED)
-        else
-            StatusLabel.Text = "NO COINS FOUND"
+local function UpdateRoles()
+    roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    for name, data in pairs(roles) do
+        if data.Role == "Murderer" then
+            Murder = name
+        elseif data.Role == 'Sheriff' then
+            Sheriff = name
+        elseif data.Role == 'Hero' then
+            Hero = name
         end
-    end)
+    end
 end
 
--- ============================================
--- زر التفعيل
--- ============================================
-ToggleButton.MouseButton1Click:Connect(function()
-    FarmEnabled = not FarmEnabled
-    
-    if FarmEnabled then
-        -- تشغيل النظام
-        ToggleButton.Text = "▶️ STOP FARM"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        StatusLabel.Text = "STARTING..."
-        StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+Tabs.EspTab:Section({Title = gradient("Special ESP", Color3.fromHex("#b914fa"), Color3.fromHex("#7023c2"))})
+
+Tabs.EspTab:Toggle({
+    Title = gradient("Higlight Murder", Color3.fromHex("#e80909"), Color3.fromHex("#630404")),
+    Default = false,
+    Callback = function(state) 
+        ESPConfig.HighlightMurderer = state
+        if not state then UpdateHighlights() end
+    end
+})
+
+Tabs.EspTab:Toggle({
+    Title = gradient("Highlight Innocent", Color3.fromHex("#0ff707"), Color3.fromHex("#1e690c")),
+    Default = false,
+    Callback = function(state) 
+        ESPConfig.HighlightInnocent = state
+        if not state then UpdateHighlights() end
+    end
+})
+
+Tabs.EspTab:Toggle({
+    Title = gradient("Highlight Sheriff", Color3.fromHex("#001e80"), Color3.fromHex("#16f2d9")),
+    Default = false,
+    Callback = function(state) 
+        ESPConfig.HighlightSheriff = state
+        if not state then UpdateHighlights() end
+    end
+})
+
+RunService.RenderStepped:Connect(function()
+    UpdateRoles()
+    if ESPConfig.HighlightMurderer or ESPConfig.HighlightInnocent or ESPConfig.HighlightSheriff then
+        UpdateHighlights()
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    if player == LP then
+        RemoveAllHighlights()
+    end
+end)
+
+-- Teleport
+local teleportTarget = nil
+
+local function updateTeleportPlayers()
+    local playersList = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playersList, player.Name)
+        end
+    end
+    return playersList
+end
+
+local teleportDropdown = Tabs.TeleportTab:Dropdown({
+    Title = "Players",
+    Values = updateTeleportPlayers(),
+    Value = "Select Player",
+    Callback = function(selected)
+        teleportTarget = Players:FindFirstChild(selected)
+    end
+})
+
+local function teleportToPlayer()
+    if teleportTarget and teleportTarget.Character then
+        local targetRoot = teleportTarget.Character:FindFirstChild("HumanoidRootPart")
+        local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         
-        -- تجميد الشخصية
-        FreezeCharacter()
-        
-        -- بدء الفارم
-        task.wait(0.5)
-        StartFarming()
-        
-        print("✅ Coin Farm Started | Instant Teleport")
-        
+        if targetRoot and localRoot then
+            localRoot.CFrame = targetRoot.CFrame
+            WindUI:Notify({
+                Title = "Телепортация",
+                Content = "Успешно телепортирован к "..teleportTarget.Name,
+                Icon = "check-circle",
+                Duration = 3
+            })
+        end
     else
-        -- إيقاف النظام
-        ToggleButton.Text = "⏸️ START FARM"
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-        StatusLabel.Text = "Status: OFF"
-        StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+        WindUI:Notify({
+            Title = "Ошибка",
+            Content = "Цель не найдена или недоступна",
+            Icon = "x-circle",
+            Duration = 3
+        })
+    end
+end
+
+Tabs.TeleportTab:Button({
+    Title = "Teleport to player",
+    Callback = teleportToPlayer
+})
+
+Tabs.TeleportTab:Button({
+    Title = "Update players list",
+    Callback = function()
+        teleportDropdown:Refresh({updateTeleportPlayers()})
+    end
+})
+
+Tabs.TeleportTab:Button({
+    Title = "Teleport to Sheriff",
+    Callback = function()
+        UpdateRoles()
+        if Sheriff then
+            local sheriffPlayer = Players:FindFirstChild(Sheriff)
+            if sheriffPlayer and sheriffPlayer.Character then
+                local targetRoot = sheriffPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                
+                if targetRoot and localRoot then
+                    localRoot.CFrame = targetRoot.CFrame
+                    WindUI:Notify({
+                        Title = "Телепортация",
+                        Content = "Успешно телепортирован к шерифу "..Sheriff,
+                        Icon = "check-circle",
+                        Duration = 3
+                    })
+                end
+            else
+                WindUI:Notify({
+                    Title = "Ошибка",
+                    Content = "Шериф не найден или недоступен",
+                    Icon = "x-circle",
+                    Duration = 3
+                })
+            end
+        else
+            WindUI:Notify({
+                Title = "Ошибка",
+                Content = "Шериф не определен в текущем матче",
+                Icon = "x-circle",
+                Duration = 3
+            })
+        end
+    end
+})
+
+Tabs.TeleportTab:Button({
+    Title = "Teleport to Murderer",
+    Callback = function()
+        UpdateRoles()
+        if Murder then
+            local murderPlayer = Players:FindFirstChild(Murder)
+            if murderPlayer and murderPlayer.Character then
+                local targetRoot = murderPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local localRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                
+                if targetRoot and localRoot then
+                    localRoot.CFrame = targetRoot.CFrame
+                    WindUI:Notify({
+                        Title = "Телепортация",
+                        Content = "Успешно телепортирован к убийце "..Murder,
+                        Icon = "check-circle",
+                        Duration = 3
+                    })
+                end
+            else
+                WindUI:Notify({
+                    Title = "Ошибка",
+                    Content = "Убийца не найден или недоступен",
+                    Icon = "x-circle",
+                    Duration = 3
+                })
+            end
+        else
+            WindUI:Notify({
+                Title = "Ошибка",
+                Content = "Убийца не определен в текущем матче",
+                Icon = "x-circle",
+                Duration = 3
+            })
+        end
+    end
+})
+
+Players.PlayerAdded:Connect(function()
+    teleportDropdown:Refresh({updateTeleportPlayers()})
+end)
+
+Players.PlayerRemoving:Connect(function()
+    teleportDropdown:Refresh({updateTeleportPlayers()})
+end)
+
+-- Aimbot
+local roles = {}
+local Murder, Sheriff
+local isCameraLocked = false
+local isSpectating = false
+local lockedRole = nil
+local cameraConnection = nil
+local originalCameraType = Enum.CameraType.Custom
+local originalCameraSubject = nil
+
+function IsAlive(player)
+    for name, data in pairs(roles) do
+        if player.Name == name then
+            return not data.Killed and not data.Dead
+        end
+    end
+    return false
+end
+
+local function UpdateRoles()
+    local success, result = pcall(function()
+        return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    end)
+    if success then
+        roles = result or {}
+        Murder, Sheriff = nil, nil
+        for name, data in pairs(roles) do
+            if data.Role == "Murderer" then Murder = name
+            elseif data.Role == 'Sheriff' then Sheriff = name end
+        end
+    end
+end
+
+RoleDropdown = Tabs.AimbotTab:Dropdown({
+    Title = "Target Role",
+    Values = {"None", "Sheriff", "Murderer"},
+    Value = "None",
+    Callback = function(selected)
+        lockedRole = (selected ~= "None") and selected or nil
+    end
+})
+
+Tabs.AimbotTab:Toggle({
+    Title = "Spectate Mode",
+    Default = false,
+    Callback = function(state)
+        isSpectating = state
+        if state then
+            originalCameraType = CurrentCamera.CameraType
+            originalCameraSubject = CurrentCamera.CameraSubject
+            CurrentCamera.CameraType = Enum.CameraType.Scriptable
+        else
+            CurrentCamera.CameraType = originalCameraType
+            CurrentCamera.CameraSubject = originalCameraSubject
+        end
+    end
+})
+
+Tabs.AimbotTab:Toggle({
+    Title = "Lock Camera",
+    Default = false,
+    Callback = function(state)
+        isCameraLocked = state
+        if not state and not isSpectating then
+            CurrentCamera.CameraType = originalCameraType
+            CurrentCamera.CameraSubject = originalCameraSubject
+        end
+    end
+})
+
+local function GetTargetPosition()
+    if not lockedRole then return nil end
+    local targetName = lockedRole == "Sheriff" and Sheriff or Murder
+    if not targetName then return nil end
+    local player = Players:FindFirstChild(targetName)
+    if not player or not IsAlive(player) then return nil end
+    local character = player.Character
+    if not character then return nil end
+    local head = character:FindFirstChild("Head")
+    return head and head.Position or nil
+end
+
+local function UpdateSpectate()
+    if not isSpectating or not lockedRole then return end
+    local targetPos = GetTargetPosition()
+    if not targetPos then return end
+    local offset = CFrame.new(0, 2, 8)
+    local targetChar = Players:FindFirstChild(lockedRole == "Sheriff" and Sheriff or Murder).Character
+    if targetChar then
+        local root = targetChar:FindFirstChild("HumanoidRootPart")
+        if root then
+            CurrentCamera.CFrame = root.CFrame * offset
+        end
+    end
+end
+
+local function UpdateLockCamera()
+    if not isCameraLocked or not lockedRole then return end
+    local targetPos = GetTargetPosition()
+    if not targetPos then return end
+    local currentPos = CurrentCamera.CFrame.Position
+    CurrentCamera.CFrame = CFrame.new(currentPos, targetPos)
+end
+
+local function Update()
+    if isSpectating then
+        UpdateSpectate()
+    elseif isCameraLocked then
+        UpdateLockCamera()
+    end
+end
+
+local function AutoUpdate()
+    while true do
+        UpdateRoles()
+        task.wait(3)
+    end
+end
+
+coroutine.wrap(AutoUpdate)()
+cameraConnection = RunService.RenderStepped:Connect(Update)
+
+LocalPlayer.AncestryChanged:Connect(function()
+    if not LocalPlayer.Parent and cameraConnection then
+        cameraConnection:Disconnect()
+        CurrentCamera.CameraType = originalCameraType
+        CurrentCamera.CameraSubject = originalCameraSubject
+    end
+end)
+
+UpdateRoles()
+
+-- Combat
+Tabs.CombatTab:Section({Title = "Innocent"})
+
+Tabs.CombatTab:Button({
+    Title = "Grab Gun",
+    Callback = function()
+    end
+})
+
+Tabs.CombatTab:Section({Title = "Murder"})
+
+Tabs.CombatTab:Button({
+    Title = "Kill All",
+    Callback = function()
+        WindUI:Notify({
+    Title = "Ошибка!",
+    Content = "Функция на стадии разработки",
+    Icon = "check-circle",
+    Duration = 3,
+})
+    end
+})
+
+Tabs.CombatTab:Section({Title = "Sheriff"})
+
+Tabs.CombatTab:Button({
+    Title = "Shoot Murder",
+    Callback = function()
+    end
+})
+
+-- Settings
+local Settings = {
+    Hitbox = {
+        Enabled = false,
+        Size = 5,
+        Color = Color3.new(1,0,0),
+        Adornments = {},
+        Connections = {}
+    },
+    Noclip = {
+        Enabled = false,
+        Connection = nil
+    },
+    AntiAFK = {
+        Enabled = false,
+        Connection = nil
+    }
+}
+
+local function ToggleNoclip(state)
+        if state then
+            Settings.Noclip.Connection = RunService.Stepped:Connect(function()
+                local chr = LocalPlayer.Character
+                if chr then
+                    for _, part in pairs(chr:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+                end)
+        else
+            if Settings.Noclip.Connection then
+                Settings.Noclip.Connection:Disconnect()
+            end
+        end
+end
+
+local function UpdateHitboxes()
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                local chr = plr.Character
+                local box = Settings.Hitbox.Adornments[plr]
+                
+                if chr and Settings.Hitbox.Enabled then
+                    local root = chr:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        if not box then
+                            box = Instance.new("BoxHandleAdornment")
+                            box.Adornee = root
+                            box.Size = Vector3.new(Settings.Hitbox.Size, Settings.Hitbox.Size, Settings.Hitbox.Size)
+                            box.Color3 = Settings.Hitbox.Color
+                            box.Transparency = 0.4
+                            box.ZIndex = 10
+                            box.Parent = root
+                            Settings.Hitbox.Adornments[plr] = box
+                        else
+                            box.Size = Vector3.new(Settings.Hitbox.Size, Settings.Hitbox.Size, Settings.Hitbox.Size)
+                            box.Color3 = Settings.Hitbox.Color
+                        end
+                    end
+                elseif box then
+                    box:Destroy()
+                    Settings.Hitbox.Adornments[plr] = nil
+                end
+            end
+        end
+end
+
+local function ToggleAntiAFK(state)
+        if state then
+            Settings.AntiAFK.Connection = RunService.Heartbeat:Connect(function()
+                pcall(function()
+                    local vu = game:GetService("VirtualUser")
+                    vu:CaptureController()
+                    vu:ClickButton2(Vector2.new())
+                end)
+            end)
+        else
+            if Settings.AntiAFK.Connection then
+                Settings.AntiAFK.Connection:Disconnect()
+            end
+        end
+end
+
+Tabs.SettingsTab:Toggle({
+    Title = "NoClip",
+    Callback = function(state)
+        Settings.Noclip.Enabled = state
+        ToggleNoclip(state)
+    end
+})
+
+Tabs.SettingsTab:Toggle({
+    Title = "Hixboxes",
+    Callback = function(state)
+        Settings.Hitbox.Enabled = state
+        if state then
+            RunService.Heartbeat:Connect(UpdateHitboxes)
+        else
+            for _, box in pairs(Settings.Hitbox.Adornments) do
+                box:Destroy()
+            end
+            Settings.Hitbox.Adornments = {}
+        end
+    end
+})
+
+Tabs.SettingsTab:Slider({
+    Title = "Hitbox size",
+    Value = {Min=1, Max=10, Default=5},
+    Callback = function(val)
+        Settings.Hitbox.Size = val
+        UpdateHitboxes()
+    end
+})
+
+Tabs.SettingsTab:Colorpicker({
+    Title = "Hitbox color",
+    Default = Color3.new(1,0,0),
+    Callback = function(col)
+        Settings.Hitbox.Color = col
+        UpdateHitboxes()
+    end
+})
+
+Tabs.SettingsTab:Toggle({
+    Title = "Anti-AFK",
+    Callback = function(state)
+        Settings.AntiAFK.Enabled = state
+        ToggleAntiAFK(state)
+    end
+})
+
+-- Socials
+Tabs.SocialsTab:Paragraph({
+    Title = "SnowT",
+    Desc = "Join to my socials for know more information!",
+    Image = "snowflake",
+    Color = "Blue"
+})
+
+Tabs.SocialsTab:Button({
+    Title = "SnowT Channel",
+    Callback = function()
+        SetClipboard("t.me/supreme_scripts")
+    end
+})
+
+Tabs.SocialsTab:Paragraph({
+    Title = "Mirrozz",
+    Desc = "Join to socials my friend for get more scripts!",
+    Image = "eye",
+    Color = "Green"
+})
+
+Tabs.SocialsTab:Button({
+    Title = "Mirrozz Channel",
+    Callback = function()
+        SetClipboard("t.me/mirrozzscript")
+    end
+})
+
+-- Changelogs
+Tabs.ChangelogsTab:Code({
+    Title = "Changelogs:",
+    Code = [[
+    Early release [Alpha]:
+    • Script has been released
+    • Shoot murder function
+    • Grab gun function
+    • Esp all: murderer, sheriff, innocent
+   More functions will be added in future!
+]]
+})
+
+Tabs.ChangelogsTab:Code({
+    Title = "Next update:",
+    Code = [[ The next update is Alpha [0.1.1]
+    In future we will be add:
+    • New autofarm function
+    • New Kill all function
+    • Fix bugs
+   The date of update: 17.05.2025!
+]]
+})
+
+-- Server
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+Tabs.ServerTab:Button({
+    Title = "Rejoin",
+    Callback = function()
+        local success, error = pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
+        end)
+        if not success then
+            warn("Rejoin error:", error)
+        end
+    end
+})
+
+Tabs.ServerTab:Button({
+    Title = "Server Hop",
+    Callback = function()
+        local placeId = game.PlaceId
+        local currentJobId = game.JobId
         
-        if teleportConnection then
-            teleportConnection:Disconnect()
-            teleportConnection = nil
+        local function serverHop()
+            local servers = {}
+            local success, result = pcall(function()
+                return HttpService:JSONDecode(HttpService:GetAsync("https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"))
+            end)
+            
+            if success and result and result.data then
+                for _, server in ipairs(result.data) do
+                    if server.id ~= currentJobId then
+                        table.insert(servers, server)
+                    end
+                end
+                
+                if #servers > 0 then
+                    TeleportService:TeleportToPlaceInstance(placeId, servers[math.random(#servers)].id)
+                else
+                    TeleportService:Teleport(placeId)
+                end
+            else
+                TeleportService:Teleport(placeId)
+            end
         end
         
-        -- إلغاء التجميد
-        UnfreezeCharacter()
+        pcall(serverHop)
+    end
+})
+
+Tabs.ServerTab:Button({
+    Title = "Join to Lower Server",
+    Callback = function()
+        local placeId = game.PlaceId
+        local currentJobId = game.JobId
         
-        print("❌ Coin Farm Stopped")
+        local function joinLowerServer()
+            local servers = {}
+            local success, result = pcall(function()
+                return HttpService:JSONDecode(HttpService:GetAsync("https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Asc&limit=100"))
+            end)
+            
+            if success and result and result.data then
+                for _, server in ipairs(result.data) do
+                    if server.id ~= currentJobId and server.playing < (server.maxPlayers or 30) then
+                        table.insert(servers, server)
+                    end
+                end
+                
+                table.sort(servers, function(a, b)
+                    return a.playing < b.playing
+                end)
+                
+                if #servers > 0 then
+                    TeleportService:TeleportToPlaceInstance(placeId, servers[1].id)
+                else
+                    TeleportService:Teleport(placeId)
+                end
+            else
+                TeleportService:Teleport(placeId)
+            end
+        end
+        
+        pcall(joinLowerServer)
     end
-end)
+})
 
--- ============================================
--- الحفاظ على التجميد عند إعادة الظهور
--- ============================================
-lp.CharacterAdded:Connect(function()
-    if FarmEnabled then
-        task.wait(1) -- انتظار تحميل الشخصية
-        FreezeCharacter()
+-- Configuration
+local HttpService = game:GetService("HttpService")
+
+local folderPath = "WindUI"
+makefolder(folderPath)
+
+local function SaveFile(fileName, data)
+    local filePath = folderPath .. "/" .. fileName .. ".json"
+    local jsonData = HttpService:JSONEncode(data)
+    writefile(filePath, jsonData)
+end
+
+local function LoadFile(fileName)
+    local filePath = folderPath .. "/" .. fileName .. ".json"
+    if isfile(filePath) then
+        local jsonData = readfile(filePath)
+        return HttpService:JSONDecode(jsonData)
     end
-end)
+end
 
--- ============================================
--- معلومات عند التحميل
--- ============================================
-print("=======================================")
-print("🎮 INSTANT COIN FARM LOADED")
-print("⚡ Instant teleport to nearest coin")
-print("❄️ Character will be frozen")
-print("🧱 Can pass through walls")
-print("💰 Only collects parts named 'coin'")
-print("=======================================")
+local function ListFiles()
+    local files = {}
+    for _, file in ipairs(listfiles(folderPath)) do
+        local fileName = file:match("([^/]+)%.json$")
+        if fileName then
+            table.insert(files, fileName)
+        end
+    end
+    return files
+end
 
+Tabs.WindowTab:Section({ Title = "Window" })
+local themeValues = {}
+for name, _ in pairs(WindUI:GetThemes()) do
+    table.insert(themeValues, name)
+end
+
+local themeDropdown = Tabs.WindowTab:Dropdown({
+    Title = "Select Theme",
+    Multi = false,
+    AllowNone = false,
+    Value = nil,
+    Values = themeValues,
+    Callback = function(theme)
+        WindUI:SetTheme(theme)
+    end
+})
+
+themeDropdown:Select(WindUI:GetCurrentTheme())
+
+local ToggleTransparency = Tabs.WindowTab:Toggle({
+    Title = "Toggle Window Transparency",
+    Callback = function(e)
+        Window:ToggleTransparency(e)
+    end,
+    Value = WindUI:GetTransparency()
+})
+
+Tabs.WindowTab:Section({ Title = "Save" })
+
+local fileNameInput = ""
+Tabs.WindowTab:Input({
+    Title = "Write File Name",
+    PlaceholderText = "Enter file name",
+    Callback = function(text)
+        fileNameInput = text
+    end
+})
+
+Tabs.WindowTab:Button({
+    Title = "Save File",
+    Callback = function()
+        if fileNameInput ~= "" then
+            SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
+        end
+    end
+})
+
+Tabs.WindowTab:Section({ Title = "Load" })
+
+local filesDropdown
+local files = ListFiles()
+
+filesDropdown = Tabs.WindowTab:Dropdown({
+    Title = "Select File",
+    Multi = false,
+    AllowNone = true,
+    Values = files,
+    Callback = function(selectedFile)
+        fileNameInput = selectedFile
+    end
+})
+
+Tabs.WindowTab:Button({
+    Title = "Load File",
+    Callback = function()
+        if fileNameInput ~= "" then
+            local data = LoadFile(fileNameInput)
+            if data then
+                WindUI:Notify({
+                    Title = "File Loaded",
+                    Content = "Loaded data: " .. HttpService:JSONEncode(data),
+                Duration = 5,
+                })
+                if data.Transparent then 
+                    Window:ToggleTransparency(data.Transparent)
+                    ToggleTransparency:SetValue(data.Transparent)
+                end
+                if data.Theme then WindUI:SetTheme(data.Theme) end
+            end
+        end
+    end
+})
+
+Tabs.WindowTab:Button({
+    Title = "Overwrite File",
+    Callback = function()
+        if fileNameInput ~= "" then
+            SaveFile(fileNameInput, { Transparent = WindUI:GetTransparency(), Theme = WindUI:GetCurrentTheme() })
+        end
+    end
+})
+
+Tabs.WindowTab:Button({
+    Title = "Refresh List",
+    Callback = function()
+        filesDropdown:Refresh(ListFiles())
+    end
+})
+
+-- Themes
+local currentThemeName = WindUI:GetCurrentTheme()
+local themes = WindUI:GetThemes()
+
+local ThemeAccent = themes[currentThemeName].Accent
+local ThemeOutline = themes[currentThemeName].Outline
+local ThemeText = themes[currentThemeName].Text
+local ThemePlaceholderText = themes[currentThemeName].PlaceholderText
+
+function updateTheme()
+    WindUI:AddTheme({
+        Name = currentThemeName,
+        Accent = ThemeAccent,
+        Outline = ThemeOutline,
+        Text = ThemeText,
+        PlaceholderText = ThemePlaceholderText
+    })
+    WindUI:SetTheme(currentThemeName)
+end
+
+Tabs.CreateThemeTab:Colorpicker({
+    Title = "Background Color",
+    Default = Color3.fromHex(ThemeAccent),
+    Callback = function(color)
+        ThemeAccent = color
+    end
+})
+
+Tabs.CreateThemeTab:Colorpicker({
+    Title = "Outline Color",
+    Default = Color3.fromHex(ThemeOutline),
+    Callback = function(color)
+        ThemeOutline = color
+    end
+})
+
+Tabs.CreateThemeTab:Colorpicker({
+    Title = "Text Color",
+    Default = Color3.fromHex(ThemeText),
+    Callback = function(color)
+        ThemeText = color
+    end
+})
+
+Tabs.CreateThemeTab:Colorpicker({
+    Title = "Placeholder Text Color",
+    Default = Color3.fromHex(ThemePlaceholderText),
+    Callback = function(color)
+        ThemePlaceholderText = color
+    end
+})
+
+Tabs.CreateThemeTab:Button({
+    Title = "Update Theme",
+    Callback = function()
+        WindUI:AddTheme({
+            Name = currentThemeName,
+            Accent = ThemeAccent,
+            Outline = ThemeOutline,
+            Text = ThemeText,
+            PlaceholderText = ThemePlaceholderText
+        })
+        WindUI:SetTheme(currentThemeName)
+        WindUI:Notify({
+            Title = "Тема обновлена",
+            Content = "Новая тема '"..currentThemeName.."' применена!",
+            Duration = 3,
+            Icon = "check-circle"
+        })
+    end
+})
