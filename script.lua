@@ -1,120 +1,104 @@
--- ✨ Wand UI (Redz Library V5 Remake)
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 
 local Window = Library:MakeWindow({
-  Title = "Blox Fruits - Aim Bot Skill",
-  SubTitle = "يعمل في جميع السياس - Aim Bot للمهارات (Devil Fruit)",
-  ScriptFolder = "blox-fruits-aimbot-skill"
+    Title = "Aim Bot | Player Hunter",
+    SubTitle = "Blox Fruits",
+    ScriptFolder = "AimBot"
 })
 
-local AimBotTab = Window:MakeTab({
-  Title = "Aim Bot Skill",
-  Icon = "target"
+local Tab = Window:MakeTab({
+    Title = "Main",
+    Icon = "Sword"
 })
 
--- الدالة الأساسية للـ Aim Bot (توجيه الكاميرا نحو العدو الأقرب)
-local function GetNearestEnemy()
-    local NearestEnemy = nil
-    local NearestMagnitude = math.huge
-    local LocalPlayer = game.Players.LocalPlayer
-    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+-- المتغيرات اللازمة (يجب أن تكون موجودة في السكريبت الأساسي)
+_G.AutoPlayerHunter = false
+_G.SelectWeapon = "Melee"  -- غيرها حسب السلاح الذي تستخدمه
 
-    for _, Enemy in pairs(game.Workspace.Enemies:GetChildren()) do
-        if Enemy:FindFirstChild("Humanoid") and Enemy.Humanoid.Health > 0 and Enemy:FindFirstChild("HumanoidRootPart") then
-            local Magnitude = (Enemy.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
-            if Magnitude < NearestMagnitude then
-                NearestMagnitude = Magnitude
-                NearestEnemy = Enemy.HumanoidRootPart
-            end
-        end
+-- دوال مساعدة (يجب أن تكون موجودة أو معرفة في السكريبت الأساسي)
+function StopTween(value) end
+function AutoHaki() 
+    if game.Players.LocalPlayer.Character:FindFirstChild("Haki") then
+        game.Players.LocalPlayer.Character.Haki.Value = true
     end
-    return NearestEnemy
+end
+function EquipWeapon(name)
+    local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(name) or game.Players.LocalPlayer.Character:FindFirstChild(name)
+    if tool then
+        tool.Parent = game.Players.LocalPlayer.Character
+    end
+end
+function topos(cf)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = cf
+    end
 end
 
--- Aim Bot Skill Toggle
-AimBotTab:AddSection("إعدادات Aim Bot للمهارات")
-
-AimBotTab:AddToggle({
-  Name = "Aim Bot Skill (توجيه الكاميرا نحو العدو)",
-  Default = true,
-  Callback = function(Value)
-    getgenv().AimBotSkill = Value
-  end
+Tab:AddToggle({
+    Title = "Aim Bot (Auto Kill Player Quest)",
+    Description = "يطير للاعب اللي عليه المهمة ويقتله تلقائياً",
+    Default = false,
+    Callback = function(value)
+        _G.AutoPlayerHunter = value
+        StopTween(_G.AutoPlayerHunter)
+    end
 })
 
-AimBotTab:AddToggle({
-  Name = "Skill Z",
-  Default = true,
-  Callback = function(Value)
-    getgenv().SkillZ = Value
-  end
-})
-
-AimBotTab:AddToggle({
-  Name = "Skill X",
-  Default = true,
-  Callback = function(Value)
-    getgenv().SkillX = Value
-  end
-})
-
-AimBotTab:AddToggle({
-  Name = "Skill C",
-  Default = true,
-  Callback = function(Value)
-    getgenv().SkillC = Value
-  end
-})
-
-AimBotTab:AddToggle({
-  Name = "Skill V",
-  Default = true,
-  Callback = function(Value)
-    getgenv().SkillV = Value
-  end
-})
-
-AimBotTab:AddToggle({
-  Name = "Skill F",
-  Default = false,
-  Callback = function(Value)
-    getgenv().SkillF = Value
-  end
-})
-
--- اللوب الرئيسي لتفعيل الـ Aim Bot والمهارات
+-- السبونات اللازمة لتشغيل الـ Aim Bot
 spawn(function()
-    while task.wait() do
-        if getgenv().AimBotSkill then
-            local EnemyPart = GetNearestEnemy()
-            if EnemyPart then
-                workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, EnemyPart.Position)
+    game:GetService("RunService").Heartbeat:Connect(function()
+        pcall(function()
+            if _G.AutoPlayerHunter and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+                game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+            end
+        end)
+    end)
+end)
+
+spawn(function()
+    pcall(function()
+        while wait(0.1) do
+            if _G.AutoPlayerHunter and game.Players.LocalPlayer.PlayerGui.Main.PvpDisabled.Visible then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("EnablePvp")
             end
         end
-    end
+    end)
 end)
 
--- لوب لاستخدام المهارات تلقائياً عند وجود عدو قريب
 spawn(function()
-    while task.wait(0.5) do
-        if GetNearestEnemy() and (getgenv().SkillZ or getgenv().SkillX or getgenv().SkillC or getgenv().SkillV or getgenv().SkillF) then
-            if getgenv().SkillZ then game:GetService("VirtualInputManager"):SendKeyEvent(true, "Z", false, game) task.wait(0.1) game:GetService("VirtualInputManager"):SendKeyEvent(false, "Z", false, game) end
-            if getgenv().SkillX then game:GetService("VirtualInputManager"):SendKeyEvent(true, "X", false, game) task.wait(0.1) game:GetService("VirtualInputManager"):SendKeyEvent(false, "X", false, game) end
-            if getgenv().SkillC then game:GetService("VirtualInputManager"):SendKeyEvent(true, "C", false, game) task.wait(0.1) game:GetService("VirtualInputManager"):SendKeyEvent(false, "C", false, game) end
-            if getgenv().SkillV then game:GetService("VirtualInputManager"):SendKeyEvent(true, "V", false, game) task.wait(0.1) game:GetService("VirtualInputManager"):SendKeyEvent(false, "V", false, game) end
-            if getgenv().SkillF then game:GetService("VirtualInputManager"):SendKeyEvent(true, "F", false, game) task.wait(0.1) game:GetService("VirtualInputManager"):SendKeyEvent(false, "F", false, game) end
+    while task.wait() do
+        if _G.AutoPlayerHunter then
+            pcall(function()
+                if game.Players.LocalPlayer.PlayerGui.Main.Quest.Visible then
+                    for _, playerChar in pairs(game.Workspace.Characters:GetChildren()) do
+                        if playerChar:FindFirstChild("Humanoid") and playerChar:FindFirstChild("HumanoidRootPart") then
+                            if string.find(game.Players.LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, playerChar.Name) then
+                                repeat
+                                    task.wait()
+                                    AutoHaki()
+                                    EquipWeapon(_G.SelectWeapon)
+                                    topos(playerChar.HumanoidRootPart.CFrame * CFrame.new(0, 30, 5))
+                                    playerChar.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
+                                    game:GetService("VirtualUser"):CaptureController()
+                                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                                until not _G.AutoPlayerHunter or playerChar.Humanoid.Health <= 0 or not game.Players.LocalPlayer.PlayerGui.Main.Quest.Visible
+                                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+                            end
+                        end
+                    end
+                else
+                    task.wait(0.5)
+                    game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("PlayerHunter")
+                end
+            end)
         end
     end
 end)
 
-Window:Notify({
-  Title = "Aim Bot Skill جاهز!",
-  Content = "الآن يوجه الكاميرا نحو العدو الأقرب ويستخدم المهارات تلقائياً\nيعمل في كل السياس بدون مشاكل (تم تحديث الطريقة لعام 2025)",
-  Duration = 10
-})
-
-AimBotTab:AddParagraph({
-  Title = "ملاحظة",
-  Content = "• شغل الـ Aim Bot Skill\n• اقترب من عدو (NPC)\n• الكاميرا ستتجه تلقائياً نحوه والمهارات المفعلة ستُستخدم\n• يعمل مع Devil Fruit skills بشكل مثالي\nاستخدم بحذر عشان ما تتبند!"
+Tab:AddButton({
+    Title = "Get Quest (Player Hunter)",
+    Description = "يأخذ مهمة صيد اللاعبين",
+    Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("PlayerHunter")
+    end
 })
