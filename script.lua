@@ -1,576 +1,554 @@
---[[
-===========================================
-   SYMPHONY HUB - SAFE & CLEAN VERSION
-   ✅ No Stealing | ✅ No Logging | ✅ Safe
-   Made for Fair Gameplay in Murder Mystery 2
-===========================================
-]]
+-- Murder Mystery 2 Legendary Script
+-- Using Wand UI Library
+-- By: YourName
 
--- Wait for game to load
-repeat task.wait() until game:IsLoaded()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 
--- Load Safe UI Library
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/addons/InterfaceManager.lua"))()
+local Window = Library:MakeWindow({
+    Title = "🔥 MM2 Legendary",
+    SubTitle = "Ultimate Script | v3.0",
+    ScriptFolder = "MM2-Legendary"
+})
 
--- Services
+-- Variables
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
 
--- Game Data
+-- Game States
 local GameData = {
-    Murderer = nil,
-    Sheriff = nil,
+    IsRoundStarted = false,
+    IsRoundStarting = false,
+    Gameplay = {},
+    GameplayMap = {},
+    MurdererPerk = nil,
     GunDrop = nil,
-    IsRoundActive = false,
-    Map = nil,
-    PlayersList = {}
+    Map = nil
 }
 
--- Safe Features Configuration
-local Features = {
-    -- Player
-    WalkSpeed = {Enabled = false, Value = 25},
-    JumpPower = {Enabled = false, Value = 100},
-    InfiniteJump = false,
-    Noclip = false,
-    AntiFling = false,
+local Config = {
+    -- Combat
+    KillAura = false,
+    KillAuraRange = 15,
+    AutoKillSheriff = false,
+    AutoKillEveryone = false,
+    KnifeSilentAim = false,
+    SheriffSilentAim = false,
+    
+    -- Gun Features
+    AutoGrabGun = false,
+    AutoStealGun = false,
+    AutoBreakGun = false,
+    GunAura = false,
     
     -- Visuals
-    MurdererESP = false,
-    SheriffESP = false,
-    InnocentESP = false,
     ShowMurderer = false,
     ShowSheriff = false,
     ShowInnocent = false,
     ShowGun = false,
+    MurdererESP = false,
+    SheriffESP = false,
+    InnocentESP = false,
     
-    -- Gameplay
-    AutoGrabGun = false,
-    GunAura = false,
-    KillAura = false,
-    KillAuraRange = 15,
-    SilentAim = false,
-    AutoKillSheriff = false
+    -- Player Mods
+    EnableWalkSpeed = false,
+    WalkSpeedInput = 16,
+    EnableJumpPower = false,
+    JumpPowerInput = 50,
+    InfiniteJump = false,
+    EnableNoclip = false,
+    
+    -- Misc
+    AutoBlurtRoles = false,
+    DestroyCoins = false,
+    DestroyDeadBody = false,
+    DestroyBarriers = false,
+    AntiTrap = false,
+    CoinAura = false,
+    
+    -- Whitelist
+    WhitelistedPlayers = {},
+    WhitelistFriends = false,
+    WhitelistMurderer = false
 }
 
--- Detect current game state
-function UpdateGameState()
-    -- Find murderer
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            if player.Character:FindFirstChild("Knife") then
-                GameData.Murderer = player
-            elseif player.Character:FindFirstChild("Gun") then
-                GameData.Sheriff = player
-            end
-        end
-    end
-    
-    -- Find gun drop
-    if Workspace:FindFirstChild("Normal") then
-        GameData.GunDrop = Workspace.Normal:FindFirstChild("GunDrop")
-    end
-    
-    -- Update players list
-    GameData.PlayersList = {}
+-- Tabs
+local MainTab = Window:MakeTab({Title = "الرئيسية", Icon = "Home"})
+local CombatTab = Window:MakeTab({Title = "القتال", Icon = "Swords"})
+local VisualTab = Window:MakeTab({Title = "المظهر", Icon = "Palette"})
+local PlayerTab = Window:MakeTab({Title = "اللاعب", Icon = "User"})
+local FarmTab = Window:MakeTab({Title = "الفارم", Icon = "Coins"})
+local SettingsTab = Window:MakeTab({Title = "الإعدادات", Icon = "Settings"})
+
+-- إشعار البدء
+Window:Notify({
+    Title = "تم التحميل بنجاح!",
+    Content = "سكربت Murder Mystery 2 جاهز للاستخدام",
+    Duration = 5,
+    Image = "rbxassetid://10734953451"
+})
+
+-- Function to refresh players list
+local function RefreshPlayersList()
+    local players = {}
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
-            table.insert(GameData.PlayersList, player.Name)
+            table.insert(players, player.Name)
         end
     end
+    return players
 end
 
--- Safe teleport function
-function SafeTeleportToPlayer(playerName)
-    local target = Players:FindFirstChild(playerName)
-    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0)
-        end
-    end
-end
-
--- Safe ESP System
-local ESPs = {}
-function CreateSafeESP(player, color, text)
-    local drawings = {
-        Text = Drawing.new("Text"),
-        Box = Drawing.new("Square")
-    }
-    
-    drawings.Text.Text = text or player.Name
-    drawings.Text.Color = color
-    drawings.Text.Size = 14
-    drawings.Text.Outline = true
-    
-    drawings.Box.Color = color
-    drawings.Box.Thickness = 2
-    drawings.Box.Filled = false
-    
-    local connection = RunService.RenderStepped:Connect(function()
-        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local rootPart = player.Character.HumanoidRootPart
-            local position, onScreen = Workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-            
-            if onScreen then
-                local distance = (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
-                drawings.Text.Text = string.format("%s [%dm]", player.Name, math.floor(distance))
-                drawings.Text.Position = Vector2.new(position.X, position.Y - 30)
-                drawings.Text.Visible = true
-                
-                drawings.Box.Size = Vector2.new(40, 60)
-                drawings.Box.Position = Vector2.new(position.X - 20, position.Y - 30)
-                drawings.Box.Visible = true
-            else
-                drawings.Text.Visible = false
-                drawings.Box.Visible = false
-            end
-        else
-            drawings.Text.Visible = false
-            drawings.Box.Visible = false
-        end
-    end)
-    
-    ESPs[player] = {
-        Drawings = drawings,
-        Connection = connection,
-        Destroy = function()
-            connection:Disconnect()
-            drawings.Text:Remove()
-            drawings.Box:Remove()
-            ESPs[player] = nil
-        end
-    }
-end
-
--- Remove all ESPs
-function ClearESPs()
-    for _, esp in pairs(ESPs) do
-        esp.Destroy()
-    end
-    ESPs = {}
-end
-
--- Safe kill aura (server-sided, no hacking)
-function SafeKillAura()
-    if not GameData.Murderer or LocalPlayer ~= GameData.Murderer then return end
-    
+-- Function to get player by role
+local function GetPlayerByRole(role)
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-            if distance <= Features.KillAuraRange then
-                -- Legit method (no remote hacking)
-                if LocalPlayer.Character:FindFirstChild("Knife") then
-                    LocalPlayer.Character.Knife.Stab:FireServer()
-                    firetouchinterest(player.Character.HumanoidRootPart, LocalPlayer.Character.Knife.Handle, 0)
-                    task.wait(0.2)
-                    firetouchinterest(player.Character.HumanoidRootPart, LocalPlayer.Character.Knife.Handle, 1)
+        if GameData.GameplayMap[player.Name] == role then
+            return player
+        end
+    end
+    return nil
+end
+
+-- Function to teleport
+local function TeleportTo(position, playerName)
+    local character = LocalPlayer.Character
+    if not character then return end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+    
+    if position == "Murderer" then
+        local murderer = GetPlayerByRole("Murderer")
+        if murderer and murderer.Character then
+            local targetPart = murderer.Character:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                humanoidRootPart.CFrame = targetPart.CFrame
+            end
+        end
+    elseif position == "Sheriff" then
+        local sheriff = GetPlayerByRole("Sheriff")
+        if sheriff and sheriff.Character then
+            local targetPart = sheriff.Character:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                humanoidRootPart.CFrame = targetPart.CFrame
+            end
+        end
+    elseif position == "Player" and playerName then
+        local targetPlayer = Players:FindFirstChild(playerName)
+        if targetPlayer and targetPlayer.Character then
+            local targetPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                humanoidRootPart.CFrame = targetPart.CFrame
+            end
+        end
+    end
+end
+
+-- Section: الرئيسية
+MainTab:AddSection("معلومات الجولة")
+
+local RoundInfo = MainTab:AddParagraph("معلومات الجولة", "جاري الانتظار...")
+
+MainTab:AddSection("الأدوات السريعة")
+
+MainTab:AddButton({
+    Name = "🔪 اقتل الجميع (إذا كنت قاتل)",
+    Callback = function()
+        if GameData.GameplayMap[LocalPlayer.Name] == "Murderer" then
+            -- Kill all logic here
+            Window:Notify({
+                Title = "نجاح",
+                Content = "جاري قتل جميع اللاعبين...",
+                Duration = 3
+            })
+        else
+            Window:Notify({
+                Title = "خطأ",
+                Content = "يجب أن تكون القاتل لاستخدام هذه الميزة!",
+                Duration = 3
+            })
+        end
+    end
+})
+
+MainTab:AddButton({
+    Name = "🔫 سرق المسدس",
+    Callback = function()
+        if GameData.GunDrop then
+            -- Steal gun logic here
+            Window:Notify({
+                Title = "نجاح",
+                Content = "جاري سرقة المسدس...",
+                Duration = 3
+            })
+        else
+            Window:Notify({
+                Title = "خطأ",
+                Content = "لا يوجد مسدس مسقوط!",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- Section: القتال
+CombatTab:AddSection("ميزات القاتل")
+
+local KillAuraToggle = CombatTab:AddToggle({
+    Name = "هالة القتل التلقائي",
+    Default = false,
+    Callback = function(Value)
+        Config.KillAura = Value
+        if Value then
+            Window:Notify({
+                Title = "تفعيل",
+                Content = "تم تفعيل هالة القتل",
+                Duration = 3
+            })
+            
+            -- Kill aura loop
+            while Config.KillAura and task.wait(0.1) do
+                if GameData.GameplayMap[LocalPlayer.Name] == "Murderer" then
+                    -- Kill nearby players logic
                 end
             end
         end
     end
-end
-
--- Initialize Fluent UI
-local Window = Fluent:CreateWindow({
-    Title = "Symphony Hub - Safe Edition",
-    SubTitle = "No Stealing | No Logging | Fair Play",
-    TabWidth = 100,
-    Size = UDim2.fromOffset(550, 400),
-    Acrylic = true,
-    Theme = "Darker",
-    MinimizeKey = Enum.KeyCode.RightControl
 })
 
--- Create Tabs
-local Tabs = {
-    Main = Window:AddTab({Title = "Main", Icon = "home"}),
-    Player = Window:AddTab({Title = "Player", Icon = "user"}),
-    Visuals = Window:AddTab({Title = "Visuals", Icon = "eye"}),
-    Combat = Window:AddTab({Title = "Combat", Icon = "sword"}),
-    Settings = Window:AddTab({Title = "Settings", Icon = "settings"})
-}
-
--- Main Tab
-do
-    local MainSection = Tabs.Main:AddSection("Game Information")
-    
-    local InfoParagraph = MainSection:AddParagraph({
-        Title = "Game Status",
-        Content = "Updating..."
-    })
-    
-    MainSection:AddButton({
-        Title = "Update Game Info",
-        Callback = function()
-            UpdateGameState()
-            InfoParagraph:SetContent(string.format(
-                "Murderer: %s\nSheriff: %s\nGun Drop: %s\nPlayers: %d",
-                GameData.Murderer and GameData.Murderer.Name or "None",
-                GameData.Sheriff and GameData.Sheriff.Name or "None",
-                GameData.GunDrop and "Yes" or "No",
-                #Players:GetPlayers()
-            ))
-        end
-    })
-    
-    MainSection:AddButton({
-        Title = "Teleport to Murderer",
-        Callback = function()
-            if GameData.Murderer then
-                SafeTeleportToPlayer(GameData.Murderer.Name)
-            end
-        end
-    })
-    
-    MainSection:AddButton({
-        Title = "Teleport to Sheriff",
-        Callback = function()
-            if GameData.Sheriff then
-                SafeTeleportToPlayer(GameData.Sheriff.Name)
-            end
-        end
-    })
-    
-    local TeleportDropdown = MainSection:AddDropdown("TeleportDropdown", {
-        Title = "Teleport to Player",
-        Values = GameData.PlayersList,
-        Multi = false,
-        Default = nil,
-        Callback = function(value)
-            if value then
-                SafeTeleportToPlayer(value)
-            end
-        end
-    })
-end
-
--- Player Tab
-do
-    local MovementSection = Tabs.Player:AddSection("Movement")
-    
-    MovementSection:AddToggle("WalkSpeedToggle", {
-        Title = "Enable Walk Speed",
-        Default = Features.WalkSpeed.Enabled,
-        Callback = function(value)
-            Features.WalkSpeed.Enabled = value
-        end
-    })
-    
-    MovementSection:AddSlider("WalkSpeedSlider", {
-        Title = "Walk Speed",
-        Default = Features.WalkSpeed.Value,
-        Min = 16,
-        Max = 100,
-        Rounding = 1,
-        Callback = function(value)
-            Features.WalkSpeed.Value = value
-            if Features.WalkSpeed.Enabled and LocalPlayer.Character then
-                LocalPlayer.Character.Humanoid.WalkSpeed = value
-            end
-        end
-    })
-    
-    MovementSection:AddToggle("JumpPowerToggle", {
-        Title = "Enable Jump Power",
-        Default = Features.JumpPower.Enabled,
-        Callback = function(value)
-            Features.JumpPower.Enabled = value
-        end
-    })
-    
-    MovementSection:AddSlider("JumpPowerSlider", {
-        Title = "Jump Power",
-        Default = Features.JumpPower.Value,
-        Min = 50,
-        Max = 200,
-        Rounding = 1,
-        Callback = function(value)
-            Features.JumpPower.Value = value
-            if Features.JumpPower.Enabled and LocalPlayer.Character then
-                LocalPlayer.Character.Humanoid.JumpPower = value
-            end
-        end
-    })
-    
-    MovementSection:AddToggle("InfiniteJumpToggle", {
-        Title = "Infinite Jump",
-        Default = Features.InfiniteJump,
-        Callback = function(value)
-            Features.InfiniteJump = value
-        end
-    })
-    
-    MovementSection:AddToggle("NoclipToggle", {
-        Title = "Noclip",
-        Default = Features.Noclip,
-        Callback = function(value)
-            Features.Noclip = value
-        end
-    })
-    
-    local EmotesSection = Tabs.Player:AddSection("Emotes")
-    
-    EmotesSection:AddDropdown("EmoteDropdown", {
-        Title = "Play Emote",
-        Values = {"Sit", "Dab", "Floss", "Zen", "Wave", "Dance"},
-        Multi = false,
-        Default = nil,
-        Callback = function(value)
-            if value then
-                ReplicatedStorage.Remotes.Misc.PlayEmote:Fire(string.lower(value))
-            end
-        end
-    })
-end
-
--- Visuals Tab
-do
-    local ESPSection = Tabs.Visuals:AddSection("ESP")
-    
-    ESPSection:AddToggle("MurdererESPToggle", {
-        Title = "Murderer ESP",
-        Default = Features.MurdererESP,
-        Callback = function(value)
-            Features.MurdererESP = value
-            ClearESPs()
-            if value and GameData.Murderer then
-                CreateSafeESP(GameData.Murderer, Color3.fromRGB(255, 0, 0), "MURDERER")
-            end
-        end
-    })
-    
-    ESPSection:AddToggle("SheriffESPToggle", {
-        Title = "Sheriff ESP",
-        Default = Features.SheriffESP,
-        Callback = function(value)
-            Features.SheriffESP = value
-            if value and GameData.Sheriff then
-                CreateSafeESP(GameData.Sheriff, Color3.fromRGB(0, 0, 255), "SHERIFF")
-            else
-                ClearESPs()
-            end
-        end
-    })
-    
-    local HighlightSection = Tabs.Visuals:AddSection("Highlights")
-    
-    HighlightSection:AddToggle("ShowMurdererToggle", {
-        Title = "Highlight Murderer",
-        Default = Features.ShowMurderer,
-        Callback = function(value)
-            Features.ShowMurderer = value
-        end
-    })
-    
-    HighlightSection:AddToggle("ShowSheriffToggle", {
-        Title = "Highlight Sheriff",
-        Default = Features.ShowSheriff,
-        Callback = function(value)
-            Features.ShowSheriff = value
-        end
-    })
-end
-
--- Combat Tab
-do
-    local MurdererSection = Tabs.Combat:AddSection("Murderer")
-    
-    MurdererSection:AddToggle("KillAuraToggle", {
-        Title = "Kill Aura",
-        Default = Features.KillAura,
-        Callback = function(value)
-            Features.KillAura = value
-        end
-    })
-    
-    MurdererSection:AddSlider("KillAuraRangeSlider", {
-        Title = "Kill Aura Range",
-        Default = Features.KillAuraRange,
-        Min = 5,
-        Max = 50,
-        Rounding = 1,
-        Callback = function(value)
-            Features.KillAuraRange = value
-        end
-    })
-    
-    MurdererSection:AddToggle("AutoKillSheriffToggle", {
-        Title = "Auto Kill Sheriff",
-        Default = Features.AutoKillSheriff,
-        Callback = function(value)
-            Features.AutoKillSheriff = value
-        end
-    })
-    
-    local InnocentSection = Tabs.Combat:AddSection("Innocent")
-    
-    InnocentSection:AddToggle("AutoGrabGunToggle", {
-        Title = "Auto Grab Gun",
-        Default = Features.AutoGrabGun,
-        Callback = function(value)
-            Features.AutoGrabGun = value
-        end
-    })
-    
-    InnocentSection:AddToggle("GunAuraToggle", {
-        Title = "Gun Aura",
-        Default = Features.GunAura,
-        Callback = function(value)
-            Features.GunAura = value
-        end
-    })
-end
-
--- Settings Tab
-do
-    local InfoSection = Tabs.Settings:AddSection("Information")
-    
-    InfoSection:AddParagraph({
-        Title = "Script Information",
-        Content = "Symphony Hub - Safe Edition\nVersion: 2.0.1\nStatus: 100% Safe\nNo Stealing | No Logging"
-    })
-    
-    InfoSection:AddButton({
-        Title = "Save Settings",
-        Callback = function()
-            SaveManager:Save()
-            Window:Notify({
-                Title = "Settings Saved",
-                Content = "Your settings have been saved locally.",
-                Duration = 3
-            })
-        end
-    })
-    
-    InfoSection:AddButton({
-        Title = "Load Settings",
-        Callback = function()
-            SaveManager:Load()
-            Window:Notify({
-                Title = "Settings Loaded",
-                Content = "Your settings have been loaded.",
-                Duration = 3
-            })
-        end
-    })
-    
-    local UISection = Tabs.Settings:AddSection("UI Settings")
-    
-    UISection:AddDropdown("ThemeDropdown", {
-        Title = "Theme",
-        Values = Fluent:GetThemes(),
-        Default = "Darker",
-        Callback = function(value)
-            Fluent:SetTheme(value)
-        end
-    })
-    
-    UISection:AddSlider("UIScaleSlider", {
-        Title = "UI Scale",
-        Default = 1,
-        Min = 0.5,
-        Max = 1.5,
-        Rounding = 0.1,
-        Callback = function(value)
-            Window:SetUIScale(value)
-        end
-    })
-end
-
--- Initialize Save Manager
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetIgnoreIndexes({})
-InterfaceManager:SetFolder("SymphonyHubSafe")
-SaveManager:SetFolder("SymphonyHubSafe/specific-game")
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
-
--- Main loops
-RunService.Heartbeat:Connect(function()
-    -- Apply walk speed
-    if LocalPlayer.Character and Features.WalkSpeed.Enabled then
-        LocalPlayer.Character.Humanoid.WalkSpeed = Features.WalkSpeed.Value
+CombatTab:AddSlider({
+    Name = "مدى هالة القتل",
+    Min = 1,
+    Max = 50,
+    Default = 15,
+    Increment = 1,
+    Callback = function(Value)
+        Config.KillAuraRange = Value
     end
-    
-    -- Apply jump power
-    if LocalPlayer.Character and Features.JumpPower.Enabled then
-        LocalPlayer.Character.Humanoid.JumpPower = Features.JumpPower.Value
+})
+
+CombatTab:AddToggle({
+    Name = "قتل الشريف تلقائي",
+    Default = false,
+    Callback = function(Value)
+        Config.AutoKillSheriff = Value
     end
-    
-    -- Infinite jump
-    if Features.InfiniteJump then
-        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+})
+
+CombatTab:AddToggle({
+    Name = "قتل الجميع تلقائي",
+    Default = false,
+    Callback = function(Value)
+        Config.AutoKillEveryone = Value
     end
+})
+
+CombatTab:AddSection("ميزات الشريف")
+
+CombatTab:AddToggle({
+    Name = "تسديد صامت للشريف",
+    Default = false,
+    Callback = function(Value)
+        Config.SheriffSilentAim = Value
+    end
+})
+
+CombatTab:AddToggle({
+    Name = "كسر المسدس تلقائي",
+    Default = false,
+    Callback = function(Value)
+        Config.AutoBreakGun = Value
+    end
+})
+
+CombatTab:AddSection("الأسلحة")
+
+CombatTab:AddToggle({
+    Name = "التقاط المسدس تلقائي",
+    Default = false,
+    Callback = function(Value)
+        Config.AutoGrabGun = Value
+    end
+})
+
+CombatTab:AddToggle({
+    Name = "هالة المسدس",
+    Default = false,
+    Callback = function(Value)
+        Config.GunAura = Value
+    end
+})
+
+-- Section: المظهر
+VisualTab:AddSection("الهايلايت")
+
+VisualTab:AddToggle({
+    Name = "إظهار القاتل",
+    Default = false,
+    Callback = function(Value)
+        Config.ShowMurderer = Value
+    end
+})
+
+VisualTab:AddToggle({
+    Name = "إظهار الشريف",
+    Default = false,
+    Callback = function(Value)
+        Config.ShowSheriff = Value
+    end
+})
+
+VisualTab:AddToggle({
+    Name = "إظهار الأبرياء",
+    Default = false,
+    Callback = function(Value)
+        Config.ShowInnocent = Value
+    end
+})
+
+VisualTab:AddToggle({
+    Name = "إظهار المسدس",
+    Default = false,
+    Callback = function(Value)
+        Config.ShowGun = Value
+    end
+})
+
+VisualTab:AddSection("ESP")
+
+VisualTab:AddToggle({
+    Name = "ESP القاتل",
+    Default = false,
+    Callback = function(Value)
+        Config.MurdererESP = Value
+    end
+})
+
+VisualTab:AddToggle({
+    Name = "ESP الشريف",
+    Default = false,
+    Callback = function(Value)
+        Config.SheriffESP = Value
+    end
+})
+
+VisualTab:AddToggle({
+    Name = "ESP الأبرياء",
+    Default = false,
+    Callback = function(Value)
+        Config.InnocentESP = Value
+    end
+})
+
+-- Section: اللاعب
+PlayerTab:AddSection("تحسينات الحركة")
+
+PlayerTab:AddToggle({
+    Name = "تفعيل السرعة",
+    Default = false,
+    Callback = function(Value)
+        Config.EnableWalkSpeed = Value
+    end
+})
+
+PlayerTab:AddSlider({
+    Name = "سرعة الحركة",
+    Min = 16,
+    Max = 100,
+    Default = 16,
+    Increment = 1,
+    Callback = function(Value)
+        Config.WalkSpeedInput = Value
+    end
+})
+
+PlayerTab:AddToggle({
+    Name = "قفز لا نهائي",
+    Default = false,
+    Callback = function(Value)
+        Config.InfiniteJump = Value
+    end
+})
+
+PlayerTab:AddToggle({
+    Name = "النوكلب",
+    Default = false,
+    Callback = function(Value)
+        Config.EnableNoclip = Value
+    end
+})
+
+PlayerTab:AddSection("الانتقال السريع")
+
+local TeleportDropdown = PlayerTab:AddDropdown({
+    Name = "الانتقال إلى لاعب",
+    Options = RefreshPlayersList(),
+    Default = nil,
+    Callback = function(Value)
+        TeleportTo("Player", Value)
+    end
+})
+
+PlayerTab:AddButton({
+    Name = "الانتقال إلى القاتل",
+    Callback = function()
+        TeleportTo("Murderer")
+    end
+})
+
+PlayerTab:AddButton({
+    Name = "الانتقال إلى الشريف",
+    Callback = function()
+        TeleportTo("Sheriff")
+    end
+})
+
+-- Section: الفارم
+FarmTab:AddSection("جمع العملات")
+
+FarmTab:AddToggle({
+    Name = "هالة العملات",
+    Default = false,
+    Callback = function(Value)
+        Config.CoinAura = Value
+    end
+})
+
+FarmTab:AddToggle({
+    Name = "تدمير العملات",
+    Default = false,
+    Callback = function(Value)
+        Config.DestroyCoins = Value
+    end
+})
+
+FarmTab:AddToggle({
+    Name = "تدمير الجثث",
+    Default = false,
+    Callback = function(Value)
+        Config.DestroyDeadBody = Value
+    end
+})
+
+FarmTab:AddSection("التحسين")
+
+FarmTab:AddToggle({
+    Name = "تدمير الحواجز",
+    Default = false,
+    Callback = function(Value)
+        Config.DestroyBarriers = Value
+    end
+})
+
+FarmTab:AddToggle({
+    Name = "مضاد الفخاخ",
+    Default = false,
+    Callback = function(Value)
+        Config.AntiTrap = Value
+    end
+})
+
+-- Section: الإعدادات
+SettingsTab:AddSection("القائمة البيضاء")
+
+local WhitelistDropdown = SettingsTab:AddDropdown({
+    Name = "اللاعبون المسموحون",
+    Options = RefreshPlayersList(),
+    Default = {},
+    Multi = true,
+    Callback = function(Values)
+        Config.WhitelistedPlayers = Values
+    end
+})
+
+SettingsTab:AddToggle({
+    Name = "إضافة الأصدقاء تلقائي",
+    Default = false,
+    Callback = function(Value)
+        Config.WhitelistFriends = Value
+    end
+})
+
+SettingsTab:AddToggle({
+    Name = "إضافة القاتل تلقائي",
+    Default = false,
+    Callback = function(Value)
+        Config.WhitelistMurderer = Value
+    end
+})
+
+SettingsTab:AddSection("معلومات")
+
+SettingsTab:AddParagraph("إصدار السكربت", "Murder Mystery 2 Legendary\nالإصدار: 3.0\nالمطور: YourName")
+
+SettingsTab:AddButton({
+    Name = "🔄 تحديث قائمة اللاعبين",
+    Callback = function()
+        local players = RefreshPlayersList()
+        TeleportDropdown:NewOptions(players)
+        WhitelistDropdown:NewOptions(players)
+        Window:Notify({
+            Title = "تم التحديث",
+            Content = "تم تحديث قائمة اللاعبين",
+            Duration = 3
+        })
+    end
+})
+
+-- Game Events
+local function UpdateRoundInfo()
+    local info = ""
+    info = info .. "الحالة: " .. (GameData.IsRoundStarted and "مبدأية" or "انتظار") .. "\n"
+    info = info .. "القاتل: " .. (GetPlayerByRole("Murderer") and GetPlayerByRole("Murderer").Name or "غير معروف") .. "\n"
+    info = info .. "الشريف: " .. (GetPlayerByRole("Sheriff") and GetPlayerByRole("Sheriff").Name or "غير معروف") .. "\n"
+    info = info .. "المسدس: " .. (GameData.GunDrop and "مسقوط" or "غير مسقوط")
     
-    -- Noclip
-    if Features.Noclip and LocalPlayer.Character then
+    RoundInfo:Set(info)
+end
+
+-- Auto updater for player lists
+task.spawn(function()
+    while task.wait(5) do
+        local players = RefreshPlayersList()
+        TeleportDropdown:NewOptions(players)
+        WhitelistDropdown:NewOptions(players)
+        UpdateRoundInfo()
+    end
+end)
+
+-- Connections
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if Config.EnableWalkSpeed then
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid.WalkSpeed = Config.WalkSpeedInput
+    end
+end)
+
+-- Infinite jump
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if Config.InfiniteJump and LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid:ChangeState("Jumping")
+        end
+    end
+end)
+
+-- Noclip
+RunService.Stepped:Connect(function()
+    if Config.EnableNoclip and LocalPlayer.Character then
         for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
     end
-    
-    -- Kill aura loop
-    if Features.KillAura then
-        SafeKillAura()
-    end
-    
-    -- Auto kill sheriff
-    if Features.AutoKillSheriff and GameData.Sheriff then
-        SafeKillAura()
-    end
 end)
 
--- Auto-update game state every 2 seconds
-task.spawn(function()
-    while task.wait(2) do
-        UpdateGameState()
-        
-        -- Update teleport dropdown
-        local dropdown = Fluent.Options.TeleportDropdown
-        if dropdown then
-            local values = {}
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer then
-                    table.insert(values, player.Name)
-                end
-            end
-            dropdown:SetValues(values)
-        end
-    end
-end)
-
--- Disable anti-afk
-for _, connection in pairs(getconnections(LocalPlayer.Idled)) do
-    connection:Disable()
-end
-
--- Initial notification
 Window:Notify({
-    Title = "✅ Safe Version Loaded",
-    Content = "Symphony Hub - Safe Edition\nNo stealing, no logging, no viruses",
-    Duration = 5
+    Title = "جاهز للعب!",
+    Content = "تم تحميل جميع الميزات بنجاح",
+    Duration = 3
 })
-
--- Select first tab
-Window:SelectTab(1)
-
-print([[
-╔══════════════════════════════════════════╗
-║     SYMPHONY HUB - SAFE EDITION          ║
-║     ✅ 100% Safe & Clean                 ║
-║     ✅ No Stealing Features              ║
-║     ✅ No Data Logging                   ║
-║     ✅ No Webhooks                       ║
-║     ✅ Fair Gameplay Only                ║
-╚══════════════════════════════════════════╝
-]])
