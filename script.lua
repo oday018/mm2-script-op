@@ -2,7 +2,7 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 local Window = Library:MakeWindow({
 	Title = "M1's Murder & Fling",
-	SubTitle = "For MM2 — Clean & Complete",
+	SubTitle = "For MM2 — Pure Power",
 	ScriptFolder = "m1-murder-fling"
 })
 
@@ -12,7 +12,7 @@ local MurdererTab = Window:MakeTab({ Title = "Murderer", Icon = "axe" })
 -- 🌀 تاب الفلينق
 local FlingTab = Window:MakeTab({ Title = "Fling", Icon = "rotate-cw" })
 
--- === 🔁 المتغيرات والمصادر من السكربت الأصلي === --
+-- === 🧬 المتغيرات الأساسية من السكربت الأصلي === --
 local vu18 = game.Players
 local vu26 = vu18.LocalPlayer
 local vu16 = game:GetService("ReplicatedStorage")
@@ -31,7 +31,7 @@ if vu26.Character then
 	vu29 = vu27:FindFirstChild("HumanoidRootPart")
 end
 
--- === 📋 إدارة اللاعبين === --
+-- === 📋 Players List === --
 local PlayersList = {}
 local function RefreshPlayersList()
 	PlayersList = {}
@@ -43,12 +43,13 @@ local function RefreshPlayersList()
 end
 
 RefreshPlayersList()
-vu18.PlayerAdded:Connect(RefreshPlayersList)
+vu18.PlayerAdded:Connect(function() task.delay(0.3, RefreshPlayersList) end)
 vu18.PlayerRemoving:Connect(RefreshPlayersList)
 
--- === 🎭 تحديد الأدوار === --
+-- === 🎭 Roles Detection === --
 local Gameplay = {}
-local function GetRoles()
+local function DetectRoles()
+	Gameplay = {}
 	local Data = vu16.Remotes.Extras.GetPlayerData:InvokeServer()
 	for Name, Info in pairs(Data) do
 		if Info.Role ~= "Innocent" then
@@ -59,8 +60,9 @@ local function GetRoles()
 		end
 	end
 end
+DetectRoles()
 
--- === 🧠 الدوال الأساسية من الملف === --
+-- === 🧠 IsAlive === --
 local function IsAlive(p107)
 	local Name = p107 or vu26.Name
 	local Data = vu16.Remotes.Extras.GetPlayerData:InvokeServer()[Name]
@@ -68,6 +70,7 @@ local function IsAlive(p107)
 	return not Data.Dead and not Data.Killed
 end
 
+-- === 💀 Kill Functions === --
 local function KillPlayer(pu195, pu196)
 	task.spawn(function()
 		local Target = vu18:FindFirstChild(pu195)
@@ -129,28 +132,118 @@ local function GetNearestPlayer(p143)
 	return Nearest
 end
 
--- === 💥 Fling من السكربت الأصلي (نسخ حرفي للمنطق الأساسي) === --
+-- === 🌪️ Fling Functions (مأخوذة حرفيًا من ملفك، محدثة) === --
 local vu236 = false
-local function Fling(pu244)
+local OldPos, FPDH
+
+function Fling(pu244)
 	pcall(function()
-		if not pu244.Character or not vu29 then return end
-		getgenv().FPDH = game.Workspace.FallenPartsDestroyHeight
-		game.Workspace.FallenPartsDestroyHeight = math.huge
-		game.Workspace.CurrentCamera.CameraSubject = pu244.Character:FindFirstChild("Humanoid") or pu244.Character:FindFirstChild("Head")
-		
-		local BodyVelocity = Instance.new("BodyVelocity")
-		BodyVelocity.Velocity = Vector3.new(9e8, 9e8, 9e8)
-		BodyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-		BodyVelocity.Parent = pu244.Character:FindFirstChild("HumanoidRootPart") or pu244.Character:FindFirstChild("Head")
-		
-		task.wait(0.5)
-		BodyVelocity:Destroy()
-		game.Workspace.CurrentCamera.CameraSubject = vu28
-		game.Workspace.FallenPartsDestroyHeight = getgenv().FPDH
+		if not pu244 or not pu244.Character then return end
+		local Character = pu244.Character
+		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+		local HRP = Humanoid and Humanoid.RootPart or Character:FindFirstChild("HumanoidRootPart")
+		local Head = Character:FindFirstChild("Head")
+
+		if not (HRP or Head) then return end
+
+		if vu29 and vu29.Velocity.Magnitude < 50 then
+			OldPos = vu29.CFrame
+		end
+
+		if vu236 and (Humanoid and Humanoid.Sit) then return end
+
+		if Head then
+			vu13.CurrentCamera.CameraSubject = Head
+		elseif HRP then
+			vu13.CurrentCamera.CameraSubject = Humanoid
+		end
+
+		if not Character:FindFirstChildWhichIsA("BasePart") then return end
+
+		FPDH = vu13.FallenPartsDestroyHeight
+		vu13.FallenPartsDestroyHeight = math.huge
+
+		if Humanoid then
+			Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+		end
+
+		local Vel = Instance.new("BodyVelocity")
+		Vel.Velocity = Vector3.new(9e8, 9e8, 9e8)
+		Vel.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+		Vel.Parent = (HRP or Head)
+
+		local function Simulate(BasePart)
+			local Start = tick()
+			local Duration = 2
+			local Angle = 0
+
+			while vu29 and Humanoid and BasePart do
+				if BasePart.Velocity.Magnitude > 50 then
+					vu29.CFrame = CFrame.new(BasePart.Position) * CFrame.new(0, 1.5, Humanoid.WalkSpeed) * CFrame.Angles(math.rad(90), 0, 0)
+					vu27:SetPrimaryPartCFrame(vu29.CFrame)
+					task.wait()
+
+					vu29.CFrame = CFrame.new(BasePart.Position) * CFrame.new(0, -1.5, -Humanoid.WalkSpeed)
+					vu27:SetPrimaryPartCFrame(vu29.CFrame)
+					task.wait()
+				else
+					Angle = Angle + 200
+					local Offset = Humanoid.MoveDirection * (BasePart.Velocity.Magnitude / 1.25)
+					vu29.CFrame = CFrame.new(BasePart.Position) + CFrame.new(0, 1.5, 0) + Offset
+					vu27:SetPrimaryPartCFrame(vu29.CFrame)
+					task.wait()
+				end
+
+				if BasePart.Velocity.Magnitude > 500 or
+				   (BasePart.Parent ~= Character) or
+				   (pu244.Parent ~= vu18) or
+				   (not pu244.Character) or
+				   (Humanoid.Sit) or
+				   (Humanoid.Health <= 0) or
+				   (tick() > Start + Duration) then
+					break
+				end
+			end
+		end
+
+		if HRP and Head then
+			if (HRP.Position - Head.Position).Magnitude <= 5 then
+				Simulate(HRP)
+			else
+				Simulate(Head)
+			end
+		elseif HRP then
+			Simulate(HRP)
+		elseif Head then
+			Simulate(Head)
+		end
+
+		Vel:Destroy()
+		if Humanoid then
+			Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+		end
+
+		vu13.CurrentCamera.CameraSubject = vu28
+		vu13.FallenPartsDestroyHeight = FPDH or 100
+
+		if OldPos then
+			repeat
+				vu29.CFrame = OldPos * CFrame.new(0, 0.5, 0)
+				vu27:SetPrimaryPartCFrame(vu29.CFrame)
+				vu28:ChangeState("GettingUp")
+				for _, Part in ipairs(vu27:GetDescendants()) do
+					if Part:IsA("BasePart") then
+						Part.Velocity = Vector3.new()
+						Part.RotVelocity = Vector3.new()
+					end
+				end
+				task.wait()
+			until (vu29.Position - OldPos.Position).Magnitude < 25
+		end
 	end)
 end
 
-local function FlingKill(pu262)
+function FlingKill(pu262)
 	pcall(function()
 		if pu262 ~= "All" then
 			local Target = vu18:FindFirstChild(pu262)
@@ -169,7 +262,7 @@ local function FlingKill(pu262)
 	end)
 end
 
--- === 🔄 تحديث القوائم داينمك (مثل الأصل) === --
+-- === 🔄 تحديث Dropdowns داينمك === --
 local function UpdateDropdowns()
 	RefreshPlayersList()
 	if PlayersToKillDropdown then PlayersToKillDropdown:NewOptions(PlayersList) end
@@ -207,9 +300,7 @@ MurdererTab:AddButton({
 
 MurdererTab:AddButton({
 	Name = "Kill Everyone",
-	Callback = function()
-		KillAll()
-	end
+	Callback = KillAll
 })
 
 local KillAuraRange = 15
@@ -243,17 +334,18 @@ MurdererTab:AddToggle({
 	end
 })
 
--- Knife Silent Aim (باستخدام hook لاحقًا — لكن بدون أي تعليق)
-local KnifeSilentAimEnabled = false
+-- === 🔪 Knife Silent Aim (بدون أي تعليق) === --
 local vu396 = nil
+local SilentAimEnabled = false
+
 MurdererTab:AddToggle({
 	Name = "Knife Silent Aim",
 	Default = false,
 	Callback = function(v)
-		KnifeSilentAimEnabled = v
+		SilentAimEnabled = v
 		if v then
 			spawn(function()
-				while KnifeSilentAimEnabled do
+				while SilentAimEnabled do
 					if tostring(Gameplay.Murderer) == vu26.Name then
 						vu396 = GetNearestPlayer(60)
 					else
@@ -266,10 +358,10 @@ MurdererTab:AddToggle({
 	end
 })
 
--- Hook for Knife Silent Aim (بدون أي تعليق — جاهز للدمج)
+-- Hook Namecall للـSilent Aim
 local oldNamecall = nil
 oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-	if not checkcaller() and getnamecallmethod() == "FireServer" and self.Name == "Throw" and self.Parent == vu26 and KnifeSilentAimEnabled and vu396 then
+	if not checkcaller() and getnamecallmethod() == "FireServer" and self.Name == "Throw" and self.Parent == vu26 and SilentAimEnabled and vu396 then
 		local HRP = vu396.Character and vu396.Character:FindFirstChild("HumanoidRootPart")
 		if HRP then
 			return oldNamecall(self, HRP.CFrame, select(2, ...))
@@ -325,10 +417,7 @@ FlingTab:AddButton({
 	end
 })
 
--- === 🔄 بدء جمع الأدوار === --
-GetRoles()
-
--- ربط أدوات السكربت عند دخولها
+-- === 🔁 Live Role Detection === --
 vu13.DescendantAdded:Connect(function(Obj)
 	if Obj:IsA("Tool") and (Obj.Name == "Knife" or Obj.Name == "Gun") then
 		local Owner = Obj:FindFirstAncestorOfClass("Model")
@@ -345,4 +434,4 @@ vu13.DescendantAdded:Connect(function(Obj)
 	end
 end)
 
-Window:Notify({ Title = "M1", Content = "Murderer + Fling Loaded ✅", Duration = 4 })
+Window:Notify({ Title = "M1", Content = "✅ Murderer + Fling Fully Loaded", Duration = 4 })
