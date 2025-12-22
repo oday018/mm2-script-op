@@ -15,22 +15,21 @@ local CombatTab = Window:MakeTab({
 local FlingSection = CombatTab:AddSection("Fling")
 
 -- Function to update player list
-local function UpdatePlayerList()
+local function UpdatePlayerList(Dropdown)
   local PlayerList = {}
   for _, Player in pairs(game.Players:GetPlayers()) do
     if Player.Name ~= game.Players.LocalPlayer.Name then
       table.insert(PlayerList, Player.Name)
     end
   end
-  return PlayerList
+  Dropdown:NewOptions(PlayerList)
 end
 
-local CurrentPlayerList = UpdatePlayerList()
-
+-- Create the dropdown first
 local PlayerDropdown = FlingSection:AddDropdown({
   Name = "Players To Fling",
-  Options = CurrentPlayerList,
-  Default = CurrentPlayerList[1] or nil,
+  Options = {},
+  Default = nil,
   Callback = function(Value)
     -- اختيار لاعب معين للقذف
     vu35.PlayerToFling = Value
@@ -41,10 +40,23 @@ local PlayerDropdown = FlingSection:AddDropdown({
 FlingSection:AddButton({
   Name = "Refresh Players",
   Callback = function()
-    CurrentPlayerList = UpdatePlayerList()
-    PlayerDropdown:NewOptions(CurrentPlayerList)
+    UpdatePlayerList(PlayerDropdown)
   end
 })
+
+-- Update the list when the script starts
+UpdatePlayerList(PlayerDropdown)
+
+-- Connect to PlayerAdded and PlayerRemoving events to update the list automatically
+game.Players.PlayerAdded:Connect(function(Player)
+  -- Wait a short time to ensure the player is fully loaded
+  task.wait(0.1)
+  UpdatePlayerList(PlayerDropdown)
+end)
+
+game.Players.PlayerRemoving:Connect(function(Player)
+  UpdatePlayerList(PlayerDropdown)
+end)
 
 FlingSection:AddButton({
   Name = "Fling Murderer",
