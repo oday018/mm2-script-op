@@ -1,15 +1,21 @@
+-- تحميل مكتبة Wand UI
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 
--- المتغيرات (كلها من السكربت الأصلي)
+-- المتغيرات (من السكربت الأصلي)
 local vu5 = 168687157
 local vu6 = "5C0A7004-373F-7541-7F22-D9F0A22C11A9"
 local vu13 = game:GetService("Workspace")
 local vu15 = game:GetService("TeleportService")
-local vu16 = { Remotes = { } } -- سيتم تعريفه لاحقًا
+local vu16 = { Remotes = { } }
+local vu18 = game:GetService("Players")
+local vu19 = game:GetService("RunService")
+local vu20 = game:GetService("MarketplaceService")
 local vu26 = game.Players.LocalPlayer
 local vu27 = vu26.Character
 local vu28 = vu27:WaitForChild("Humanoid")
 local vu29 = vu27:WaitForChild("HumanoidRootPart")
+local vu32 = game:GetService("Workspace").CurrentCamera
+local vu33 = setclipboard or function() end
 local vu35 = {
   -- إعدادات القذف (Fling)
   PlayerToFling = nil,
@@ -25,11 +31,7 @@ local vu35 = {
   WhitelistedPlayers = {},
   ManualWhitelistedPlayers = {},
 
-  -- إعدادات أخرى
-  AutoUpdateDelay = 0.1,
-  PlayersList = {},
-
-  -- إعدادات من السكربت الأصلي
+  -- إعدادات أخرى (من السكربت الأصلي)
   WalkSpeed = 16,
   JumpPower = 50,
   FlySpeed = 1,
@@ -211,25 +213,99 @@ local vu36 = {
   Map = nil,
   -- ... (استمرار المتغيرات)
 }
-local vu38 = { } -- سيتم تعريفه لاحقًا
+local vu38 = { }
 local vu40 = { "Sit", "Ninja", "Dab", "Zen", "Floss", "Headless", "Zombie" }
--- ... (استمرار المتغيرات الأخرى)
 
-local Window = Library:MakeWindow({
-  Title = "Symphony Hub : Murder Mystery 2",
-  SubTitle = "dev by real_redz",
-  ScriptFolder = "redz-library-V5"
-})
+-- وظائف (من السكربت الأصلي)
+function FlingKill(pu262)
+  pcall(function()
+    if pu262 ~= "All" then
+      local v263 = GetPlayer(pu262)
+      if v263 and v263 ~= game.Players.LocalPlayer then
+        Fling(v263)
+      end
+    else
+      -- قذف الجميع
+      for _, Player in pairs(game.Players:GetPlayers()) do
+        if Player ~= game.Players.LocalPlayer and not IsPlayerWhitelisted(Player.Name) then
+          Fling(Player)
+        end
+      end
+    end
+  end)
+end
 
-local CombatTab = Window:MakeTab({
-  Title = "Combat",
-  Icon = "Gun"
-})
+function KillPlayer(PlayerName, Instant)
+  if tostring(vu36.Gameplay.Murderer) == game.Players.LocalPlayer.Name then
+    local Player = game.Players:FindFirstChild(PlayerName)
+    if Player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+      local Character = game.Players.LocalPlayer.Character
+      if Character and Character:FindFirstChild("Knife") then
+        pcall(function()
+          Character.Knife.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, Player.Character.HumanoidRootPart.Position, "AH2")
+        end)
+      end
+    end
+  end
+end
 
--- Fling Section
-local FlingSection = CombatTab:AddSection("Fling")
+function KillAll()
+  if tostring(vu36.Gameplay.Murderer) == game.Players.LocalPlayer.Name then
+    for _, Player in pairs(game.Players:GetPlayers()) do
+      if Player ~= game.Players.LocalPlayer and not IsPlayerWhitelisted(Player.Name) then
+        KillPlayer(Player.Name, true)
+      end
+    end
+  end
+end
 
--- Function to update player list
+function IsPlayerWhitelisted(PlayerName)
+  return table.find(vu35.WhitelistedPlayers, PlayerName) ~= nil
+end
+
+function GetPlayer(PlayerName)
+  return game.Players:FindFirstChild(PlayerName)
+end
+
+function Fling(Player)
+  if Player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+    local Character = game.Players.LocalPlayer.Character
+    if Character and Character:FindFirstChild("HumanoidRootPart") then
+      local HumanoidRootPart = Character.HumanoidRootPart
+      local TargetRootPart = Player.Character.HumanoidRootPart
+
+      HumanoidRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
+      HumanoidRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
+
+      HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+      HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+
+      HumanoidRootPart.CFrame = TargetRootPart.CFrame * CFrame.new(0, -1.5, 0)
+
+      TargetRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
+      TargetRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
+
+      TargetRootPart.Velocity = Vector3.new(0, 0, 0)
+      TargetRootPart.RotVelocity = Vector3.new(0, 0, 0)
+
+      task.wait(0.1)
+
+      HumanoidRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
+      HumanoidRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
+
+      HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+      HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+
+      TargetRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
+      TargetRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
+
+      TargetRootPart.Velocity = Vector3.new(0, 0, 0)
+      TargetRootPart.RotVelocity = Vector3.new(0, 0, 0)
+    end
+  end
+end
+
+-- وظيفة تحديث قائمة اللاعبين
 local function UpdatePlayerList(Dropdown)
   local PlayerList = {}
   for _, Player in pairs(game.Players:GetPlayers()) do
@@ -239,6 +315,29 @@ local function UpdatePlayerList(Dropdown)
   end
   Dropdown:NewOptions(PlayerList)
 end
+
+-- إنشاء النافذة
+local Window = Library:MakeWindow({
+  Title = "Symphony Hub : Murder Mystery 2",
+  SubTitle = "dev by real_redz",
+  ScriptFolder = "redz-library-V5"
+})
+
+-- إنشاء التبويبات
+local MainTab = Window:MakeTab({Title = "🏠 الرئيسية", Icon = "Home"})
+local PlayerTab = Window:MakeTab({Title = "👤 اللاعب", Icon = "User"})
+local VisualTab = Window:MakeTab({Title = "👁️ المرئيات", Icon = "Eye"})
+local TeleportTab = Window:MakeTab({Title = "📍 الانتقال", Icon = "Navigation"})
+local WeaponsTab = Window:MakeTab({Title = "🔫 الأسلحة", Icon = "Target"})
+local KillerTab = Window:MakeTab({Title = "🔥القاتل", Icon = "skull"})
+local FlingTab = Window:MakeTab({Title = "💨 القذف", Icon = "Wind"})
+local ScriptsTab = Window:MakeTab({Title = "📁 السكربتات", Icon = "Cloud"})
+local SettingsTab = Window:MakeTab({Title = "⚙️ الإعدادات", Icon = "Settings"})
+
+-- ==================== تبويب القذف (FlingTab) ====================
+
+-- Fling Section
+local FlingSection = FlingTab:AddSection("💨 Fling")
 
 -- Create the dropdown first
 local PlayerDropdown = FlingSection:AddDropdown({
@@ -325,10 +424,12 @@ FlingSection:AddToggle({
   end
 })
 
--- Murderer Section
-local MurdererSection = CombatTab:AddSection("Murderer")
+-- ==================== تبويب القاتل (KillerTab) ====================
 
-MurdererSection:AddButton({
+-- قسم قتل جديد
+local KillerSection = KillerTab:AddSection("💀 Kill Options")
+
+KillerSection:AddButton({
   Name = "Kill Sheriff",
   Callback = function()
     -- قتل الشريف فقط
@@ -345,7 +446,7 @@ MurdererSection:AddButton({
   end
 })
 
-MurdererSection:AddButton({
+KillerSection:AddButton({
   Name = "Kill Everyone",
   Callback = function()
     -- قتل جميع اللاعبين
@@ -357,7 +458,7 @@ MurdererSection:AddButton({
   end
 })
 
-MurdererSection:AddToggle({
+KillerSection:AddToggle({
   Name = "Auto Kill Sheriff",
   Default = false,
   Callback = function(Value)
@@ -367,7 +468,7 @@ MurdererSection:AddToggle({
   end
 })
 
-MurdererSection:AddToggle({
+KillerSection:AddToggle({
   Name = "Auto Kill Everyone",
   Default = false,
   Callback = function(Value)
@@ -377,7 +478,7 @@ MurdererSection:AddToggle({
   end
 })
 
-MurdererSection:AddToggle({
+KillerSection:AddToggle({
   Name = "Kill Aura",
   Default = false,
   Callback = function(Value)
@@ -387,7 +488,7 @@ MurdererSection:AddToggle({
   end
 })
 
-MurdererSection:AddSlider({
+KillerSection:AddSlider({
   Name = "Kill Aura Range",
   Min = 1,
   Max = 60,
@@ -398,110 +499,7 @@ MurdererSection:AddSlider({
   end
 })
 
--- اجعل تبويب Combat هو التبويب الظاهر افتراضيًا
-Window:SelectTab(CombatTab)
+-- ==================== تحديد التبويب الظاهر ====================
 
--- وظيفة القذف (FlingKill)
-function FlingKill(pu262)
-  pcall(function()
-    if pu262 ~= "All" then
-      local v263 = GetPlayer(pu262) -- وظيفة موجودة أدناه
-      if v263 and v263 ~= game.Players.LocalPlayer then
-        Fling(v263) -- وظيفة موجودة أدناه
-      end
-    else
-      -- قذف الجميع
-      for _, Player in pairs(game.Players:GetPlayers()) do
-        if Player ~= game.Players.LocalPlayer and not IsPlayerWhitelisted(Player.Name) then
-          Fling(Player)
-        end
-      end
-    end
-  end)
-end
-
--- وظيفة القتل (KillPlayer)
-function KillPlayer(PlayerName, Instant)
-  if tostring(vu36.Gameplay.Murderer) == game.Players.LocalPlayer.Name then
-    local Player = game.Players:FindFirstChild(PlayerName)
-    if Player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-      -- استخدام السكربت الأصلي للقتل
-      local Character = game.Players.LocalPlayer.Character
-      if Character and Character:FindFirstChild("Knife") then
-        -- محاولة القتل
-        pcall(function()
-          Character.Knife.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(1, Player.Character.HumanoidRootPart.Position, "AH2")
-        end)
-      end
-    end
-  end
-end
-
--- وظيفة قتل الجميع (KillAll)
-function KillAll()
-  if tostring(vu36.Gameplay.Murderer) == game.Players.LocalPlayer.Name then
-    for _, Player in pairs(game.Players:GetPlayers()) do
-      if Player ~= game.Players.LocalPlayer and not IsPlayerWhitelisted(Player.Name) then
-        KillPlayer(Player.Name, true)
-      end
-    end
-  end
-end
-
--- وظيفة التحقق من القائمة البيضاء (IsPlayerWhitelisted)
-function IsPlayerWhitelisted(PlayerName)
-  return table.find(vu35.WhitelistedPlayers, PlayerName) ~= nil
-end
-
--- وظيفة جلب اللاعب (GetPlayer)
-function GetPlayer(PlayerName)
-  return game.Players:FindFirstChild(PlayerName)
-end
-
--- وظيفة القذف (Fling)
-function Fling(Player)
-  if Player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-    local Character = game.Players.LocalPlayer.Character
-    if Character and Character:FindFirstChild("HumanoidRootPart") then
-      -- استخدام السكربت الأصلي للقذف
-      local HumanoidRootPart = Character.HumanoidRootPart
-      local TargetRootPart = Player.Character.HumanoidRootPart
-
-      -- تغيير المقاومة
-      HumanoidRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
-      HumanoidRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
-
-      -- تغيير السرعة
-      HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-      HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
-
-      -- الالتصاق بالهدف
-      HumanoidRootPart.CFrame = TargetRootPart.CFrame * CFrame.new(0, -1.5, 0)
-
-      -- تغيير المقاومة والسرعة للهدف
-      TargetRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
-      TargetRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
-
-      TargetRootPart.Velocity = Vector3.new(0, 0, 0)
-      TargetRootPart.RotVelocity = Vector3.new(0, 0, 0)
-
-      -- الانتظار قليلاً
-      task.wait(0.1)
-
-      -- تغيير المقاومة والسرعة مرة أخرى
-      HumanoidRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
-      HumanoidRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
-
-      HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-      HumanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
-
-      TargetRootPart:ApplyImpulse(Vector3.new(0, 0, 0))
-      TargetRootPart:ApplyAngularImpulse(Vector3.new(0, 0, 0))
-
-      TargetRootPart.Velocity = Vector3.new(0, 0, 0)
-      TargetRootPart.RotVelocity = Vector3.new(0, 0, 0)
-    end
-  end
-end
-
--- ... (استمرار الوظائف الأخرى من السكربت الأصلي)
+-- اجعل تبويب القاتل هو التبويب الظاهر افتراضيًا
+Window:SelectTab(KillerTab) -- أو FlingTab لو حابب تبدأ بـ القذف
