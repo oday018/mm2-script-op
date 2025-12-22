@@ -33,3 +33,4 @@ local Settings = {
     KillAura = false,
     ESP = false,
     AutoFarm
+
