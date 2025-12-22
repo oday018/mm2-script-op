@@ -223,3 +223,6 @@ MurdererSection:AddSlider({
     vu35.KillAuraRange = Value
   end
 })
+
+-- اجعل تبويب Combat هو التبويب الظاهر افتراضيًا
+Window:SelectTab(CombatTab)
