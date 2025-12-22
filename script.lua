@@ -1,164 +1,200 @@
--- Tiny Anti-Fling UI Library
--- ضع هذا السكربت في StarterPlayerScripts
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local StarterGui = game:GetService("StarterGui")
 
---[[======================
-     هنا يبدأ الكود الأصلي لنظام Anti-Fling
-========================]]
-local AntiFling = {
-    Enabled = false,
-    DetectionThreshold = 100,
-    MaxVelocity = 80,
-    MaxAngularVelocity = 50,
-    AntiFlingForce = 10000
-}
+-- Fling Section
+local FlingSection = Tab:AddSection("Fling")
 
-local lastValidPosition = nil
-local isBeingFlinged = false
-local flingDetectionCount = 0
-local flingProtectionEnabled = true
-
-local function restorePlayerState()
-    if not LocalPlayer.Character then return end
-    local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-    local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if humanoid and rootPart then
-        rootPart.AssemblyLinearVelocity = Vector3.new(0,0,0)
-        rootPart.AssemblyAngularVelocity = Vector3.new(0,0,0)
-        for _, force in ipairs(rootPart:GetChildren()) do
-            if force:IsA("BodyForce") or force:IsA("BodyVelocity") or force:IsA("BodyAngularVelocity") then
-                force:Destroy()
-            end
-        end
-        if lastValidPosition then
-            rootPart.CFrame = CFrame.new(lastValidPosition)
-        end
-        humanoid.PlatformStand = false
-        humanoid.AutoRotate = true
-        humanoid:ChangeState("GettingUp")
-    end
+-- قائمة اللاعبين (يتم تحديثها تلقائيًا)
+local PlayerList = {}
+for _, Player in pairs(game.Players:GetPlayers()) do
+  if Player.Name ~= game.Players.LocalPlayer.Name then
+    table.insert(PlayerList, Player.Name)
+  end
 end
 
-local function advancedAntiFling()
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return false end
-    local rootPart = LocalPlayer.Character.HumanoidRootPart
-    local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-    if not humanoid then return false end
+FlingSection:AddDropdown({
+  Name = "Players To Fling",
+  Options = PlayerList,
+  Default = PlayerList[1] or nil,
+  Callback = function(Value)
+    -- اختيار لاعب معين للقذف
+    vu35.PlayerToFling = Value
+  end
+})
 
-    local currentVelocity = rootPart.AssemblyLinearVelocity.Magnitude
-    local currentAngularVelocity = rootPart.AssemblyAngularVelocity.Magnitude
-
-    if currentVelocity < 50 and currentAngularVelocity < 30 then
-        lastValidPosition = rootPart.Position
-        isBeingFlinged = false
-        flingDetectionCount = 0
-        return false
-    end
-
-    if currentVelocity > AntiFling.DetectionThreshold or currentAngularVelocity > AntiFling.MaxAngularVelocity then
-        flingDetectionCount = flingDetectionCount + 1
-        isBeingFlinged = true
-        if flingDetectionCount > 3 then return true end
+FlingSection:AddButton({
+  Name = "Fling Murderer",
+  Callback = function()
+    -- قذف القاتل
+    local MurdererName = tostring(vu36.Gameplay.Murderer)
+    if MurdererName and MurdererName ~= "None" then
+      FlingKill(MurdererName)
     else
-        flingDetectionCount = math.max(0, flingDetectionCount -1)
+      print("Murderer not found!")
     end
-    return false
-end
+  end
+})
 
-local function applyAntiFlingForce()
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-    local rootPart = LocalPlayer.Character.HumanoidRootPart
-    for _, force in ipairs(rootPart:GetChildren()) do
-        if force:IsA("BodyForce") or force:IsA("BodyVelocity") or force:IsA("BodyAngularVelocity") then
-            force:Destroy()
-        end
-    end
-
-    local antiForce = Instance.new("BodyForce")
-    antiForce.Name = "AntiFlingForce"
-    antiForce.Force = -rootPart.AssemblyLinearVelocity.Unit * AntiFling.AntiFlingForce
-    antiForce.Parent = rootPart
-
-    local antiAngular = Instance.new("BodyAngularVelocity")
-    antiAngular.Name = "AntiFlingAngular"
-    antiAngular.AngularVelocity = -rootPart.AssemblyAngularVelocity
-    antiAngular.MaxTorque = Vector3.new(10000,10000,10000)
-    antiAngular.P = 10000
-    antiAngular.Parent = rootPart
-
-    task.spawn(function()
-        for i=1,10 do
-            if antiForce and antiForce.Parent then
-                antiForce.Force = antiForce.Force * 0.7
-                antiAngular.AngularVelocity = antiAngular.AngularVelocity * 0.7
-            end
-            task.wait(0.05)
-        end
-        if antiForce then antiForce:Destroy() end
-        if antiAngular then antiAngular:Destroy() end
-        restorePlayerState()
-    end)
-end
-
-local function mainAntiFlingLoop()
-    while AntiFling.Enabled and flingProtectionEnabled do
-        RunService.Heartbeat:Wait()
-        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then continue end
-        local rootPart = LocalPlayer.Character.HumanoidRootPart
-        if advancedAntiFling() then
-            applyAntiFlingForce()
-        end
-        -- تقييد السرعات
-        if rootPart.AssemblyLinearVelocity.Magnitude > AntiFling.MaxVelocity then
-            rootPart.AssemblyLinearVelocity = rootPart.AssemblyLinearVelocity.Unit * AntiFling.MaxVelocity
-        end
-        if rootPart.AssemblyAngularVelocity.Magnitude > AntiFling.MaxAngularVelocity then
-            rootPart.AssemblyAngularVelocity = rootPart.AssemblyAngularVelocity.Unit * AntiFling.MaxAngularVelocity
-        end
-    end
-end
-
-local function enableAntiFling()
-    if AntiFling.Enabled then return end
-    AntiFling.Enabled = true
-    lastValidPosition = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position or Vector3.new(0,0,0)
-    task.spawn(mainAntiFlingLoop)
-end
-
-local function disableAntiFling()
-    AntiFling.Enabled = false
-end
-
---[[======================
-     هنا يبدأ كود الواجهة البسيطة جدًا
-========================]]
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TinyAntiFlingUI"
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(0,60,0,30)
-button.Position = UDim2.new(0,10,0,10)
-button.BackgroundColor3 = Color3.fromRGB(35,35,35)
-button.TextColor3 = Color3.fromRGB(255,255,255)
-button.Text = "OFF"
-button.Font = Enum.Font.SourceSans
-button.TextSize = 18
-button.Parent = screenGui
-
-local enabled = false
-button.MouseButton1Click:Connect(function()
-    if enabled then
-        disableAntiFling()
-        button.Text = "OFF"
-        enabled = false
+FlingSection:AddButton({
+  Name = "Fling Sheriff",
+  Callback = function()
+    -- قذف الشريف
+    local SheriffName = tostring(vu36.Gameplay.Sheriff)
+    if SheriffName and SheriffName ~= "None" then
+      FlingKill(SheriffName)
     else
-        enableAntiFling()
-        button.Text = "ON"
-        enabled = true
+      print("Sheriff not found!")
     end
-end)
+  end
+})
+
+FlingSection:AddButton({
+  Name = "Fling All",
+  Callback = function()
+    -- قذف جميع اللاعبين
+    for _, Player in pairs(game.Players:GetPlayers()) do
+      if Player.Name ~= game.Players.LocalPlayer.Name and not IsPlayerWhitelisted(Player.Name) then
+        FlingKill(Player.Name)
+      end
+    end
+  end
+})
+
+FlingSection:AddToggle({
+  Name = "Auto Fling Player",
+  Default = false,
+  Callback = function(Value)
+    -- تفعيل/تعطيل القذف التلقائي للاعب محدد
+    if Value then
+      vu35.AutoFlingPlayer = true
+      while vu35.AutoFlingPlayer and task.wait(0.1) do
+        if vu35.PlayerToFling then
+          FlingKill(vu35.PlayerToFling)
+        end
+      end
+    else
+      vu35.AutoFlingPlayer = false
+    end
+  end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+-- Murderer Section
+local MurdererSection = Tab:AddSection("Murderer")
+
+MurdererSection:AddButton({
+  Name = "Kill Sheriff",
+  Callback = function()
+    -- قتل الشريف فقط
+    local SheriffName = tostring(vu36.Gameplay.Sheriff)
+    if SheriffName and SheriffName ~= "None" then
+      if tostring(vu36.Gameplay.Murderer) == game.Players.LocalPlayer.Name then
+        KillPlayer(SheriffName, true)
+      else
+        print("You are not the murderer!")
+      end
+    else
+      print("Sheriff not found!")
+    end
+  end
+})
+
+MurdererSection:AddButton({
+  Name = "Kill Everyone",
+  Callback = function()
+    -- قتل جميع اللاعبين
+    if tostring(vu36.Gameplay.Murderer) == game.Players.LocalPlayer.Name then
+      for _, Player in pairs(game.Players:GetPlayers()) do
+        if Player.Name ~= game.Players.LocalPlayer.Name and not IsPlayerWhitelisted(Player.Name) then
+          KillPlayer(Player.Name, true)
+        end
+      end
+    else
+      print("You are not the murderer!")
+    end
+  end
+})
+
+MurdererSection:AddToggle({
+  Name = "Auto Kill Sheriff",
+  Default = false,
+  Callback = function(Value)
+    -- تفعيل/تعطيل القتل التلقائي للشريف
+    vu35.AutoKillSheriff = Value
+    if Value then
+      local MurdererName = tostring(vu36.Gameplay.Murderer)
+      local SheriffName = tostring(vu36.Gameplay.Sheriff)
+      if MurdererName == game.Players.LocalPlayer.Name and SheriffName and SheriffName ~= "None" then
+        KillPlayer(SheriffName, true)
+      end
+    end
+  end
+})
+
+MurdererSection:AddToggle({
+  Name = "Auto Kill Everyone",
+  Default = false,
+  Callback = function(Value)
+    -- تفعيل/تعطيل القتل التلقائي للجميع
+    vu35.AutoKillEveryone = Value
+    if Value and tostring(vu36.Gameplay.Murderer) == game.Players.LocalPlayer.Name then
+      for _, Player in pairs(game.Players:GetPlayers()) do
+        if Player.Name ~= game.Players.LocalPlayer.Name and not IsPlayerWhitelisted(Player.Name) then
+          KillPlayer(Player.Name, true)
+        end
+      end
+    end
+  end
+})
+
+MurdererSection:AddToggle({
+  Name = "Kill Aura",
+  Default = false,
+  Callback = function(Value)
+    -- تفعيل/تعطيل قتل تلقائي لمن حولك
+    vu35.KillAura = Value
+    if Value then
+      vu35.KillAuraLoop = true
+      while vu35.KillAuraLoop and vu35.KillAura do
+        task.wait()
+        for _, Player in pairs(game.Players:GetPlayers()) do
+          if Player.Name ~= game.Players.LocalPlayer.Name and not IsPlayerWhitelisted(Player.Name) then
+            local Character = Player.Character
+            if Character then
+              local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+              if HumanoidRootPart then
+                local Distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - HumanoidRootPart.Position).Magnitude
+                if Distance <= vu35.KillAuraRange then
+                  KillPlayer(Player.Name, true)
+                end
+              end
+            end
+          end
+        end
+      end
+    else
+      vu35.KillAuraLoop = false
+    end
+  end
+})
+
+MurdererSection:AddSlider({
+  Name = "Kill Aura Range",
+  Min = 1,
+  Max = 60,
+  Default = 10,
+  Callback = function(Value)
+    -- تحديد مدى Kill Aura
+    vu35.KillAuraRange = Value
+  end
+})
