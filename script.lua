@@ -1,24 +1,48 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/tlredz/Library/refs/heads/main/redz-V5-remake/main.luau"))()
 
+local Window = Library:MakeWindow({
+  Title = "Symphony Hub : Murder Mystery 2",
+  SubTitle = "dev by real_redz",
+  ScriptFolder = "redz-library-V5"
+})
+
+local CombatTab = Window:MakeTab({
+  Title = "Combat",
+  Icon = "Gun"
+})
 
 -- Fling Section
-local FlingSection = Tab:AddSection("Fling")
+local FlingSection = CombatTab:AddSection("Fling")
 
--- قائمة اللاعبين (يتم تحديثها تلقائيًا)
-local PlayerList = {}
-for _, Player in pairs(game.Players:GetPlayers()) do
-  if Player.Name ~= game.Players.LocalPlayer.Name then
-    table.insert(PlayerList, Player.Name)
+-- Function to update player list
+local function UpdatePlayerList()
+  local PlayerList = {}
+  for _, Player in pairs(game.Players:GetPlayers()) do
+    if Player.Name ~= game.Players.LocalPlayer.Name then
+      table.insert(PlayerList, Player.Name)
+    end
   end
+  return PlayerList
 end
 
-FlingSection:AddDropdown({
+local CurrentPlayerList = UpdatePlayerList()
+
+local PlayerDropdown = FlingSection:AddDropdown({
   Name = "Players To Fling",
-  Options = PlayerList,
-  Default = PlayerList[1] or nil,
+  Options = CurrentPlayerList,
+  Default = CurrentPlayerList[1] or nil,
   Callback = function(Value)
     -- اختيار لاعب معين للقذف
     vu35.PlayerToFling = Value
+  end
+})
+
+-- Button to refresh player list
+FlingSection:AddButton({
+  Name = "Refresh Players",
+  Callback = function()
+    CurrentPlayerList = UpdatePlayerList()
+    PlayerDropdown:NewOptions(CurrentPlayerList)
   end
 })
 
@@ -78,19 +102,8 @@ FlingSection:AddToggle({
   end
 })
 
-
-
-
-
-
-
-
-
-
-
-
 -- Murderer Section
-local MurdererSection = Tab:AddSection("Murderer")
+local MurdererSection = CombatTab:AddSection("Murderer")
 
 MurdererSection:AddButton({
   Name = "Kill Sheriff",
