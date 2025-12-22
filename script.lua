@@ -6,7 +6,7 @@ local Window = Library:MakeWindow({
   ScriptFolder = "redz-library-V5"
 })
 
-local CombatTab = Window:MakeTab({
+local FlingTab = Window:MakeTab({
   Title = "Combat",
   Icon = "Gun"
 })
@@ -226,3 +226,4 @@ MurdererSection:AddSlider({
 
 -- اجعل تبويب Combat هو التبويب الظاهر افتراضيًا
 Window:SelectTab(CombatTab)
+
