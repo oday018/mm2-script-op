@@ -89,7 +89,7 @@ local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleButton"
 toggleButton.Size = UDim2.fromScale(1, 1) -- ياخذ كامل مساحة الـ CanvasGroup
 toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50) -- لون داكن شوية
-toggleButton.Text = "ممنوع" -- الحالة الافتراضية
+toggleButton.Text = "مموع" -- الحالة الافتراضية
 toggleButton.TextScaled = true
 toggleButton.BorderSizePixel = 1
 toggleButton.Parent = canvasGroup
@@ -98,7 +98,7 @@ toggleButton.Parent = canvasGroup
 local function toggleAntiFling()
     if antiFlingEnabled then
         DisableAntiFling() -- استخدم الدالة الجديدة
-        toggleButton.Text = "ممنوع" -- بعد التوقف
+        toggleButton.Text = "مموع" -- بعد التوقف
     else
         EnableAntiFling() -- استخدم الدالة الجديدة
         toggleButton.Text = "مسموح" -- بعد البدء
@@ -109,3 +109,4 @@ end
 toggleButton.MouseButton1Click:Connect(toggleAntiFling)
 
 print("Single Button Anti-Fling UI Created. Drag it around. Click to toggle ON/OFF.")
+
