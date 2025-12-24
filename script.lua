@@ -4,13 +4,15 @@ local LocalPlayer = Players.LocalPlayer
 
 -- متغيرات الحماية
 local AntiFlingEnabled = false
+local Connections = {}
 local LastSafePos = Vector3.zero
 
 -- دالة لتفعيل Anti-Fling
 local function EnableAntiFling()
+    if AntiFlingEnabled then return end
     AntiFlingEnabled = true
-    RunService.Heartbeat:Connect(function()
-        if not AntiFlingEnabled then return end
+
+    local connection = RunService.Heartbeat:Connect(function()
         local char = LocalPlayer.Character
         local root = char and char:FindFirstChild("HumanoidRootPart")
         if not root then return end
@@ -39,10 +41,29 @@ local function EnableAntiFling()
             end
         end
     end)
+
+    table.insert(Connections, connection)
 end
 
--- استدعاء الحماية
-EnableAntiFling()
+-- دالة لتعطيل Anti-Fling
+local function DisableAntiFling()
+    if not AntiFlingEnabled then return end
+    AntiFlingEnabled = false
+
+    for _, connection in pairs(Connections) do
+        connection:Disconnect()
+    end
+    Connections = {}
+end
+
+-- دالة التبديل
+local function ToggleAntiFling(state)
+    if state then
+        EnableAntiFling()
+    else
+        DisableAntiFling()
+    end
+end
 
 --// ================== UI ==================
 
@@ -57,7 +78,7 @@ local Window = Library:MakeWindow({
 })
 
 local MainTab = Window:MakeTab({
-    Title = "ain",
+    Title = "an",
     Icon = "Shield"
 })
 
@@ -65,12 +86,6 @@ MainTab:AddToggle({
     Name = "Anti Fling",
     Default = false,
     Callback = function(Value)
-        if Value then
-            startAntiFling()
-        else
-            stopAntiFling()
-        end
+        ToggleAntiFling(Value)
     end
 })
-
-
