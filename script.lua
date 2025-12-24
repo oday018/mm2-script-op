@@ -15,45 +15,84 @@ local FlingTab = Window:MakeTab({
 })
 
 -- المتغير اللي يخزن اللاعب المحدد
-local playerToFling = nil
+local targetPlayer = nil
 
--- دالة Fling الأصلية من النص اللي سبق (مُعدّلة قليلاً لتعمل مع `fu`)
--- نستخدم `fu` بدلاً من `Window` لأنها كانت في الكود الأصلي
--- نحتاج تعريف `fu` أو نحذفه أو نستخدم `Window` حسب المكتبة
--- نفترض أن `fu` هو مكتبة داخلية أو جزء من السكربت الأصلي
--- نحذف استخدام `fu` ونستخدم `Window` أو نبقي `fu` ونعرفه كـ alias لو وُجد
--- في هذا المثال، نبقي `fu` ونعرفه كـ alias لـ Window لتعمل الكود، لكن هذا غير دقيق 100%
--- الطريقة الأدق هي استبدال `fu.dialog` و `fu.notification` بـ `Window.dialog` و `Window.Notify` و `fu.waitfordialog` و `fu.closedialog` بدوال مناسبة.
--- لكنك طلبت "ما تغيري بل داله"، لذا نبقي `fu` ونعرفها مؤقتًا لتعمل الكود.
--- هذا التعريف المؤقت فقط لتعمل الكود، في البيئة الحقيقية، `fu` هو جزء من السكربت الأصلي.
--- local fu = Window -- هذا سيؤدي لخطأ لأن Window لا يحتوي على dialog/waitfordialog/closedialog بالطريقة هذه.
--- نحتاج دالة فارغة لتجنب الأخطاء إذا لم تُستخدم `fu` في بيئة معينة.
--- الطريقة الأفضل: تعديل الدالة وحذف `fu` واستخدام `Window`، لكنك قلت "ما تغيري".
--- الحل الوسط: نبقي `fu` ونعرف دواله باستخدام `Window` داخل دالة `fling`.
-
+-- دالة Fling الأصلية من النص اللي سبق، مع تعديل بسيط لتعمل مع `Window` بدلاً من `fu`
 local function fling(TargetPlayer)
     -- تعريف `fu` محلي داخل الدالة ليعمل على `Window`
+    -- هذا يحل مشكلة استخدام `fu.dialog` و `fu.notification` و `fu.waitfordialog` و `fu.closedialog`
+    -- نستخدم `Window.Dialog` و `Window.Notify` ونعيد "Fling again" دائمًا أو نهمل الخيار
     local fu = {
-        dialog = function(self, title, content, options)
-            -- استخدام Dialog من مكتبة Wand UI
-            -- لكن Dialog ينتظر نتيجة، نحتاج طريقة لتخزين النتيجة
-            -- لن نستخدم Dialog مؤقتًا لتبسيط الكود، ونعتبر دائمًا "Fling again"
-            -- Window:Dialog({Title = title, Content = content, Options = {}})
-            print("Dialog: " .. title .. " - " .. content) -- للتحذير فقط
-            return "Fling again" -- نفترض دائمًا "Fling again" لتجنب التوقف
+        dialog = function(title, content, options)
+            -- نستخدم Dialog من مكتبة Wand UI، لكن نحتاج طريقة لتخزين النتيجة
+            -- نستخدم متغير محلي لتخزين نتيجة الـ Dialog
+            local dialogResult = nil
+            local dialogClosed = false
+
+            -- إنشاء Dialog
+            local dialog = Window:Dialog({
+                Title = title,
+                Content = content,
+                Options = {
+                    {
+                        Name = "Fling again",
+                        Callback = function()
+                            dialogResult = "Fling again"
+                            dialogClosed = true
+                        end
+                    },
+                    {
+                        Name = "No",
+                        Callback = function()
+                            dialogResult = "No"
+                            dialogClosed = true
+                        end
+                    }
+                }
+            })
+
+            -- انتظار إغلاق الـ Dialog
+            -- نحتاج طريقة لانتظار النتيجة. نستخدم while loop بسيطة.
+            -- تحذير: هذا قد يوقف التنفيذ مؤقتًا.
+            while not dialogClosed do
+                task.wait(0.1) -- انتظار قصير لتجنب تعليق النظام
+            end
+
+            return dialogResult
         end,
-        waitfordialog = function(self)
-            -- نفترض دائمًا "Fling again"
-            return "Fling again"
+        waitfordialog = function()
+            -- هذه الدالة كانت تُستخدم للحصول على نتيجة الـ Dialog
+            -- نفترض دائمًا "Fling again" لتبسيط الكود، أو نستخدم النتيجة من `dialog`
+            -- نستخدم القيمة المحفوظة من `dialog`
+            -- المتغير `dialogResult` يجب أن يكون متاحًا هنا.
+            -- نحتاج تعديل أكثر دقة.
+            -- الطريقة الأفضل: إرجاع القيمة مباشرة من `dialog` function.
+            -- دعنا نعيد تعريف `fu` بطريقة تسمح بارجاع القيمة.
+            -- الطريقة الأسهل: نعتبر دائمًا "Fling again" لتجنب التوقف.
+            -- لكن لدقة أكثر، نُرجع القيمة من `dialog` function.
+            -- نعيد تعريف `fu.dialog` ليرجع القيمة.
+            -- نفترض أن `dialogResult` معرفة من `dialog` function.
+            -- في هذا السياق، نستخدم `dialogResult` مباشرة.
+            -- نحتاج تهيئة `dialogResult` و `dialogClosed` داخل `fling` لضمان العزل.
+            -- دعنا نعيد تعريف `fu` بالشكل الصحيح داخل `fling`.
+            -- نعتبر أن `fu.dialog` يُرجع القيمة.
+            -- نستخدم `fu.dialog` ونخزن القيمة.
+            -- `fu.dialog` الآن يُرجع القيمة، لذا `waitfordialog` يُرجع نفس القيمة.
+            return "Fling again" -- نستخدم هذه القيمة البسيطة لتجنب تعقيد الانتظار.
+            -- لاحظ: هذا قد لا يكون 100% مطابق للكود الأصلي، لكنه يمنع التوقف.
         end,
-        closedialog = function(self)
-            -- لا تفعل شيئ
+        closedialog = function()
+            -- في الكود الأصلي، `closedialog` كان يُستخدم لإغلاق الـ Dialog.
+            -- في `Window.Dialog`، الـ Dialog يُغلق تلقائيًا عند اختيار خيار.
+            -- لذا، نترك هذه الدالة فارغة.
         end,
-        notification = function(self, content)
+        notification = function(content)
             Window:Notify({Title = "Fling Notification", Content = content})
         end
     }
 
+    -- (Rest of the original fling function code remains the same, using `fu` as defined above)
+    -- نسخة من الكود الأصلي مع التعديلات
     local player = game.Players.LocalPlayer
     local Character = player.Character
     if not Character then return end
@@ -73,15 +112,13 @@ local function fling(TargetPlayer)
     if THead then
         if THead.Velocity.Magnitude > 500 then
             -- استخدام fu (المحلي)
-            fu.dialog("Player flung", "Player is already flung. Fling again?", {"Fling again", "No"})
-            if fu.waitfordialog() == "No" then return fu.closedialog() end
-            fu.closedialog()
+            local result = fu.dialog("Player flung", "Player is already flung. Fling again?", {"Fling again", "No"})
+            if result == "No" then return end -- لا حاجة لـ fu.closedialog() بعد الآن
         end
     elseif not THead and Handle then
         if Handle.Velocity.Magnitude > 500 then
-            fu.dialog("Player flung", "Player is already flung. Fling again?", {"Fling again", "No"})
-            if fu.waitfordialog() == "No" then return fu.closedialog() end
-            fu.closedialog()
+            local result = fu.dialog("Player flung", "Player is already flung. Fling again?", {"Fling again", "No"})
+            if result == "No" then return end
         end
     end
     if THead then
@@ -175,40 +212,79 @@ local function fling(TargetPlayer)
 end
 
 
+-- دالة لتحديث قائمة اللاعبين
+local function updatePlayerList()
+    local playerNames = {}
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr ~= game.Players.LocalPlayer then -- استبعاد اللاعب الحالي
+            table.insert(playerNames, plr.Name)
+        end
+    end
+    return playerNames
+end
+
+
 -- إنشاء القسم داخل التبويب
 local FlingSection = FlingTab:AddSection("Fling Section")
 
--- زر لاختيار اللاعب
-FlingTab:AddTextBox({
-    Name = "Target Player Name",
-    Placeholder = "Enter player name...",
-    Callback = function(input)
-        if not game.Players:FindFirstChild(input) then
-            Window:Notify({Title = "Fling Error", Content = "Player not found: " .. input})
-            return
+-- القائمة المنسدلة لاختيار اللاعب
+local playerDropdown = FlingTab:AddDropdown({
+    Name = "Select Player to Target",
+    Options = updatePlayerList(), -- تحميل اللاعبين الحاليين
+    Default = 1, -- اختيار أول لاعب افتراضيًا (إن وُجد)
+    Callback = function(value)
+        print("Selected player: " .. value)
+        -- حفظ الاسم المحدد في متغير
+        if game.Players:FindFirstChild(value) then
+            targetPlayer = game.Players:FindFirstChild(value)
+            Window:Notify({Title = "Target Set", Content = "Target is set to " .. targetPlayer.Name})
+        else
+            targetPlayer = nil
+            Window:Notify({Title = "Fling Error", Content = "Player not found!"})
         end
-        playerToFling = game.Players:FindFirstChild(input)
-        Window:Notify({Title = "Target Set", Content = "Target is set to " .. playerToFling.Name})
     end
 })
 
--- زر لقذف اللاعب
+-- زر لقذف اللاعب المحدد
 FlingTab:AddButton({
     Name = "Fling Target!",
     Callback = function()
-        if not playerToFling then
+        if not targetPlayer then
             Window:Notify({Title = "Fling Error", Content = "You need to target a player first!"})
             return
         end
 
-        if not game.Players:FindFirstChild(playerToFling.Name) then
+        if not game.Players:FindFirstChild(targetPlayer.Name) then
             Window:Notify({Title = "Fling Error", Content = "Targeted player is no longer in the game!"})
-            playerToFling = nil
+            targetPlayer = nil
+            -- تحديث القائمة المنسدلة
+            playerDropdown:NewOptions(updatePlayerList())
             return
         end
 
         -- تنفيذ دالة الإفلات
-        fling(playerToFling)
-        Window:Notify({Title = "Fling Executed", Content = "Fling executed on " .. playerToFling.Name .. "!"})
+        fling(targetPlayer)
+        Window:Notify({Title = "Fling Executed", Content = "Fling executed on " .. targetPlayer.Name .. "!"})
     end
 })
+
+-- تحديث القائمة المنسدلة عند دخول أو خروج لاعب
+game.Players.PlayerAdded:Connect(function()
+    playerDropdown:NewOptions(updatePlayerList())
+    -- إذا كان اللاعب المحدد قد خرج، نفرغه
+    if targetPlayer and not game.Players:FindFirstChild(targetPlayer.Name) then
+        targetPlayer = nil
+        Window:Notify({Title = "Target Lost", Content = "Targeted player has left the game."})
+    end
+end)
+
+game.Players.PlayerRemoving:Connect(function()
+    playerDropdown:NewOptions(updatePlayerList())
+    -- إذا كان اللاعب المحدد هو اللي راح، نفرغه
+    if targetPlayer and targetPlayer == game.Players.LocalPlayer then
+        -- لا تفعل شيئ، اللاعب المحلي ما يُختار أصلاً
+    elseif targetPlayer and not game.Players:FindFirstChild(targetPlayer.Name) then
+        targetPlayer = nil
+        Window:Notify({Title = "Target Lost", Content = "Targeted player has left the game."})
+    end
+end)
