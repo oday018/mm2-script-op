@@ -57,7 +57,7 @@ local Window = Library:MakeWindow({
 })
 
 local MainTab = Window:MakeTab({
-    Title = "Main",
+    Title = "ain",
     Icon = "Shield"
 })
 
@@ -72,4 +72,5 @@ MainTab:AddToggle({
         end
     end
 })
+
 
