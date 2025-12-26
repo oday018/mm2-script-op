@@ -11,6 +11,7 @@ local Window = Library:MakeWindow({
 -- ==================== التعاريف الأساسية ====================
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local workspace = workspace
 
 -- حفظ FPDH الأصلي (لإرجاعه لاحقًا)
@@ -18,20 +19,21 @@ if not getgenv().FPDH then
     getgenv().FPDH = workspace.FallenPartsDestroyHeight
 end
 
--- ==================== دالة جلب الأدوار (MM2) ====================
+-- تطبيق cloneref على الخدمات
+local SafePlayers = cloneref(game:GetService("Players"))
+local SafeReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+
+-- دالة الحصول على الأدوار
 local function GetRoles()
+    local data = SafeReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
     local roles = {}
-    local gameSettings = workspace:FindFirstChild("GameSettings")
-    if not gameSettings then return roles end
-
-    local rolesFolder = gameSettings:FindFirstChild("Roles")
-    if not rolesFolder then return roles end
-
-    for _, v in pairs(rolesFolder:GetChildren()) do
-        if v:IsA("StringValue") and v.Value ~= "" then
-            roles[v.Name] = v.Value
+    
+    for playerName, playerData in pairs(data) do
+        if not playerData.Dead then
+            roles[playerName] = playerData.Role
         end
     end
+    
     return roles
 end
 
