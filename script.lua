@@ -13,88 +13,80 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local workspace = workspace
 
--- حفظ FPDH الأصلي
+-- حفظ FPDH الأصلي (لإرجاعه لاحقًا)
 if not getgenv().FPDH then
     getgenv().FPDH = workspace.FallenPartsDestroyHeight
 end
 
--- دالة بحث عن اللاعب
-local function findPlayer(input)
-    if not input or input == "" then return nil end
-    input = tostring(input):lower()
-    if tonumber(input) then
-        local plr = Players:GetPlayerByUserId(tonumber(input))
-        if plr then return plr end
-    end
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr.Name:lower():find(input, 1, true) then
-            return plr
+-- دالة جلب أسماء اللاعبين (باستثناء اللاعب نفسه)
+local function GetPlayerNames()
+    local names = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(names, player.Name)
         end
     end
-    return nil
+    return names
 end
 
 -- ==================== إنشاء تاب Fling ====================
 local FlingTab = Window:MakeTab({
     Title = "💥 Fling",
-    Icon = "Flame" -- يمكنك تغيير الأيقونة لـ "Bomb", "Rocket", أو حذفها
+    Icon = "Bomb" -- أو "Flame", "Rocket"
 })
 
--- متغير لتخزين الهدف
-local TargetPlayer = nil
+-- متغير لتخزين اللاعب المحدد من القائمة
+local SelectedPlayerName = nil
 
--- ==================== حقل إدخال: إدخال اسم/ID اللاعب ====================
-FlingTab:AddTextBox({
-    Name = "🎯 اسم أو ID اللاعب",
-    Placeholder = "اكتب اسم اللاعب هنا...",
-    ClearOnFocus = true,
-    Callback = function(input)
-        if not input or input == "" then
-            Window:Notify({
-                Title = "Fling",
-                Content = "يرجى إدخال اسم اللاعب!"
-            })
-            TargetPlayer = nil
-            return
-        end
-
-        local player = findPlayer(input)
-        if not player then
-            Window:Notify({
-                Title = "Fling",
-                Content = "اللاعب غير موجود!"
-            })
-            TargetPlayer = nil
-            return
-        end
-
-        TargetPlayer = player
-        Window:Notify({
-            Title = "Fling",
-            Content = "الهدف: " .. player.Name
-        })
+-- ==================== القائمة المنسدلة (Dropdown) ====================
+local PlayerDropdown = FlingTab:AddDropdown({
+    Name = "🎯 اختر لاعب للقذف",
+    Options = GetPlayerNames(),
+    Default = GetPlayerNames()[1] or "",
+    Callback = function(Value)
+        SelectedPlayerName = Value
     end
 })
 
+-- تحديث القائمة عند دخول/خروج لاعب
+Players.PlayerAdded:Connect(function()
+    task.wait(0.5) -- تأخير بسيط علشان يخلص التحميل
+    PlayerDropdown:NewOptions(GetPlayerNames())
+    if not table.find(GetPlayerNames(), SelectedPlayerName) then
+        SelectedPlayerName = GetPlayerNames()[1] or nil
+        PlayerDropdown:SetValue(SelectedPlayerName or "")
+    end
+end)
+
+Players.PlayerRemoving:Connect(function()
+    task.wait(0.1)
+    PlayerDropdown:NewOptions(GetPlayerNames())
+    if not table.find(GetPlayerNames(), SelectedPlayerName) then
+        SelectedPlayerName = GetPlayerNames()[1] or nil
+        PlayerDropdown:SetValue(SelectedPlayerName or "")
+    end
+end)
+
 -- ==================== زر القذف ====================
 FlingTab:AddButton({
-    Name = "🚀 قذف اللاعب",
+    Name = "🚀 قذف اللاعب المحدد",
     Debounce = 0.5,
     Callback = function()
-        if not TargetPlayer then
+        if not SelectedPlayerName then
             Window:Notify({
                 Title = "Fling",
-                Content = "حدد لاعبًا أولًا!"
+                Content = "يرجى اختيار لاعب من القائمة أولًا!"
             })
             return
         end
 
-        if not Players:FindFirstChild(TargetPlayer.Name) then
+        local TargetPlayer = Players:FindFirstChild(SelectedPlayerName)
+        if not TargetPlayer then
             Window:Notify({
                 Title = "Fling",
-                Content = "اللاعب خرج من اللعبة!"
+                Content = "اللاعب غير موجود حالياً!"
             })
-            TargetPlayer = nil
+            SelectedPlayerName = nil
             return
         end
 
@@ -114,7 +106,7 @@ FlingTab:AddButton({
         if not TCharacter then
             Window:Notify({
                 Title = "Fling",
-                Content = "الهدف ما عنده شخصية!"
+                Content = "اللاعب المحدد ما عنده شخصية!"
             })
             return
         end
@@ -130,8 +122,8 @@ FlingTab:AddButton({
             getgenv().OldPos = RootPart.CFrame
         end
 
-        -- دالة التموضع والقذف
-        local function applyFling(BasePart, Pos, Ang)
+        -- دالة تطبيق القذف
+        local function FPos(BasePart, Pos, Ang)
             local cf = CFrame.new(BasePart.Position) * Pos * Ang
             RootPart.CFrame = cf
             Character:SetPrimaryPartCFrame(cf)
@@ -140,7 +132,7 @@ FlingTab:AddButton({
         end
 
         -- منطق الفلينق
-        local function executeFling(BasePart)
+        local function SkidFling(BasePart)
             local startTime = tick()
             local angle = 0
 
@@ -151,31 +143,25 @@ FlingTab:AddButton({
                     angle += 100
                     local dir = THumanoid.MoveDirection
                     local mag = BasePart.Velocity.Magnitude / 1.25
-                    applyFling(BasePart, CFrame.new(0, 1.5, 0) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0))
-                    task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, 0) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0))
-                    task.wait()
-                    applyFling(BasePart, CFrame.new(2.25, 1.5, -2.25) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0))
-                    task.wait()
-                    applyFling(BasePart, CFrame.new(-2.25, -1.5, 2.25) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0))
-                    task.wait()
-                    applyFling(BasePart, CFrame.new(0, 1.5, 0) + dir, CFrame.Angles(math.rad(angle), 0, 0))
-                    task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, 0) + dir, CFrame.Angles(math.rad(angle), 0, 0))
-                    task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, 0) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + dir * mag, CFrame.Angles(math.rad(angle), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, 0) + dir, CFrame.Angles(math.rad(angle), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0) + dir, CFrame.Angles(math.rad(angle), 0, 0)); task.wait()
                 else
                     local ws = THumanoid.WalkSpeed
                     local vmag = TRootPart and TRootPart.Velocity.Magnitude or 0
-                    applyFling(BasePart, CFrame.new(0, 1.5, ws), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, -ws), CFrame.Angles(0, 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, 1.5, ws), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, 1.5, vmag / 1.25), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, -vmag / 1.25), CFrame.Angles(0, 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, 1.5, vmag / 1.25), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(-90), 0, 0)); task.wait()
-                    applyFling(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, ws), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, -ws), CFrame.Angles(0, 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, ws), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, vmag / 1.25), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, -vmag / 1.25), CFrame.Angles(0, 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, 1.5, vmag / 1.25), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(-90), 0, 0)); task.wait()
+                    FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0)); task.wait()
                 end
             until BasePart.Velocity.Magnitude > 500
                 or BasePart.Parent ~= TCharacter
@@ -186,11 +172,11 @@ FlingTab:AddButton({
                 or (tick() - startTime > 2)
         end
 
-        -- تعديل FPDH مؤقت
+        -- تعديل FPDH مؤقتًا
         local oldFPDH = workspace.FallenPartsDestroyHeight
         workspace.FallenPartsDestroyHeight = math.huge
 
-        -- BodyVelocity
+        -- BodyVelocity للقذف القوي
         local BV = Instance.new("BodyVelocity")
         BV.Name = "FlingBlast"
         BV.Velocity = Vector3.new(9e8, 9e8, 9e8)
@@ -199,12 +185,12 @@ FlingTab:AddButton({
 
         Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
 
-        -- اختيار أفضل جزء
+        -- اختيار أفضل جزء في هدف الفلينق
         local partToUse = (TRootPart and THead and (TRootPart.Position - THead.Position).Magnitude > 5) and THead
             or TRootPart or THead or Handle
 
         if partToUse then
-            executeFling(partToUse)
+            SkidFling(partToUse)
         else
             Window:Notify({
                 Title = "Fling",
@@ -221,11 +207,11 @@ FlingTab:AddButton({
         workspace.CurrentCamera.CameraSubject = Humanoid
         workspace.FallenPartsDestroyHeight = oldFPDH
 
-        -- إرجاع الموضع
-        local restore = (getgenv().OldPos or RootPart.CFrame) * CFrame.new(0, 0.5, 0)
+        -- إرجاع الموقع الأصلي
+        local restoreCFrame = (getgenv().OldPos or RootPart.CFrame) * CFrame.new(0, 0.5, 0)
         repeat
-            RootPart.CFrame = restore
-            Character:SetPrimaryPartCFrame(restore)
+            RootPart.CFrame = restoreCFrame
+            Character:SetPrimaryPartCFrame(restoreCFrame)
             Humanoid:ChangeState("GettingUp")
             for _, child in ipairs(Character:GetChildren()) do
                 if child:IsA("BasePart") then
@@ -234,7 +220,7 @@ FlingTab:AddButton({
                 end
             end
             task.wait()
-        until (RootPart.Position - restore.Position).Magnitude < 25
+        until (RootPart.Position - restoreCFrame.Position).Magnitude < 25
 
         Window:Notify({
             Title = "Fling",
