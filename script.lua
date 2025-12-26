@@ -21,10 +21,13 @@ end
 -- ==================== دالة جلب الأدوار (MM2) ====================
 local function GetRoles()
     local roles = {}
-    local remote = workspace:FindFirstChild("GameSettings") and workspace.GameSettings:FindFirstChild("Roles") or nil
-    if not remote then return roles end
+    local gameSettings = workspace:FindFirstChild("GameSettings")
+    if not gameSettings then return roles end
 
-    for _, v in pairs(remote:GetChildren()) do
+    local rolesFolder = gameSettings:FindFirstChild("Roles")
+    if not rolesFolder then return roles end
+
+    for _, v in pairs(rolesFolder:GetChildren()) do
         if v:IsA("StringValue") and v.Value ~= "" then
             roles[v.Name] = v.Value
         end
@@ -32,8 +35,8 @@ local function GetRoles()
     return roles
 end
 
--- ==================== دالة القذف (SkidFling من السكربت القديم) ====================
-local function SkidFling(TargetPlayer)
+-- ==================== دالة القذف (SHubFling من السكربت القديم) ====================
+local function SHubFling(TargetPlayer)
     local Player = LocalPlayer
     local Character = Player.Character or Player.CharacterAdded:Wait()
     local Humanoid = Character:FindFirstChildOfClass("Humanoid")
@@ -185,12 +188,14 @@ FlingTab:AddButton({
     Callback = function()
         local roles = GetRoles()
         local found = false
+        
         for playerName, role in pairs(roles) do
             if role == "Murderer" then
                 local murderer = Players:FindFirstChild(playerName)
                 if murderer and murderer ~= LocalPlayer then
-                    SkidFling(murderer) -- استخدام دالة القذف
+                    SHubFling(murderer) -- استخدام دالة القذف
                     found = true
+                    
                     Window:Notify({
                         Title = "💨 تم قذف القاتل",
                         Content = "تم قذف: " .. murderer.Name,
@@ -200,6 +205,7 @@ FlingTab:AddButton({
                 end
             end
         end
+        
         if not found then
             Window:Notify({
                 Title = "❌ خطأ",
@@ -215,12 +221,14 @@ FlingTab:AddButton({
     Callback = function()
         local roles = GetRoles()
         local found = false
+        
         for playerName, role in pairs(roles) do
             if role == "Sheriff" or role == "Hero" then
                 local target = Players:FindFirstChild(playerName)
                 if target and target ~= LocalPlayer then
-                    SkidFling(target) -- استخدام دالة القذف
+                    SHubFling(target) -- استخدام دالة القذف
                     found = true
+                    
                     Window:Notify({
                         Title = "💨 تم القذف",
                         Content = "تم قذف: " .. target.Name .. " (" .. role .. ")",
@@ -230,6 +238,7 @@ FlingTab:AddButton({
                 end
             end
         end
+        
         if not found then
             Window:Notify({
                 Title = "❌ خطأ",
@@ -254,19 +263,22 @@ FlingTab:AddToggle({
     Default = false,
     Callback = function(Value)
         FlingAllEnabled = Value
+        
         if Value then
             FlingAllLoop = task.spawn(function()
                 while FlingAllEnabled do
                     local roles = GetRoles()
                     local flungCount = 0
-                    for playerName, _ in pairs(roles) do
+                    
+                    for playerName, role in pairs(roles) do
                         local player = Players:FindFirstChild(playerName)
                         if player and player ~= LocalPlayer then
-                            SkidFling(player) -- استخدام دالة القذف
+                            SHubFling(player) -- استخدام دالة القذف
                             flungCount = flungCount + 1
-                            task.wait(0.05)
+                            task.wait(0.05) -- تم تقليل الوقت من 0.2 إلى 0.05 لجعل القذف أسرع
                         end
                     end
+                    
                     if flungCount > 0 then
                         Window:Notify({
                             Title = "💥 قذف مستمر",
@@ -274,9 +286,11 @@ FlingTab:AddToggle({
                             Duration = 2
                         })
                     end
-                    task.wait(1)
+                    
+                    task.wait(1) -- تم تقليل الوقت من 3 إلى 1 ثانية
                 end
             end)
+            
             Window:Notify({
                 Title = "🔥 تم تفعيل قذف الكل",
                 Content = "سيتم قذف جميع اللاعبين بشكل مستمر",
@@ -287,6 +301,7 @@ FlingTab:AddToggle({
                 FlingAllLoop:Cancel()
                 FlingAllLoop = nil
             end
+            
             Window:Notify({
                 Title = "🛑 تم إيقاف قذف الكل",
                 Content = "تم إيقاف قذف جميع اللاعبين",
@@ -347,7 +362,7 @@ FlingTab:AddButton({
             return
         end
 
-        SkidFling(TargetPlayer)
+        SHubFling(TargetPlayer)
 
         Window:Notify({
             Title = "Fling",
