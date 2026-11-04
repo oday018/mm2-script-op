@@ -41,6 +41,7 @@ local BAG_LIMIT_DEFAULT = 40
 local BAG_LIMIT_ELITE = 50
 local ELITE_GAMEPASS_ID = 429957
 local MAX_FARM_DISTANCE = 180
+local FARM_DURING_ROUND_END = true -- ← جديد: يكمل التجميع حتى بعد انتهاء الجولة
 local fireTouch = (typeof(firetouchinterest) == "function" and firetouchinterest)
     or (typeof(firetouchtransmitter) == "function" and firetouchtransmitter)
     or nil
@@ -446,6 +447,7 @@ local function findClosestItem(rootPart)
 end
 
 local function isRoundOver()
+    if FARM_DURING_ROUND_END then return false end
     for _, guiName in ipairs({ "Scoreboard", "Scoreboard_Phone" }) do
         local scoreboard = guiParent:FindFirstChild(guiName)
         if scoreboard and scoreboard:IsA("ScreenGui") and scoreboard.Enabled then
@@ -1473,7 +1475,7 @@ end)
 local miniButton = create("TextButton", {
     Name = "MiniButton",
     AnchorPoint = Vector2.new(1, 0.5),
-    Position = UDim2.new(1, -18, 0.3, 0),   -- ← في الثلث الأعلى من يمين الشاشة
+    Position = UDim2.new(1, -18, 0.3, 0),
     Size = UDim2.fromOffset(56, 56),
     BackgroundColor3 = Theme.NavySoft,
     BackgroundTransparency = 0.02,
